@@ -1,0 +1,119 @@
+<!-- 10-shell.html — doctype, head, login page, hamburger, sidebar, <main> open (assembled in name order by app.py) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muster Consulting GmbH - Invoices</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="apple-touch-icon" href="/static/favicon.svg">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="/static/app.css?v=20260617b">
+</head>
+<body>
+
+<!-- Global loading bar -->
+<div id="top-progress"></div>
+
+<!-- ══════ Login Page ══════ -->
+<div id="login-page" style="display:none">
+  <div class="login-card">
+    <h1>Muster Consulting GmbH</h1>
+    <p>Enter your password to continue</p>
+    <div id="login-error" class="login-error"></div>
+    <form onsubmit="doLogin(event)">
+      <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" autofocus>
+      <button type="submit" class="btn btn--primary" id="login-btn">Log in</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════ Hamburger ══════ -->
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">&#9776;</button>
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="app-sidebar" style="display:none">
+  <div class="sidebar-header">Muster Consulting GmbH</div>
+  <nav>
+    <a href="#" data-page="dashboard" class="active" style="border-top:1px solid #1e293b;padding-top:16px">
+      <span class="icon">&#9632;</span> Dashboard
+    </a>
+    <a href="#" data-page="budget">
+      <span class="icon">&#128200;</span> Forecast
+    </a>
+    <div class="nav-section">GmbH Finances</div>
+    <a href="#" data-page="cash">
+      <span class="icon">&#128181;</span> Cash Allocation
+    </a>
+    <a href="#" data-page="accounting">
+      <span class="icon">&#128218;</span> Bills &amp; Documents
+    </a>
+    <a href="#" data-page="obligations">
+      <span class="icon">&#127974;</span> Obligations
+    </a>
+    <a href="#" data-page="calendar">
+      <span class="icon">&#128197;</span> Calendar
+    </a>
+    <a href="#" data-page="payroll">
+      <span class="icon">&#128100;</span> Payroll
+    </a>
+    <a href="#" data-page="reports">
+      <span class="icon">&#128202;</span> Reports (VAT / Tax)
+    </a>
+    <a href="#" data-page="dividends">
+      <span class="icon">&#9889;</span> Dividends
+    </a>
+
+    <div class="nav-section">Invoicing</div>
+    <a href="#" data-page="invoices">
+      <span class="icon">&#9776;</span> Invoices
+    </a>
+    <a href="#" data-page="customers">
+      <span class="icon">&#9673;</span> Customers
+    </a>
+
+    <div class="nav-section">Travel Expenses</div>
+    <a href="#" data-page="expenses">
+      <span class="icon">&#9830;</span> Expenses
+    </a>
+    <a href="#" data-page="trips">
+      <span class="icon">&#9992;</span> Trips
+    </a>
+
+    <div class="nav-section">Banking</div>
+    <a href="#" data-page="bank">
+      <span class="icon">&#127974;</span> Bank Statements
+    </a>
+
+    <div class="nav-section">Help</div>
+    <a href="#" data-page="docs">
+      <span class="icon">&#128214;</span> Docs
+    </a>
+    <a href="#" data-page="test-procedure">
+      <span class="icon">&#9989;</span> Accounting Checklist
+    </a>
+  </nav>
+  <div class="sidebar-resize-handle" id="sidebar-resize"></div>
+  <div class="sidebar-footer">
+    <button type="button" class="sidebar-action" onclick="openQuickAdd(event)" title="Quick add (mobile)" aria-label="Quick add (mobile)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+    </button>
+    <button type="button" class="sidebar-action" onclick="toggleTheme(event)" title="Toggle light / dark theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button type="button" class="sidebar-action" onclick="showShortcuts(event)" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M10 14h4"/></svg>
+    </button>
+    <button type="button" class="sidebar-action" onclick="downloadBackup(event)" title="Download backup ZIP" aria-label="Download backup">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+    <button type="button" class="sidebar-action sidebar-action--danger" onclick="doLogout(event)" title="Log out" aria-label="Log out">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</aside>
+
+<div class="main" id="app-main" style="display:none">
+
+

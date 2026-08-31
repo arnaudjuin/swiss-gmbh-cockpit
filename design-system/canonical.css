@@ -1,0 +1,474 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Muster Consulting Tool — canonical design system  ·  Phase 2, revision 2
+   (design review of the machine-made draft against design-audit/screenshots/)
+
+   § numbering is stable and referenced by README.md / CONTRIBUTING.md:
+     §1  tokens            §2  buttons + segmented control
+     §3  chips             §4  panels + headline panel
+     §5  stats + meters    §6  text / money utilities
+     §7  tables            §8  layout shell
+     §9  forms + dialogs   §10 feedback (notice / empty / toast)
+     §11 calendar family   §12 responsive   §13 data-viz + recap
+
+   §9–§12 are NEW in this revision: the draft had no primitive for forms,
+   dialogs (14 in index.html), notices, meters or the calendar's own tokens,
+   so those screens could not be built without inline styles. See
+   README.md for how the system is organised.
+
+   This file is the BUILD TARGET, not (yet) loaded by the app.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── §1 Tokens ────────────────────────────────────────────────────────── */
+:root {
+  /* §1.1 Surfaces */
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --card-raised: #ffffff;      /* dialogs/popovers — diverges in dark */
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;    /* table rules that must read at 13px */
+  --overlay: rgba(15, 23, 42, 0.5);
+  --zebra: rgba(15, 23, 42, 0.02);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.18);
+
+  /* §1.2 Sidebar (own fixed dark palette, both themes — brand surface) */
+  --sidebar: #0f172a;
+  --sidebar-hover: #1e293b;
+  --sidebar-active: var(--primary);
+  --sidebar-text: #cbd5e1;
+  --sidebar-heading: #64748b;   /* was #475569 = 2.4:1 on the sidebar — unreadable */
+
+  /* §1.3 Text */
+  --text: #0f172a;
+  --text-muted: #64748b;
+
+  /* §1.4 Brand */
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --focus-ring: rgba(59, 130, 246, 0.45);
+
+  /* §1.5 Status families — FOUR roles per meaning, no more:
+       -fill   solid paint: filled buttons, meter bars, calendar kind-bars
+       -text   colored TEXT and numbers — legible on --card AND on its own -bg
+       -bg     chip / notice tint
+       -border chip / notice hairline, stat accent when a hairline is enough
+     Rule: never use -fill as a text color and never use -text as a fill.   */
+  --ok-fill:     #10b981;  --ok-text:     #158043;  --ok-bg:     #d1fae5;  --ok-border:     #a7f3d0;
+  --danger-fill: #ef4444;  --danger-text: #cf2020;  --danger-bg: #fee2e2;  --danger-border: #fecaca;
+  --warn-fill:   #f59e0b;  --warn-text:   #92400e;  --warn-bg:   #fef3c7;  --warn-border:   #fde68a;
+  --info-fill:   #3b82f6;  --info-text:   #1d4ed8;  --info-bg:   #dbeafe;  --info-border:   #bfdbfe;
+  /* §1.6 Owner / personal money — ONE purple family (audit found four) */
+  --owner-fill:  #9333ea;  --owner-text:  #7e22ce;  --owner-bg:  #f3e8ff;  --owner-border:  #e9d5ff;
+
+  /* §1.7 Radii — nothing rounder than --r-lg except --r-full pills */
+  --r-sm: 4px;    /* chips, meters, calendar events   */
+  --r-md: 6px;    /* buttons, inputs, segmented ctrl  */
+  --r-lg: 8px;    /* cards, panels, dialogs           */
+  --r-full: 999px;
+  --radius: var(--r-lg);  /* legacy alias */
+
+  /* §1.8 Type */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Monaco, monospace; /* fixes undefined-var bug */
+
+  /* §1.9 Spacing scale (freehand values snap to these) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+
+  /* §1.10 Type scale — the app's real sizes, named so magic numbers die.
+     13px body is deliberate: this is a dense tool for one expert user. */
+  --fs-xs: 11px;   /* stat labels, section labels, chips     */
+  --fs-sm: 12px;   /* hints, table meta                     */
+  --fs-base: 13px; /* body, table cells, buttons            */
+  --fs-md: 14px;   /* panel titles                          */
+  --fs-lg: 16px;   /* dialog titles, emphasised money        */
+  --fs-xl: 24px;   /* page title                            */
+  --fs-hero: 28px; /* headline-panel value                  */
+
+  /* §1.11 Calendar kind colors (was outside the token system entirely) */
+  --cal-obligation: var(--danger-fill);
+  --cal-bill:       var(--warn-fill);
+  --cal-payroll:    var(--ok-fill);
+  --cal-today:      var(--info-bg);
+}
+
+/* Dark theme. Status tints are TRANSLUCENT here, not solid deep fills:
+   the draft's #7f1d1d / #78350f / #581c87 blocks read as heavy swatches at
+   chip size and were near-impossible to tell apart in 22-dark-calendar. */
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --card-raised: #253347;
+  --border: #334155;
+  --border-strong: #475569;
+  --zebra: rgba(255, 255, 255, 0.035);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --sidebar: #020617;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --ok-bg:     rgba(16, 185, 129, 0.16);  --ok-text:     #6ee7b7;  --ok-border:     rgba(16, 185, 129, 0.38);
+  --danger-bg: rgba(239, 68, 68, 0.16);   --danger-text: #fca5a5;  --danger-border: rgba(239, 68, 68, 0.40);
+  --warn-bg:   rgba(245, 158, 11, 0.16);  --warn-text:   #fcd34d;  --warn-border:   rgba(245, 158, 11, 0.40);
+  --info-bg:   rgba(59, 130, 246, 0.18);  --info-text:   #93c5fd;  --info-border:   rgba(59, 130, 246, 0.42);
+  --owner-bg:  rgba(168, 85, 247, 0.18);  --owner-text:  #d8b4fe;  --owner-border:  rgba(168, 85, 247, 0.42);
+  --cal-today: rgba(59, 130, 246, 0.18);
+}
+
+/* ── §2 Buttons & segmented control ───────────────────────────────────────
+   ONE base + modifiers. The audit's 15× `.btn-ghost + inline border` becomes
+   .btn--outline. Never restyle buttons inline.
+   Color discipline: --primary = the one forward action per header;
+   --ok/--warn/--danger only when the ACTION carries that meaning
+   (Pay = ok, Reset all = danger). Exports/reports are --outline.          */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border: 1px solid transparent; border-radius: var(--r-md);
+  font: 500 var(--fs-base)/1.2 var(--font-sans); color: var(--text);
+  background: transparent; cursor: pointer; white-space: nowrap; text-decoration: none;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.btn--primary { background: var(--primary); color: #fff; }
+.btn--primary:hover { background: var(--primary-hover); }
+.btn--ghost { color: var(--text-muted); }
+.btn--ghost:hover { color: var(--text); background: var(--bg); }
+.btn--outline { color: var(--text); border-color: var(--border-strong); background: var(--card); }
+.btn--outline:hover { background: var(--bg); }
+.btn--danger { background: var(--danger-fill); color: #fff; }
+.btn--warn   { background: var(--warn-fill);   color: #4a2600; }  /* amber needs dark ink */
+.btn--ok     { background: var(--ok-fill);     color: #fff; }
+.btn--sm   { padding: 4px 9px; font-size: var(--fs-sm); }
+.btn--icon { padding: 4px 7px; font-size: var(--fs-lg); line-height: 1; }
+.btn--icon-danger { color: var(--danger-text); }   /* replaces inline color on trash icons */
+.btn-group { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+
+/* ⓘ affordance — ~15 sites (dashboard stats, reports sections) had no class */
+.info-btn {
+  width: 17px; height: 17px; padding: 0; border-radius: var(--r-full);
+  border: 1px solid var(--border-strong); background: transparent;
+  color: var(--text-muted); font: 600 10px/1 var(--font-sans); cursor: pointer;
+}
+.info-btn:hover { color: var(--text); border-color: var(--text-muted); }
+
+/* Segmented control — bank statement filters (All/In/Out/Q1–Q4) + Reports
+   quarters. Existed as `.seg-control button` only; codified here.          */
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: var(--r-md); overflow: hidden; }
+.seg > button {
+  padding: 4px 11px; border: 0; border-left: 1px solid var(--border);
+  background: var(--card); color: var(--text-muted);
+  font: 500 var(--fs-sm)/1.4 var(--font-sans); cursor: pointer;
+}
+.seg > button:first-child { border-left: 0; }
+.seg > button[aria-pressed="true"] { background: var(--primary); color: #fff; }
+
+/* ── §3 Chips ─────────────────────────────────────────────────────────────
+   A chip's color states WHAT KIND of thing it is, never decoration.
+   Categories are NEUTRAL by default (rule: color = status only):
+   colour is reserved for status so a red `overdue` isn't competing with a
+   blue `Software/Subscriptions` two columns away.                          */
+.chip {
+  display: inline-block; padding: 2px 7px; border-radius: var(--r-sm);
+  font: 500 var(--fs-xs)/1.45 var(--font-sans);
+  background: var(--bg); color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.chip--ok       { background: var(--ok-bg);     color: var(--ok-text);     border-color: var(--ok-border); }
+.chip--danger   { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+.chip--warn     { background: var(--warn-bg);   color: var(--warn-text);   border-color: var(--warn-border); }
+.chip--info     { background: var(--info-bg);   color: var(--info-text);   border-color: var(--info-border); }
+.chip--owner    { background: var(--owner-bg);  color: var(--owner-text);  border-color: var(--owner-border); }
+.chip--expected { background: transparent; color: var(--text-muted); border-style: dashed; }
+.chip--count    { background: var(--border); color: var(--text-muted); border-color: transparent; }
+.chip--sm       { font-size: 10px; padding: 1px 5px; }
+
+/* ── §4 Panels ──────────────────────────────────────────────────────────── */
+.panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--sp-4) 20px;
+}
+.panel--flush { padding: 0; }                       /* panel wrapping a table */
+.panel__title { font-size: var(--fs-md); font-weight: 600; margin: 0 0 var(--sp-3); }
+.panel + .panel, .panel + .table-card, .table-card + .panel { margin-top: var(--sp-3); }
+
+/* Headline panel — the Bank-tab pattern (big number + sub + verify line).
+   Dividends hero and VAT quarter cards migrate to this. The draft left this
+   rule empty; it now owns its own rhythm so nothing needs inline styles.   */
+.headline-panel { display: grid; gap: var(--sp-1); }
+.headline-panel__value {
+  font-size: var(--fs-hero); font-weight: 700; line-height: 1.15;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+}
+.headline-panel__value--ok     { color: var(--ok-text); }
+.headline-panel__value--danger { color: var(--danger-text); }
+.headline-panel__value--warn   { color: var(--warn-text); }
+.headline-panel__sub    { font-size: var(--fs-sm); color: var(--text-muted); }
+.headline-panel__verify { font-size: var(--fs-sm); }
+.headline-panel__verify--ok   { color: var(--ok-text); }
+.headline-panel__verify--warn { color: var(--warn-text); }
+/* compact variant: VAT quarter / reserve cards sitting four-up in a grid */
+.headline-panel--sm .headline-panel__value { font-size: 20px; }
+
+/* ── §5 Stats & meters ────────────────────────────────────────────────────
+   Replaces inline `style="border-left:3px solid …"` accents.
+   The value is fluid: 01-dashboard and 23-mobile-dashboard both truncated
+   CHF figures ("CHF 31'667…") because a fixed 26px never fit the column.   */
+.stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 10px var(--sp-3);
+  display: grid; gap: 1px; align-content: start;
+}
+.stat__head  { display: flex; justify-content: space-between; align-items: start; gap: var(--sp-2); }
+.stat__label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; color: var(--text-muted); }
+.stat__value {
+  font-size: clamp(19px, 1.6vw, 23px); font-weight: 700; line-height: 1.25;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+}
+.stat__value--ok     { color: var(--ok-text); }
+.stat__value--danger { color: var(--danger-text); }
+.stat__value--warn   { color: var(--warn-text); }
+.stat__value--info   { color: var(--info-text); }
+.stat__value--owner  { color: var(--owner-text); }
+.stat__hint  { font-size: var(--fs-xs); color: var(--text-muted); }
+.stat--ok     { border-left: 3px solid var(--ok-fill); }
+.stat--danger { border-left: 3px solid var(--danger-fill); }
+.stat--warn   { border-left: 3px solid var(--warn-fill); }
+.stat--info   { border-left: 3px solid var(--info-fill); }
+.stat--owner  { border-left: 3px solid var(--owner-fill); }
+/* auto-FILL, not auto-fit: a short row keeps the column rhythm instead of
+   stretching two cards across the page. Rows align because cards stretch. */
+.stats-grid { display: grid; gap: var(--sp-2); grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); align-items: stretch; }
+.stats-grid > * { min-width: 0; }
+/* Lead KPIs (dashboard's two headline cards): an explicit half/half row, so
+   a span-2 card can't punch holes in an auto-placed grid. */
+.stats-grid--lead { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.stats-grid--lead .stat__value { font-size: clamp(22px, 2vw, 27px); }
+.stat--wide { grid-column: span 2; }
+.stat--full { grid-column: 1 / -1; }                 /* dashboard "Full" width setting */
+/* Clickable stat (dashboard nav cards): same card, link chrome off */
+a.stat { color: inherit; text-decoration: none; cursor: pointer; }
+
+/* Meter — reserves/sinking-fund progress (dashboard, budget balances).
+   Width is the one legitimate inline style: it's live data.                */
+.meter { height: 7px; border-radius: var(--r-sm); background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
+.meter__bar { height: 100%; background: var(--info-fill); transition: width .3s; }
+.meter__bar--ok     { background: var(--ok-fill); }
+.meter__bar--warn   { background: var(--warn-fill); }
+.meter__bar--danger { background: var(--danger-fill); }
+
+/* ── §6 Text / money utilities (drain the ~90× inline hint pattern) ─────── */
+.hint { font-size: var(--fs-sm); color: var(--text-muted); }
+.hint--sm { font-size: var(--fs-xs); }
+/* Section label: uppercase micro-heading used all over dividends, reports,
+   payroll ("EMPLOYEE SIDE", "NET CAPITAL PER FISCAL YEAR"). */
+.section-label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; color: var(--text-muted); }
+/* Semantic text colors — one place, used by money cells, ledger directions,
+   deltas, verify lines. Replaces per-context colored-text inlines. */
+.t-ok { color: var(--ok-text); } .t-danger { color: var(--danger-text); }
+.t-warn { color: var(--warn-text); } .t-info { color: var(--info-text); }
+.t-owner { color: var(--owner-text); } .t-muted { color: var(--text-muted); }
+/* Mono/tabular family. `.date` and `.ref` kill the `class="money"
+   style="text-align:left"` hack that appeared 12× in the draft references. */
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.money { font-family: var(--font-mono); font-size: var(--fs-base); white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.money--lg { font-size: var(--fs-lg); font-weight: 600; }
+.money--ok { color: var(--ok-text); }          /* aliases of .t-* for legacy call sites */
+.money--danger { color: var(--danger-text); }
+.date { font-family: var(--font-mono); font-size: var(--fs-base); white-space: nowrap; }
+.ref  { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-muted); }
+.row-split { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
+.cols-2 { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+.cols-2 > * { min-width: 0; }
+
+/* ── §7 Tables ───────────────────────────────────────────────────────────
+   `.table` is new: every reference had to re-declare th/td locally, which
+   means the app has no shared table rule either.                           */
+.table-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); overflow: hidden;
+}
+.table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+.table th {
+  padding: 9px 12px; text-align: left; white-space: nowrap;
+  font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; font-weight: 600;
+  color: var(--text-muted); background: var(--card); border-bottom: 1px solid var(--border-strong);
+}
+.table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.table tbody tr:last-child td { border-bottom: 0; }
+.table th.r, .table td.r { text-align: right; }
+.table--zebra tbody tr:nth-child(even) { background: var(--zebra); }
+.table--compact th, .table--compact td { padding: 6px 10px; }
+.table--sticky thead th { position: sticky; top: 0; z-index: 1; }
+.table__group td {           /* "▾ 3 auto-logged …" and subtotal rows */
+  background: var(--bg); color: var(--text-muted); font-size: var(--fs-sm); cursor: pointer;
+}
+.table__total td { font-weight: 600; background: var(--zebra); }
+
+/* ── §8 Layout shell ─────────────────────────────────────────────────────── */
+.main { margin-left: 240px; flex: 1; padding: var(--sp-5) var(--sp-6); min-height: 100vh; min-width: 0; }
+.page { display: none; }
+.page.active { display: block; }
+.page-header {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; row-gap: 10px; margin-bottom: var(--sp-4);
+}
+.page-title { font-size: var(--fs-xl); font-weight: 700; margin: 0; }
+.page-intro { font-size: var(--fs-base); color: var(--text-muted); margin: 0 0 var(--sp-4); max-width: 92ch; }
+.filter-bar { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-3); }
+.form-grid > *, .stats-grid > *, .main { min-width: 0; }
+
+/* ── §9 Forms & dialogs (NEW — 14 dialogs and 3 form screens had none) ──── */
+.control {
+  width: 100%; padding: 6px 9px; border: 1px solid var(--border-strong);
+  border-radius: var(--r-md); background: var(--card); color: var(--text);
+  font: 400 var(--fs-base)/1.4 var(--font-sans);
+}
+.control:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 0; border-color: var(--primary); }
+.control--auto { width: auto; }                      /* filter-bar selects */
+select.control { cursor: pointer; }
+textarea.control { resize: vertical; min-height: 60px; }
+.field { display: grid; gap: var(--sp-1); min-width: 0; }
+.field__label { font-size: var(--fs-sm); font-weight: 500; color: var(--text-muted); }
+.form-grid { display: grid; gap: var(--sp-3) var(--sp-4); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.form-grid--full { grid-column: 1 / -1; }
+.form-actions { display: flex; justify-content: flex-end; align-items: center; gap: var(--sp-2); margin-top: var(--sp-4); }
+.file-drop {
+  border: 1px dashed var(--border-strong); border-radius: var(--r-md);
+  padding: var(--sp-4); text-align: center; color: var(--text-muted);
+  font-size: var(--fs-base); background: var(--bg); cursor: pointer;
+}
+.file-drop:hover { border-color: var(--primary); color: var(--text); }
+.modal-overlay { position: fixed; inset: 0; background: var(--overlay); display: grid; place-items: center; padding: var(--sp-4); z-index: 50; }
+.modal {
+  width: min(560px, 100%); max-height: 88vh; overflow: auto;
+  background: var(--card-raised); border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 20px;
+}
+.modal--wide { width: min(860px, 100%); }
+.modal__title { font-size: var(--fs-lg); font-weight: 700; margin: 0 0 var(--sp-4); }
+
+/* ── §10 Feedback (NEW) ──────────────────────────────────────────────────
+   One tinted-block primitive replaces the readonly banner, the dividends
+   "✓ Plan saved" box, the bank salary-warning box and the toast body.      */
+.notice {
+  display: flex; gap: var(--sp-2); align-items: baseline;
+  padding: 9px 12px; border-radius: var(--r-md); font-size: var(--fs-sm);
+  background: var(--bg); border: 1px solid var(--border); color: var(--text-muted);
+}
+.notice--ok     { background: var(--ok-bg);     border-color: var(--ok-border);     color: var(--ok-text); }
+.notice--warn   { background: var(--warn-bg);   border-color: var(--warn-border);   color: var(--warn-text); }
+.notice--danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+.notice--info   { background: var(--info-bg);   border-color: var(--info-border);   color: var(--info-text); }
+.empty-state { text-align: center; padding: 40px 24px; border-style: dashed; }
+.empty-state__icon { font-size: 38px; opacity: .45; margin-bottom: var(--sp-2); }
+.empty-state__title { font-size: var(--fs-lg); font-weight: 600; margin-bottom: var(--sp-1); }
+
+/* ── §11 Calendar family (kept as-is — tokenized) ───────── */
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
+.cal-head { padding: 7px 9px; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; color: var(--text-muted); background: var(--card); border-bottom: 1px solid var(--border-strong); }
+.cal-day { min-height: 92px; padding: 5px 6px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); display: grid; gap: 3px; align-content: start; }
+.cal-day--out { background: var(--zebra); }
+.cal-day--today { background: var(--cal-today); }
+.cal-day__n { font-size: var(--fs-sm); color: var(--text-muted); }
+.cal-day--today .cal-day__n { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: var(--r-full); background: var(--primary); color: #fff; font-weight: 600; }
+.cal-day__total { margin-top: auto; font-size: var(--fs-xs); color: var(--text-muted); text-align: right; font-family: var(--font-mono); }
+.cal-ev {
+  display: flex; justify-content: space-between; gap: 6px; align-items: baseline;
+  padding: 1px 4px 1px 5px; border-radius: var(--r-sm); font-size: 10.5px; line-height: 1.35;
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 3px solid var(--text-muted); overflow: hidden;
+}
+.cal-ev__name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-ev__amt { flex: none; font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; }
+.cal-ev--obligation { border-left-color: var(--cal-obligation); }
+.cal-ev--bill       { border-left-color: var(--cal-bill); }
+.cal-ev--payroll    { border-left-color: var(--cal-payroll); }
+.cal-ev--expected   { border-style: dashed; border-left-style: solid; background: transparent; }
+.cal-ev--done       { opacity: .55; text-decoration: line-through; }
+.cal-legend { display: flex; gap: var(--sp-4); align-items: center; flex-wrap: wrap; font-size: var(--fs-sm); color: var(--text-muted); margin-bottom: var(--sp-2); }
+.cal-dot { display: inline-block; width: 8px; height: 8px; border-radius: var(--r-full); }
+
+/* ── §12 Responsive (NEW — 23/24 showed truncation and a 240px dead gutter) */
+@media (max-width: 900px) {
+  .main { margin-left: 0; padding: var(--sp-4); }
+  .page-title { font-size: 20px; }
+  .cols-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .stats-grid, .stats-grid--lead { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .stat--wide { grid-column: auto; }
+  .stat__value, .stats-grid--lead .stat__value { font-size: 19px; }
+  .btn-group { width: 100%; }
+  .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-card .table { min-width: 620px; }
+  .cal-day { min-height: 64px; }
+}
+@media print {
+  .sidebar, .btn, .info-btn, .seg { display: none !important; }
+  .main { margin-left: 0; }
+  .panel, .table-card, .stat { break-inside: avoid; }
+}
+
+/* ── §13 Data-viz (NEW) ────────────────────────────────────────────────────
+   Series colour = IDENTITY, never status. Slots are the validated
+   categorical order (dataviz palette, adjacent-pair CVD ΔE ≥ 8, ≥ 3:1 on
+   both surfaces) — assign in fixed order, never cycle; a 7th series folds
+   into "Other". Income/costs are pinned to slots 1/2 so the two never swap.
+   Status families (--ok/--danger/…) stay reserved for state, not series. */
+:root {
+  --viz-1: #2a78d6;  --viz-2: #eb6834;  --viz-3: #1baf7a;
+  --viz-4: #eda100;  --viz-5: #e87ba4;  --viz-6: #4a3aa7;
+  --viz-income: var(--viz-1);  --viz-costs: var(--viz-2);
+  --viz-grid: rgba(100, 116, 139, 0.14);
+  --viz-neg-bg: rgba(239, 68, 68, 0.10);
+}
+[data-theme="dark"] {
+  --viz-1: #3987e5;  --viz-2: #d95926;  --viz-3: #199e70;
+  --viz-4: #c98500;  --viz-5: #d55181;  --viz-6: #9085e9;
+  --viz-grid: rgba(148, 163, 184, 0.16);
+  --viz-neg-bg: rgba(239, 68, 68, 0.16);
+}
+/* SVG marks (inline charts): paint through classes so both themes resolve */
+.viz-line       { fill: none; stroke: var(--viz-1); stroke-width: 2; stroke-linejoin: round; }
+.viz-area       { fill: var(--viz-1); opacity: .10; }
+.viz-neg        { fill: var(--viz-neg-bg); }
+.viz-grid       { stroke: var(--viz-grid); stroke-width: 1; }
+.viz-zero       { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.viz-today      { stroke: var(--text); stroke-width: 1; stroke-dasharray: 2 2; }
+.viz-axis-text  { fill: var(--text-muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+.viz-label      { fill: var(--text); font-size: 10px; font-weight: 600; }
+.viz-marker     { fill: var(--card); stroke: var(--viz-1); stroke-width: 2; }
+/* chart card header + legend (HTML, so text wears text tokens) */
+.chart-card__head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.chart-card__head h3 { margin: 0; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); color: var(--text-muted); }
+.chart-legend__sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.chart-legend__sw--line { height: 2px; vertical-align: 3px; border-radius: 1px; }
+/* §13b Panel recap — one tile per page, whole tile is the link */
+.recap-grid { display: grid; gap: var(--sp-2); grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); margin-bottom: var(--sp-4); }
+.recap-grid > * { min-width: 0; }
+.recap { display: block; text-decoration: none; color: inherit; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3); transition: border-color .15s, transform .15s; }
+.recap:hover { border-color: var(--primary); transform: translateY(-1px); }
+.recap:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.recap__head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-1); margin-bottom: 4px; }
+.recap__head .chip { white-space: nowrap; }
+.recap__label { font-size: var(--fs-sm); color: var(--text-muted); font-weight: 600; letter-spacing: .02em; }
+.recap__value { font-size: clamp(17px, 1.6vw, 21px); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.recap__value--ok { color: var(--ok-text); }  .recap__value--danger { color: var(--danger-text); }
+.recap__value--warn { color: var(--warn-text); }  .recap__value--owner { color: var(--owner-text); }
+.recap__hint { font-size: var(--fs-sm); color: var(--text-muted); margin-top: 3px; }
+.recap .meter { margin-top: 6px; }
+.info-btn--sm { width: 18px; height: 18px; font-size: 11px; line-height: 1; }
+.recap__head .row-split { gap: 6px; align-items: center; }
+/* §13c Page search — one segmented search bar per list page */
+.page-search { margin-bottom: var(--sp-3); }
+.page-search__input { width: 100%; max-width: 720px; font-size: 13px; }
+.page-search__chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-1); min-height: 0; }
+.page-search__chips:empty { display: none; }
+/* §13d Forecast page */
+.forecast__income { width: 150px; }
+.forecast__chart { height: 320px; }
+.forecast__horizon { width: auto; }
+.forecast__cell { width: 110px; text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding: 4px 6px; }
+.forecast__cell--set { border-color: var(--info-border); background: var(--info-bg); }
+/* §13e Panel display — sections switched off via the page's Display dialog */
+.panel-hidden { display: none !important; }

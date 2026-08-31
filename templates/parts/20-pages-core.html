@@ -1,0 +1,337 @@
+<!-- 20-pages-core.html — dashboard, invoices (+form), bank, trips, expenses (+form) (assembled in name order by app.py) -->
+  <!-- ══════ Dashboard ══════ -->
+  <div id="page-dashboard" class="page active">
+    <div class="page-header">
+      <h1 class="page-title">Dashboard</h1>
+      <div class="btn-group">
+        <select id="dashboard-range" onchange="setDashboardRange(this.value)" title="Time range applied to all metrics" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card);color:var(--text)">
+          <option value="ytd">Year to date</option>
+          <option value="month">This month</option>
+          <option value="30d">Last 30 days</option>
+          <option value="12m">Last 12 months</option>
+          <option value="year">This year</option>
+          <option value="prev_year">Last year</option>
+          <option value="all">All time</option>
+        </select>
+        <select id="pl-year" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card);color:var(--text)"></select>
+        <button class="btn btn--outline" onclick="downloadPLReport()">P&L Report</button>
+        <button class="btn btn--outline" onclick="showDashboardConfig()">Customize</button>
+      </div>
+    </div>
+    <div id="dashboard-range-banner" class="hint" style="margin-bottom:12px"></div>
+    <div id="dashboard-stats" class="stats-grid"></div>
+    <div id="dashboard-panels"></div>
+    <div id="dashboard-bank" style="margin:18px 0"></div>
+    <div id="dashboard-reserves" style="margin:18px 0"></div>
+    <div id="dashboard-charts"></div>
+    <div id="dashboard-lists"></div>
+  </div>
+
+  <!-- ══════ Invoices List ══════ -->
+  <div id="page-invoices" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Invoices &amp; Income</h1>
+      <div class="btn-group">
+        <button class="btn btn--outline" onclick="document.getElementById('income-dialog').classList.add('show')">+ Log Other Income</button>
+        <button class="btn btn--primary" onclick="navigateTo('form')">+ New Invoice</button>
+      </div>
+    </div>
+    <div class="page-search" data-panel="search" data-panel-label="Search bar">
+      <input type="search" id="inv-search" class="control page-search__input" autocomplete="off"
+             placeholder='Search invoices — number (#27), notes, 1500, >10000, 2026-06, q2, ytd, paid / unpaid / overdue'
+             oninput="invSearchInput(this.value)">
+      <div id="inv-search-chips" class="page-search__chips"></div>
+    </div>
+    <div class="table-card" data-panel="table" data-panel-label="Invoices table">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Period</th><th class="text-right">Hours</th>
+          <th class="text-right">Subtotal</th><th class="text-right">VAT</th>
+          <th class="text-right">Total</th><th class="text-right">Due</th>
+          <th>Status</th><th>Notes</th>
+          <th class="text-right">Actions</th>
+        </tr></thead>
+        <tbody id="invoices-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Non-invoice income: refunds, credit notes, interest … (paid
+         invoices ARE the income — they auto-link to income_entries) -->
+    <div class="finance-section" data-panel="other-income" data-panel-label="Other income">
+      <h3>Other income <span class="hint">(beyond invoices — refunds, credit notes, interest)</span></h3>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Source</th><th>Description</th><th>Category</th>
+            <th class="text-right">Amount</th><th>File</th><th class="text-right">Actions</th>
+          </tr></thead>
+          <tbody id="income-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ New / Edit Invoice ══════ -->
+  <div id="page-form" class="page">
+    <h1 class="page-title" id="form-title">New Invoice</h1>
+    <div class="form-card">
+      <form id="invoice-form" onsubmit="handleSubmit(event)">
+        <input type="hidden" id="edit-id">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label" for="f-month">Month</label>
+            <input class="control" type="month" id="f-month" required>
+          </div>
+          <div class="field">
+            <label class="field__label" for="f-hours">Hours</label>
+            <input class="control" type="number" id="f-hours" step="0.5" min="0" required oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label class="field__label" for="f-invnum">Invoice #</label>
+            <input class="control" type="number" id="f-invnum" min="1">
+          </div>
+          <div class="field form-grid--full">
+            <label class="field__label" for="f-customer">Customer</label>
+            <select class="control" id="f-customer"></select>
+          </div>
+          <div class="field form-grid--full">
+            <label class="field__label" for="f-notes">Notes</label>
+            <textarea class="control" id="f-notes" placeholder="Optional remarks..."></textarea>
+          </div>
+        </div>
+        <div class="preview">
+          <h4>Preview</h4>
+          <div class="preview-row"><span>Rate</span><span>CHF 62.00 / h</span></div>
+          <div class="preview-row"><span>Subtotal</span><span id="prev-subtotal">CHF 0.00</span></div>
+          <div class="preview-row"><span>VAT 8.1%</span><span id="prev-tax">CHF 0.00</span></div>
+          <div class="preview-row total"><span>Total</span><span id="prev-total">CHF 0.00</span></div>
+        </div>
+        <div class="form-actions form-grid--full">
+          <button type="submit" class="btn btn--primary" id="form-submit-btn">Generate Invoice</button>
+          <button type="button" class="btn btn--ghost" onclick="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════ Bank Statements ══════ -->
+  <div id="page-bank" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Bank Statements</h1>
+      <div class="btn-group">
+        <select id="bank-year-filter" onchange="loadBankStatements()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card)">
+          <option value="">All years</option>
+        </select>
+        <button class="btn btn--primary" onclick="openBankModal()">+ Upload Statement</button>
+      </div>
+    </div>
+    <div id="bank-summary" style="margin-bottom:12px" data-panel="summary" data-panel-label="Summary"></div>
+    <div class="table-card" data-panel="statements" data-panel-label="Statements table">
+      <table>
+        <thead><tr>
+          <th style="width:30px"></th>
+          <th>Period</th><th>Bank</th><th>Account</th>
+          <th class="text-right">Opening</th>
+          <th class="text-right">Closing</th>
+          <th>Notes</th>
+          <th class="text-right">Actions</th>
+        </tr></thead>
+        <tbody id="bank-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Owner ledger (merged from the former Transfers tab) -->
+    <div class="finance-section" style="margin-top:20px" data-panel="kontokorrent" data-panel-label="Kontokorrent & transfers">
+      <h3 class="row-split" style="flex-wrap:wrap;gap:8px">
+        <span>Owner ledger <span class="hint" style="font-weight:400">(Kontokorrent — you &harr; GmbH)</span></span>
+        <span class="btn-group">
+          <button class="btn btn--outline btn--sm" onclick="exportTransfersCsv()" title="Download all transfers as CSV with running totals">Export CSV</button>
+          <a class="btn btn--outline btn--sm" id="btn-export-all-xlsx" href="#" onclick="this.href=tokenUrl('/api/bank-statements/0/export.xlsx');" download title="Full-history Excel: every statement combined, lifetime Kontokorrent recap">Excel (full history)</a>
+          <button class="btn btn--primary btn--sm" onclick="document.getElementById('transfer-dialog').classList.add('show')">+ Log Transfer</button>
+        </span>
+      </h3>
+      <div class="panel headline-panel" style="margin-bottom:12px">
+        <div class="headline-panel__value" id="kk-position">—</div>
+        <div class="headline-panel__sub" id="kk-breakdown"></div>
+        <div id="bank-kontokorrent"></div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Direction</th><th>Description</th>
+            <th class="text-right">Amount</th>
+            <th class="text-right" title="Net position after this movement: + = GmbH owes you">Balance</th>
+            <th>File</th><th class="text-right">Actions</th>
+          </tr></thead>
+          <tbody id="transfers-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Trips List ══════ -->
+  <div id="page-trips" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Business Trips</h1>
+      <button class="btn btn--primary" onclick="openTripModal()">+ New Trip</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Name</th><th>Dates</th><th>Countries</th>
+          <th class="text-right">Expenses</th>
+          <th class="text-right">Total (CHF)</th>
+          <th class="text-right">Actions</th>
+        </tr></thead>
+        <tbody id="trips-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════ Expenses List ══════ -->
+  <div id="page-expenses" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Travel Expenses</h1>
+      <div class="btn-group">
+        <button class="btn btn--outline" onclick="showShareModal('expenses')">Share</button>
+        <button class="btn btn--outline" onclick="showImportModal()">Import Folder</button>
+        <button class="btn btn--outline" onclick="downloadExcel()">Excel</button>
+        <select id="report-month-picker" title="Optional: limit report to a single month" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:white">
+          <option value="">Whole year</option>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+        <button class="btn btn--outline" id="btn-gen-report" onclick="generateReport()">Generate Report</button>
+        <button class="btn btn--primary" onclick="clearExpenseForm(); navigateTo('expense-form')">+ Add Expense</button>
+      </div>
+    </div>
+    <div class="filter-bar" style="flex-wrap:wrap" data-panel="filters" data-panel-label="Filters">
+      <label>Year:</label>
+      <select id="expense-year-filter" onchange="applyExpenseFilters()">
+        <option value="">All</option>
+      </select>
+      <label>Category:</label>
+      <select id="expense-cat-filter" onchange="applyExpenseFilters()">
+        <option value="">All</option>
+        <option value="Meals">Meals</option>
+        <option value="Transport">Transport</option>
+        <option value="Accommodation">Accommodation</option>
+        <option value="Fuel">Fuel</option>
+        <option value="Connectivity">Connectivity</option>
+        <option value="Other">Other</option>
+      </select>
+      <label>Trip:</label>
+      <select id="expense-trip-filter" onchange="applyExpenseFilters()">
+        <option value="">All</option>
+        <option value="__none__">(no trip)</option>
+      </select>
+      <label>Search:</label>
+      <input type="text" id="expense-search" placeholder="description..." oninput="applyExpenseFilters()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;width:160px">
+      <span id="expense-total" style="margin-left:auto;font-weight:600;color:var(--text-muted)"></span>
+    </div>
+    <!-- Bulk action bar -->
+    <div class="bulk-bar" id="bulk-bar">
+      <span><span class="bulk-count" id="bulk-count">0</span> selected</span>
+      <div class="bulk-actions">
+        <select id="bulk-category" style="padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:13px">
+          <option value="">Re-categorize...</option>
+          <option value="Meals">Meals</option>
+          <option value="Transport">Transport</option>
+          <option value="Accommodation">Accommodation</option>
+          <option value="Fuel">Fuel</option>
+          <option value="Connectivity">Connectivity</option>
+          <option value="Other">Other</option>
+        </select>
+        <button class="btn btn--primary btn--sm" onclick="bulkRecategorize()">Apply</button>
+        <button class="btn btn--danger btn--sm" onclick="bulkDelete()">Delete Selected</button>
+        <button class="btn btn--ghost btn--sm" onclick="clearSelection()">Cancel</button>
+      </div>
+    </div>
+    <div class="table-card" data-panel="table" data-panel-label="Expenses table">
+      <table>
+        <thead><tr>
+          <th style="width:36px"><input type="checkbox" class="row-check" id="select-all-expenses" onchange="toggleSelectAll(this)"></th>
+          <th class="sortable" onclick="sortExpenses('expense_date')">Date <span id="sort-expense_date"></span></th>
+          <th class="sortable" onclick="sortExpenses('description')">Description <span id="sort-description"></span></th>
+          <th class="sortable" onclick="sortExpenses('category')">Category <span id="sort-category"></span></th>
+          <th class="sortable text-right" onclick="sortExpenses('amount')">Amount (CHF) <span id="sort-amount"></span></th>
+          <th>Scan</th>
+          <th class="text-right">Actions</th>
+        </tr></thead>
+        <tbody id="expenses-tbody"></tbody>
+      </table>
+    </div>
+    <div data-panel="reports" data-panel-label="Generated reports" class="reports-section">
+      <h3>Generated Reports</h3>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Period</th><th>Receipts</th>
+            <th class="text-right">Total (CHF)</th><th class="text-right">Created</th>
+            <th class="text-right">Actions</th>
+          </tr></thead>
+          <tbody id="reports-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Add / Edit Expense ══════ -->
+  <div id="page-expense-form" class="page">
+    <h1 class="page-title" id="exp-form-title">Add Expense</h1>
+    <div class="form-card">
+      <form id="expense-form" onsubmit="handleExpenseSubmit(event)">
+        <input type="hidden" id="exp-edit-id">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label" for="exp-date">Date</label>
+            <input class="control" type="date" id="exp-date" required>
+          </div>
+          <div class="field">
+            <label class="field__label" for="exp-amount">Amount (CHF)</label>
+            <input class="control" type="number" id="exp-amount" step="0.01" min="0" required>
+          </div>
+          <div class="field form-grid--full">
+            <label class="field__label" for="exp-desc">Description</label>
+            <input class="control" type="text" id="exp-desc" required placeholder="e.g. Breakfast - Hotel Restaurant">
+          </div>
+          <div class="field">
+            <label class="field__label" for="exp-cat">Category</label>
+            <select class="control" id="exp-cat" required>
+              <option value="Meals">Meals</option>
+              <option value="Transport">Transport</option>
+              <option value="Accommodation">Accommodation</option>
+              <option value="Fuel">Fuel</option>
+              <option value="Connectivity">Connectivity</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="exp-trip">Trip (optional)</label>
+            <select class="control" id="exp-trip">
+              <option value="">(none)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="exp-scan">Receipt scan</label>
+            <input type="file" id="exp-scan" accept="image/*,.pdf">
+          </div>
+        </div>
+        <div class="form-actions form-grid--full">
+          <button type="submit" class="btn btn--primary" id="exp-submit-btn">Save Expense</button>
+          <button type="button" class="btn btn--ghost" onclick="navigateTo('expenses')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+

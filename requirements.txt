@@ -1,0 +1,15 @@
+# Swiss GmbH Cockpit — pinned to the versions the app was built/tested with.
+# Install: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+fastapi==0.135.2
+uvicorn==0.42.0
+python-multipart==0.0.22
+fpdf2==2.8.7
+pillow==12.1.1
+pillow_heif==1.4.0
+PyMuPDF==1.27.2.2
+openpyxl==3.1.5
+anthropic==0.87.0
+
+# dev / tests (smoke suite uses TestClient → httpx)
+pytest==9.0.3
+httpx==0.28.1

@@ -1,0 +1,329 @@
+<!-- 40-pages-more.html — dividends, test procedure, docs, payroll, income, customers (assembled in name order by app.py) -->
+  <!-- ══════ Dividend Planner (simple set-aside model) ══════ -->
+  <div id="page-dividends" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Dividend Planner</h1>
+      <span class="hint">Decision support — not tax advice. Verify with Treuhand before the GV.</span>
+    </div>
+
+    <div id="dividend-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <!-- Inputs -->
+      <div class="chart-card" data-panel="plan" data-panel-label="Plan (buckets & years)">
+        <h3>Plan</h3>
+        <p class="hint" style="margin-bottom:14px">
+          Plan a monthly amount to set aside until you can withdraw it as a dividend
+          after next year's annual general meeting (typically <strong>June</strong>).
+        </p>
+
+        <div class="field">
+          <label class="field__label">Monthly allocation per bucket (rows) × fiscal year (columns)</label>
+          <div class="form-help" style="margin-bottom:8px">Set a CHF/month value per year. Bucket names are shared across years; amounts can vary.</div>
+          <div style="overflow-x:auto">
+            <table class="div-bucket-table">
+              <thead id="div-buckets-thead"></thead>
+              <tbody id="div-buckets-tbody"></tbody>
+              <tfoot id="div-buckets-tfoot"></tfoot>
+            </table>
+          </div>
+          <button type="button" class="btn btn--ghost btn--sm" style="margin-top:6px" onclick="addDivBucket()">+ Add bucket</button>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Fiscal years to include</label>
+          <div class="form-help" style="margin-bottom:8px">
+            Each row is one fiscal year's dividend (capped at 12 contribution months).
+            Distribution typically happens at the next AGM (June of year + 1).
+          </div>
+          <table class="div-bucket-table">
+            <thead>
+              <tr>
+                <th style="text-align:left">Fiscal year</th>
+                <th style="text-align:left">Started contributing</th>
+                <th style="text-align:right">Months</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="div-years-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td style="font-weight:600">Total months across years</td>
+                <td></td>
+                <td class="money" style="font-weight:600" id="div-years-total">0</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+          <button type="button" class="btn btn--ghost btn--sm" style="margin-top:6px" onclick="addDivYear()">+ Add fiscal year</button>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <label class="field__label">Federal marginal rate (%)</label>
+            <input class="control" type="number" id="div-fed-rate" step="0.1" min="0" max="15" oninput="recalcDividends()">
+            <div class="form-help">Your marginal direct federal tax rate. ~12% at CHF 150–200k taxable (single). Caps at 11.5% average.</div>
+          </div>
+          <div class="field">
+            <label class="field__label">Cantonal + communal marginal rate (%)</label>
+            <input class="control" type="number" id="div-cant-rate" step="0.1" min="0" max="45" oninput="recalcDividends()">
+            <div class="form-help">ZH base rate × Steuerfuss (canton 98% + Zurich City 119%). ~21.5% at CHF 150–200k (single).</div>
+          </div>
+        </div>
+        <div class="form-help" style="margin:-4px 0 12px">
+          Qualified shareholding (≥ 10%): only <strong>70%</strong> of the dividend is taxable federally
+          and <strong>50%</strong> cantonally (ZH) — effective rate on the gross:
+          <strong id="div-eff-rate">—</strong>. The 35% withholding tax is neutral (refunded via
+          your ordinary assessment) as long as the dividend is declared.
+        </div>
+
+        <div class="field">
+          <label class="field__label">Already accumulated (CHF, optional)</label>
+          <input class="control" type="number" id="div-starting" step="100" min="0" oninput="recalcDividends()">
+          <div class="form-help">Money already set aside from prior months you want to include in the pot. Defaults to 0.</div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="chart-card" data-panel="result" data-panel-label="Result">
+        <h3>If you stick to the plan</h3>
+
+        <div id="div-summary" class="headline-panel" style="margin-bottom:16px">
+          <div class="section-label" id="div-summary-eyebrow">Cumulative across all fiscal years</div>
+          <div class="headline-panel__value headline-panel__value--ok" id="div-net-final">—</div>
+          <div class="headline-panel__sub" id="div-net-sub">net into your personal account once all dividends are distributed (after WHT credit + income tax)</div>
+        </div>
+
+        <table style="width:100%;font-size:13px">
+          <tr><td>Total contribution months <span style="color:var(--text-muted)">(across all years)</span></td><td class="money" id="div-months-out">—</td></tr>
+          <tr><td>+ Starting pot</td><td class="money" id="div-start-out">—</td></tr>
+          <tr><td>+ Monthly contributions <span id="div-contrib-label" style="color:var(--text-muted)"></span></td><td class="money" id="div-contrib-total">—</td></tr>
+          <tr style="border-top:1px solid var(--border);font-weight:600"><td>= Gross dividend pot (sum of all years)</td><td class="money" id="div-gross-pot" style="color:var(--text)">—</td></tr>
+        </table>
+
+        <h4 class="section-label" style="margin:18px 0 6px">When you actually distribute it</h4>
+        <table style="width:100%;font-size:13px">
+          <tr><td>Gross dividend</td><td class="money" id="div-proposed-out">—</td></tr>
+          <tr><td>− Withholding tax (Verrechnungssteuer 35%)</td><td class="money money--danger" id="div-wht">—</td></tr>
+          <tr><td>= Hits your personal account (35% comes back via NOV refund)</td><td class="money" id="div-net-shareholder">—</td></tr>
+          <tr><td>≈ Income tax <span id="div-tax-label" class="hint hint--sm">(70% fed / 50% ZH of gross)</span></td><td class="money money--danger" id="div-personal-tax-amt">—</td></tr>
+          <tr style="border-top:1px solid var(--border);font-weight:600"><td>Net you really keep</td><td class="money money--ok" id="div-net-after-tax">—</td></tr>
+        </table>
+
+        <h4 class="section-label" style="margin:18px 0 6px">Net capital per fiscal year</h4>
+        <div class="hint hint--sm" style="margin-bottom:6px">
+          Each row = one year's dividend at the next AGM. Net = gross − personal tax (Verrechnungssteuer 35% is withheld then refunded via NOV, so it doesn't reduce what you keep).
+        </div>
+        <table style="width:100%;font-size:13px" id="div-peryear-table">
+          <thead>
+            <tr>
+              <th style="text-align:left">Fiscal year</th>
+              <th class="text-right">Months</th>
+              <th class="text-right">Gross</th>
+              <th class="text-right">− WHT 35%</th>
+              <th class="text-right">− Personal tax</th>
+              <th class="text-right">Net you keep</th>
+              <th class="text-right">Cumulative net</th>
+            </tr>
+          </thead>
+          <tbody id="div-peryear-tbody"></tbody>
+          <tfoot id="div-peryear-tfoot"></tfoot>
+        </table>
+
+        <h4 class="section-label" style="margin:18px 0 6px">Net result per bucket per year</h4>
+        <div class="hint hint--sm" style="margin-bottom:6px">
+          Each cell = the net amount that bucket contributes for that fiscal year (gross × months minus personal tax). Right column = bucket total across all years; bottom row = year total across all buckets.
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;font-size:13px" id="div-matrix-table">
+            <thead id="div-matrix-thead"></thead>
+            <tbody id="div-matrix-tbody"></tbody>
+            <tfoot id="div-matrix-tfoot"></tfoot>
+          </table>
+        </div>
+
+        <h4 class="section-label" style="margin:18px 0 6px">How the net splits across your buckets (sum across all years)</h4>
+        <table style="width:100%;font-size:13px" id="div-alloc-table">
+          <thead>
+            <tr><th style="text-align:left">Bucket</th><th class="text-right">Gross</th><th class="text-right">Net after tax</th></tr>
+          </thead>
+          <tbody id="div-alloc-tbody"></tbody>
+        </table>
+
+        <div id="div-warnings" style="margin-top:18px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Test Procedure (interactive) ══════ -->
+  <div id="page-test-procedure" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Accounting Checklist</h1>
+      <div class="btn-group">
+        <select id="tp-source" onchange="setTestSource(this.value)" title="Switch checklist" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card);color:var(--text)">
+          <option value="accounting">Accounting tasks (daily / monthly / yearly)</option>
+          <option value="technical">Developer test procedure</option>
+        </select>
+        <button class="btn btn--ghost" onclick="exportTestResults()" title="Download a JSON of your pass/fail/skip + notes">Export results</button>
+        <button class="btn btn--danger" onclick="resetTestResults()" title="Clear all marked statuses for the current checklist">Reset all</button>
+      </div>
+    </div>
+
+    <div id="test-progress" class="chart-card" style="display:flex;align-items:center;gap:18px;margin-bottom:16px">
+      <div style="flex:1">
+        <div id="test-progress-bar" style="height:10px;background:var(--bg);border-radius:6px;overflow:hidden;position:relative">
+          <div id="test-progress-fill-pass" style="position:absolute;top:0;left:0;height:100%;width:0%;background:var(--ok-fill);transition:width 0.3s"></div>
+          <div id="test-progress-fill-fail" style="position:absolute;top:0;height:100%;width:0%;background:var(--danger-fill);transition:width 0.3s, left 0.3s"></div>
+          <div id="test-progress-fill-skip" style="position:absolute;top:0;height:100%;width:0%;background:var(--text-muted);opacity:0.4;transition:width 0.3s, left 0.3s"></div>
+        </div>
+        <div id="test-progress-text" class="hint" style="margin-top:6px">Loading…</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn--ghost btn--sm" onclick="setTestFilter('all')" data-test-filter="all" id="tf-all">All</button>
+        <button class="btn btn--ghost btn--sm" onclick="setTestFilter('pending')" data-test-filter="pending" id="tf-pending">Pending</button>
+        <button class="btn btn--ghost btn--sm" onclick="setTestFilter('fail')" data-test-filter="fail" id="tf-fail">Failed</button>
+      </div>
+    </div>
+
+    <div id="test-procedure-content"></div>
+  </div>
+
+  <!-- ══════ Docs ══════ -->
+  <div id="page-docs" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Documentation</h1>
+      <span class="hint">Same content as the project's <code>.md</code> files — rendered.</span>
+    </div>
+
+    <div id="docs-grid" style="display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:start">
+      <!-- Doc list -->
+      <div class="chart-card" style="position:sticky;top:0;padding:8px 0">
+        <div id="docs-list"></div>
+      </div>
+      <!-- Rendered content -->
+      <div class="chart-card" id="docs-content" style="min-height:60vh">
+        <div class="hint">Pick a document on the left.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Payroll ══════ -->
+  <div id="page-payroll" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Payroll</h1>
+      <div class="btn-group">
+        <select id="payroll-year" onchange="loadPayroll()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card);color:var(--text)"></select>
+        <button class="btn btn--outline" onclick="showPayrollSettings()">Settings</button>
+        <button class="btn btn--outline" onclick="openUploadPayslip()">&#11014; Upload Payslip</button>
+        <button class="btn btn--primary" onclick="openGeneratePayslip()">+ Generate Payslip</button>
+      </div>
+    </div>
+
+    <!-- Monthly preview -->
+    <div class="chart-card" id="payroll-preview-card" data-panel="preview" data-panel-label="Payslip preview">
+      <h3>Current monthly payslip preview <span id="payroll-preview-badge" class="hint hint--sm" style="font-weight:400"></span></h3>
+      <div id="payroll-preview-content"></div>
+    </div>
+
+    <!-- YTD summary -->
+    <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))" id="payroll-ytd-stats" data-panel="ytd" data-panel-label="Year-to-date cards"></div>
+
+
+    <!-- Setup notes (collapsible) -->
+    <div class="chart-card" style="padding:0" data-panel="reference" data-panel-label="Setup reference">
+      <div style="padding:14px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="document.getElementById('payroll-notes-body').classList.toggle('collapsed')">
+        <h3 style="margin:0;font-size:14px">&#128210; Payroll setup reference — click to expand</h3>
+        <span class="hint">verification · rules · money flow</span>
+      </div>
+      <div id="payroll-notes-body" class="collapsed" style="padding:0 20px 16px 20px;border-top:1px solid var(--border);display:none">
+        <style>#payroll-notes-body.collapsed { display: none !important; }</style>
+
+        <h4 class="section-label" style="margin:16px 0 8px">Exact vs Estimated</h4>
+        <div style="font-size:13px;line-height:1.7">
+          <div><strong style="color:var(--ok-text)">Exact</strong> — BVG, UVG, KTG, Supplementary accident (all AXA policy #1.234.567.890)</div>
+          <div><strong style="color:var(--primary)">Official</strong> — AHV/IV/EO 5.3% and ALV 1.1% (Swiss federal law; ALV drops to 0.5% on surplus above CHF 148,200/year)</div>
+          <div><strong style="color:var(--warn-text)">Estimate — verify</strong> — Source Tax (get exact amount from ZH tariff tables) and FAK (check Ausgleichskasse annual rate sheet)</div>
+        </div>
+
+        <h4 class="section-label" style="margin:16px 0 8px">Source Tax — B permit</h4>
+        <div style="font-size:13px;line-height:1.7">
+          <div>Tariff code format: <code>A0N</code> = single / 0 children / no church</div>
+          <div>1st letter: A=single · B=married sole earner · C=married both · H=single parent</div>
+          <div>Digit: number of dependent children</div>
+          <div>Last letter: N=no church · Y=with church</div>
+          <div style="color:var(--warn-text);margin-top:6px">&#9888; Gross &gt; CHF 120k/year → ordinary tax declaration (NOV) required. Source tax is an advance payment reconciled via annual declaration.</div>
+          <div style="margin-top:6px">Official tables: <a href="https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer.html" target="_blank" style="color:var(--primary)">zh.ch/quellensteuer</a></div>
+        </div>
+
+        <h4 class="section-label" style="margin:16px 0 8px">AXA policy #1.234.567.890</h4>
+        <div style="font-size:13px;line-height:1.7">
+          <div>Validity: 2026-04-01 to 2029-12-31 · billed annually CHF 3,480.43</div>
+          <div>Breakdown: OA 103.74 + NOA 1,839.16 + Supp. 255.21 + KTG 1,282.32</div>
+          <div style="color:var(--warn-text);margin-top:4px">&#9888; AXA is billed once per year — the monthly CHF 290.04 is bookkeeping accrual only.</div>
+        </div>
+
+        <h4 class="section-label" style="margin:16px 0 8px">Monthly money flow from GmbH</h4>
+        <table style="width:100%;font-size:13px">
+          <tr><td>Personal bank account (net salary)</td><td class="money">CHF 9,123.98</td></tr>
+          <tr><td>Canton ZH (source tax withholding)</td><td class="money">CHF 2,340.00</td></tr>
+          <tr><td>Ausgleichskasse (AHV/IV/EO/ALV both sides)</td><td class="money">CHF 1,664.00</td></tr>
+          <tr><td>Ausgleichskasse (FAK employer only)</td><td class="money">CHF 156.00</td></tr>
+          <tr><td>AXA — BVG (2nd pillar)</td><td class="money">CHF 1,306.50</td></tr>
+          <tr><td>AXA — accident + KTG (accrued)</td><td class="money">CHF 290.04</td></tr>
+          <tr style="border-top:1px solid var(--border);font-weight:600"><td>Total GmbH outflow</td><td class="money">CHF 14,880.52</td></tr>
+        </table>
+
+        <h4 class="section-label" style="margin:16px 0 8px">Items to verify</h4>
+        <ol style="font-size:13px;line-height:1.7;margin-left:20px">
+          <li>Source tax amount — pull exact from ZH tariff table for your tariff code</li>
+          <li>FAK rate — check your Ausgleichskasse annual rate sheet</li>
+          <li>BVG rate matches age bracket (current ~12% of coordinated salary, corresponds to age 35–44 bracket)</li>
+          <li>Supplementary accident split — currently 100% employer, may optionally be split</li>
+        </ol>
+
+        <div class="hint" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">Full reference kept in <code>PAYROLL_NOTES.md</code> at the project root.</div>
+      </div>
+    </div>
+
+    <!-- Payslips list -->
+    <div class="finance-section" data-panel="payslips" data-panel-label="Payslips table">
+      <h3>Payslips <span id="payslips-count" class="count">0</span></h3>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Month</th><th>Payment date</th>
+            <th class="text-right">Gross</th>
+            <th class="text-right">Deductions</th>
+            <th class="text-right">Net</th>
+            <th class="text-right">Employer cost</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr></thead>
+          <tbody id="payslips-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Income ══════ -->
+  <!-- ══════ Transfers (Personal ↔ GmbH) ══════ -->
+  <!-- ══════ Customers ══════ -->
+  <div id="page-customers" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Customers</h1>
+      <button class="btn btn--primary" onclick="clearCustomerForm(); document.getElementById('cust-dialog').classList.add('show')">+ Add Customer</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead><tr>
+          <th>Name</th><th>Address</th><th>Email</th><th>Reference</th>
+          <th class="text-right">Actions</th>
+        </tr></thead>
+        <tbody id="customers-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Customer Dialog -->

@@ -1,0 +1,698 @@
+<!-- 50-dialogs.html — all modal dialogs + toast (assembled in name order by app.py) -->
+<div id="cust-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title" id="cust-dialog-title">Add Customer</h3>
+    <form id="customer-form" onsubmit="handleCustomerSubmit(event)">
+      <input type="hidden" id="cust-edit-id">
+      <div class="form-grid">
+        <div class="field form-grid--full">
+          <label class="field__label" for="cust-name">Name</label>
+          <input class="control" type="text" id="cust-name" required>
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label" for="cust-address">Address</label>
+          <input class="control" type="text" id="cust-address">
+        </div>
+        <div class="field">
+          <label class="field__label" for="cust-city">City</label>
+          <input class="control" type="text" id="cust-city">
+        </div>
+        <div class="field">
+          <label class="field__label" for="cust-country">Country</label>
+          <input class="control" type="text" id="cust-country" value="Switzerland">
+        </div>
+        <div class="field">
+          <label class="field__label" for="cust-email">Email</label>
+          <input class="control" type="email" id="cust-email">
+        </div>
+        <div class="field">
+          <label class="field__label" for="cust-ref">Reference</label>
+          <input class="control" type="text" id="cust-ref">
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('cust-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary" id="cust-submit-btn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- AI Chat -->
+<button id="ai-chat-fab" onclick="toggleAiChat()" title="Ask AI (Cmd+K)" style="display:none">&#128172;</button>
+<div id="ai-chat-panel">
+  <div class="ai-chat-header">
+    <div>
+      <h3>Ask your finances</h3>
+      <div class="ai-chat-status" id="ai-chat-status">checking...</div>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="btn btn--ghost btn--icon" onclick="aiClearHistory()" title="Clear conversation">&#8634;</button>
+      <button class="btn btn--ghost btn--icon" onclick="toggleAiChat()" title="Close">&times;</button>
+    </div>
+  </div>
+  <div id="ai-chat-model-warning" style="display:none;padding:8px 12px;background:#fef3c7;border-bottom:1px solid #fbbf24;color:#92400e;font-size:11px;line-height:1.4"></div>
+  <div class="ai-chat-body" id="ai-chat-body"></div>
+  <div class="ai-suggestions">
+    <span class="ai-suggestion" onclick="aiAsk('What is my runway?')">Runway</span>
+    <span class="ai-suggestion" onclick="aiAsk('Show overall dashboard summary')">Dashboard</span>
+    <span class="ai-suggestion" onclick="aiAsk('List unpaid bills this year')">Unpaid bills</span>
+    <span class="ai-suggestion" onclick="aiAsk('Top 5 vendors I paid this year')">Top vendors</span>
+    <span class="ai-suggestion" onclick="aiAsk('Show all my reserve balances')">Reserves</span>
+    <span class="ai-suggestion" onclick="aiAsk('Travel expenses for 2026')">Travel</span>
+    <span class="ai-suggestion" onclick="aiAsk('Unpaid obligations due')">Obligations</span>
+    <span class="ai-suggestion" onclick="aiAsk('Payslip totals 2026')">Payslips</span>
+  </div>
+  <div class="ai-chat-input">
+    <textarea id="ai-chat-text" placeholder="Ask anything about your finances..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSubmit()}"></textarea>
+    <button onclick="aiSubmit()">Ask</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Delete Modal -->
+<div id="delete-modal" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Confirm Delete</h3>
+    <p id="delete-msg">Are you sure? This cannot be undone.</p>
+    <div class="form-actions form-grid--full">
+      <button class="btn btn--ghost" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn--danger" id="delete-confirm-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scan Modal (images) -->
+<div id="scan-modal" class="modal-overlay" onclick="this.classList.remove('show')">
+  <div class="modal modal-scan" onclick="event.stopPropagation()">
+    <img id="scan-modal-img" src="" alt="Receipt scan">
+  </div>
+</div>
+
+<!-- PDF Preview Modal -->
+<div id="pdf-modal" class="modal-overlay">
+  <div class="modal modal-pdf" onclick="event.stopPropagation()">
+    <div class="pdf-header">
+      <h3 id="pdf-modal-title">PDF Preview</h3>
+      <div class="btn-group">
+        <a id="pdf-modal-download" href="#" class="btn btn--outline btn--sm" download>&#11015; Download</a>
+        <a id="pdf-modal-newtab" href="#" class="btn btn--outline btn--sm" target="_blank">Open in new tab</a>
+        <button class="btn btn--ghost btn--sm" onclick="closePdfModal()">Close</button>
+      </div>
+    </div>
+    <iframe id="pdf-modal-iframe" src="about:blank"></iframe>
+  </div>
+</div>
+
+<!-- Import Folder Modal -->
+<div id="import-modal" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Import Folder</h3>
+    <p class="hint">Scan all receipt images (JPG/PNG) in a folder using AI vision analysis.</p>
+    <div class="field" style="margin-bottom:16px">
+      <label class="field__label" for="import-path">Folder path</label>
+      <input class="control" type="text" id="import-path" value="scan" placeholder="/path/to/receipts" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px">
+    </div>
+    <div id="import-progress" style="display:none;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:14px">
+        <div class="spinner"></div>
+        <span id="import-status">Analyzing receipts...</span>
+      </div>
+    </div>
+    <div id="import-results" style="display:none;margin-bottom:16px;max-height:250px;overflow-y:auto">
+      <table style="font-size:13px">
+        <thead><tr><th>File</th><th>Date</th><th>Description</th><th class="text-right">AED</th><th>Status</th></tr></thead>
+        <tbody id="import-results-tbody"></tbody>
+      </table>
+    </div>
+    <div class="form-actions form-grid--full">
+      <button class="btn btn--ghost" onclick="closeImportModal()">Close</button>
+      <button class="btn btn--primary" id="import-start-btn" onclick="startImport()">Scan & Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Source Dialog -->
+<div id="payment-source-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Mark as Paid — How did you pay?</h3>
+    <p id="payment-source-info" style="font-size:13px"></p>
+    <div class="field form-grid--full">
+      <label class="field__label">Payment source</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <label class="field__label" style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:6px;cursor:pointer" onclick="selectPaymentSource('cash')">
+          <input type="radio" name="pay-source" value="cash" checked>
+          <div><strong>From cash</strong><div class="hint">Regular payment, no reserve deduction</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:6px;cursor:pointer" onclick="selectPaymentSource('reserve')">
+          <input type="radio" name="pay-source" value="reserve">
+          <div style="flex:1"><strong>From a budget reserve</strong><div class="hint">Deduct from one of your sinking funds</div></div>
+        </label>
+      </div>
+    </div>
+    <div class="field form-grid--full" id="reserve-picker-wrap" style="display:none;margin-top:10px">
+      <label class="field__label">Which reserve?</label>
+      <select class="control" id="reserve-picker" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px"></select>
+    </div>
+    <div class="form-actions" style="margin-top:20px">
+      <button class="btn btn--ghost" onclick="closePaymentSource()">Cancel</button>
+      <button class="btn btn--ok" onclick="confirmPayment()">Mark Paid</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard Customize Modal -->
+<div id="dashboard-config-modal" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Customize Dashboard</h3>
+    <p class="hint">Select which widgets to show on your dashboard. Click the &#9432; on a row to see what each metric counts.</p>
+    <div id="dashboard-config-widgets"></div>
+    <div class="form-actions" style="margin-top:20px">
+      <button class="btn btn--ghost" onclick="document.getElementById('dashboard-config-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn--primary" onclick="saveDashboardConfig()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Widget Info Modal — shows formula + included/excluded data per metric -->
+<div id="widget-info-modal" class="modal-overlay" onclick="this.classList.remove('show')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div id="widget-info-body"></div>
+    <div class="form-actions" style="margin-top:20px">
+      <button class="btn btn--primary" onclick="document.getElementById('widget-info-modal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cash Balance Dialog -->
+<div id="cash-balance-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">GmbH Bank Balance</h3>
+    <p class="hint">Enter your actual GmbH bank balance today. Used to compute runway (how many months your cash lasts at current burn rate).</p>
+    <form onsubmit="saveCashBalance(event)">
+      <div class="form-grid">
+        <div class="field"><label class="field__label">Balance (CHF)</label><input class="control" type="number" id="cash-balance-input" step="0.01" min="0" required></div>
+        <div class="field"><label class="field__label">As of</label><input class="control" type="date" id="cash-asof-input" required></div>
+        <div class="field form-grid--full"><label class="field__label">Notes</label><input class="control" type="text" id="cash-notes-input" placeholder="e.g. After tax payment"></div>
+      </div>
+      <div class="form-actions" style="margin-top:16px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('cash-balance-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bank CSV Import Dialog -->
+<div id="bank-csv-dialog" class="modal-overlay">
+  <div class="modal modal--wide" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Bank CSV Import</h3>
+    <p class="hint">Upload a CSV from your bank. Expected columns (case-insensitive): <code>Date</code>, <code>Description</code>, <code>Amount</code>. Positive = inflow (income), negative = outflow (bill payment). The system suggests matches against existing unpaid bills/invoices.</p>
+    <div class="field form-grid--full" style="margin-bottom:12px">
+      <input type="file" id="bank-csv-file" accept=".csv,.txt">
+      <button type="button" class="btn btn--primary btn--sm" onclick="parseBankCsv()" style="margin-top:8px">Parse &amp; Match</button>
+    </div>
+    <div id="bank-csv-results"></div>
+    <div class="form-actions" style="margin-top:16px">
+      <button type="button" class="btn btn--ghost" onclick="document.getElementById('bank-csv-dialog').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payroll Settings Dialog -->
+<div id="payroll-settings-dialog" class="modal-overlay">
+  <div class="modal modal--wide" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Payroll Settings</h3>
+    <p class="hint">All rates are configurable. "Exact" = contractual (BVG/KTG). "Estimated" = Swiss standard rates.</p>
+    <form onsubmit="savePayrollSettings(event)">
+      <h4 class="section-label" style="margin:16px 0 8px 0">Parties</h4>
+      <div class="form-grid">
+        <div class="field form-grid--full"><label class="field__label">Employer name</label><input class="control" type="text" id="ps-employer" required></div>
+        <div class="field form-grid--full"><label class="field__label">Employee name</label><input class="control" type="text" id="ps-employee" required></div>
+        <div class="field form-grid--full"><label class="field__label">Employee address</label><input class="control" type="text" id="ps-address"></div>
+        <div class="field"><label class="field__label">Employment start</label><input class="control" type="date" id="ps-start" required></div>
+        <div class="field"><label class="field__label">Canton</label><input class="control" type="text" id="ps-canton" value="Zurich"></div>
+        <div class="field"><label class="field__label">Payment day</label><input class="control" type="number" id="ps-pay-day" min="1" max="28" value="25"></div>
+        <div class="field"><label class="field__label">Currency</label><input class="control" type="text" id="ps-currency" value="CHF"></div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">Salary</h4>
+      <div class="form-grid">
+        <div class="field"><label class="field__label">Gross monthly (CHF)</label><input class="control" type="number" id="ps-gross" step="0.01" min="0" required></div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">AHV / IV / EO & ALV (estimated %)</h4>
+      <div class="form-grid">
+        <div class="field"><label class="field__label">AHV employee %</label><input class="control" type="number" id="ps-ahv-e" step="0.01" value="5.3"></div>
+        <div class="field"><label class="field__label">AHV employer %</label><input class="control" type="number" id="ps-ahv-er" step="0.01" value="5.3"></div>
+        <div class="field"><label class="field__label">ALV employee %</label><input class="control" type="number" id="ps-alv-e" step="0.01" value="1.1"></div>
+        <div class="field"><label class="field__label">ALV employer %</label><input class="control" type="number" id="ps-alv-er" step="0.01" value="1.1"></div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">BVG — 2nd pillar (exact, from AXA)</h4>
+      <div class="form-grid">
+        <div class="field"><label class="field__label">BVG provider</label><input class="control" type="text" id="ps-bvg-prov" value="AXA"></div>
+        <div class="field"><label class="field__label">BVG monthly — employee</label><input class="control" type="number" id="ps-bvg-e" step="0.01" min="0"></div>
+        <div class="field"><label class="field__label">BVG monthly — employer</label><input class="control" type="number" id="ps-bvg-er" step="0.01" min="0"></div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">UVG accident insurance — AXA (estimated)</h4>
+      <div class="form-grid">
+        <div class="field"><label class="field__label">UVG employee (NBU) / mo</label><input class="control" type="number" id="ps-uvg-e" step="0.01" min="0"></div>
+        <div class="field"><label class="field__label">UVG employer (BU) / mo</label><input class="control" type="number" id="ps-uvg-er" step="0.01" min="0"></div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">KTG — Daily sickness (exact)</h4>
+      <div class="form-grid">
+        <div class="field"><label class="field__label">KTG monthly total</label><input class="control" type="number" id="ps-ktg" step="0.01" min="0"></div>
+        <div class="field"><label class="field__label">Employer share %</label><input class="control" type="number" id="ps-ktg-er" step="1" min="0" max="100" value="50"></div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">FAK — Family Allowance Fund (employer-only)</h4>
+      <div class="form-grid">
+        <div class="field form-grid--full">
+          <label class="field__label">FAK rate % (Zurich ~1.2%, varies by compensation fund)</label>
+          <input class="control" type="number" id="ps-fak" step="0.01" min="0" value="1.2">
+        </div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">Source Tax (Quellensteuer — B permit only)</h4>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label">Tariff code</label>
+          <input class="control" type="text" id="ps-st-tariff" placeholder="e.g. A0N, B1Y" maxlength="8">
+        </div>
+        <div class="field">
+          <label class="field__label">Monthly amount (CHF)</label>
+          <input class="control" type="number" id="ps-st-amount" step="0.01" min="0" value="0">
+        </div>
+        <div class="field form-grid--full hint">
+          B/L permit only. Get exact amount from ZH tariff tables
+          (<a href="https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer.html" target="_blank" style="color:var(--primary)">zh.ch/quellensteuer</a>).
+          For single, no children, no church ("A0N"): the tariff is progressive — e.g. ~13.4% at 13k gross, slightly less at lower salaries. Enter the exact amount from the tables.
+        </div>
+      </div>
+
+      <div class="form-actions" style="margin-top:24px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('payroll-settings-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save Settings</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Generate Payslip Dialog -->
+<div id="payslip-generate-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Generate Payslip</h3>
+    <p class="hint">Creates a monthly payslip PDF using current settings. You can also have the system log related entries automatically — each is opt-in so you stay in control.</p>
+    <form onsubmit="generatePayslipSubmit(event)">
+      <div class="form-grid">
+        <div class="field"><label class="field__label">Year</label><input class="control" type="number" id="gen-year" required></div>
+        <div class="field"><label class="field__label">Month</label>
+          <select class="control" id="gen-month" required>
+            <option value="1">January</option><option value="2">February</option>
+            <option value="3">March</option><option value="4">April</option>
+            <option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option>
+            <option value="9">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+      </div>
+
+      <h4 class="section-label" style="margin:16px 0 8px 0">Automatic side-effects</h4>
+
+      <label style="display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;cursor:pointer">
+        <input type="checkbox" id="gen-opt-income" checked style="margin-top:2px">
+        <div>
+          <div style="font-weight:600;font-size:14px">Log income entry</div>
+          <div class="hint">Adds the net salary to the Income page so your Dashboard totals update. Source: Muster Consulting GmbH · Category: Salary.</div>
+        </div>
+      </label>
+
+      <label style="display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;cursor:pointer">
+        <input type="checkbox" id="gen-opt-transfer" checked style="margin-top:2px">
+        <div>
+          <div style="font-weight:600;font-size:14px">Log transfer (GmbH &rarr; Personal)</div>
+          <div class="hint">Records the money moving from the company account to your personal account. Net amount, on the payment date.</div>
+        </div>
+      </label>
+
+      <label style="display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;cursor:pointer">
+        <input type="checkbox" id="gen-opt-obligations" checked style="margin-top:2px">
+        <div>
+          <div style="font-weight:600;font-size:14px">Create obligations (GmbH owes authorities)</div>
+          <div class="hint">Creates 3 obligations this month: <strong>AHV/ALV</strong> (to Ausgleichskasse), <strong>UVG</strong> (to AXA), <strong>KTG</strong> (to AXA). BVG is billed quarterly by AXA and tracked by its own recurring quarterly obligation. Totals = employee + employer shares combined (what the GmbH actually pays out).</div>
+        </div>
+      </label>
+
+      <div style="background:#fef3c7;color:#92400e;padding:10px;border-radius:6px;font-size:12px;margin-top:8px">
+        &#9888; Already-logged entries are detected and skipped to avoid duplicates.
+      </div>
+
+      <div class="form-actions" style="margin-top:16px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('payslip-generate-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Generate</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Obligation Dialog -->
+<div id="obligation-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title" id="obl-dialog-title">Add Obligation</h3>
+    <form onsubmit="handleObligationSubmit(event)">
+      <input type="hidden" id="obl-edit-id">
+      <div class="form-grid">
+        <div class="field form-grid--full">
+          <label class="field__label">Type</label>
+          <select class="control" id="obl-type" required>
+            <option value="ahv">AHV/AVS (1st pillar)</option>
+            <option value="bvg_employee">BVG Employee (2nd pillar)</option>
+            <option value="bvg_employer">BVG Employer (2nd pillar)</option>
+            <option value="corporate_tax_federal">Corporate Tax (Federal)</option>
+            <option value="corporate_tax_cantonal">Corporate Tax (Cantonal)</option>
+            <option value="vat">VAT</option>
+            <option value="uvg">UVG (Accident — AXA)</option>
+            <option value="ktg">KTG (Sick pay — AXA)</option>
+            <option value="source_tax">Source Tax (Quellensteuer)</option>
+            <option value="accounting">Treuhand</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Year</label>
+          <input class="control" type="number" id="obl-year" min="2020" max="2035" required>
+        </div>
+        <div class="field">
+          <label class="field__label">Period Label</label>
+          <input class="control" type="text" id="obl-period" required placeholder="e.g. Q1 2026, Jan 2026, 2025">
+        </div>
+        <div class="field">
+          <label class="field__label">Amount</label>
+          <input class="control" type="number" id="obl-amount" step="0.01" min="0" required>
+        </div>
+        <div class="field">
+          <label class="field__label">Due Date</label>
+          <input class="control" type="date" id="obl-due" onchange="updateOblStatusPreview()">
+        </div>
+        <div class="field">
+          <label class="field__label">Status <span id="obl-status-preview" style="font-size:11px;font-weight:400"></span></label>
+          <select class="control" id="obl-status" onchange="updateOblStatusPreview()">
+            <option value="unpaid">Unpaid</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Currency</label>
+          <select class="control" id="obl-currency"><option value="CHF">CHF</option></select>
+        </div>
+        <div class="field">
+          <label class="field__label">Recurrence</label>
+          <select class="control" id="obl-recurrence">
+            <option value="none">One-time</option>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Expected bill date</label>
+          <input class="control" type="date" id="obl-exp-date">
+        </div>
+        <div class="field">
+          <label class="field__label">Expected bill amount (CHF)</label>
+          <input class="control" type="number" id="obl-exp-amount" step="0.01" min="0" placeholder="if it differs from the amount">
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Notes</label>
+          <input class="control" type="text" id="obl-notes" placeholder="Optional">
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Document (optional)</label>
+          <input type="file" id="obl-file" accept="image/*,.pdf">
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('obligation-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Income Dialog -->
+<div id="income-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Add Income</h3>
+    <form onsubmit="handleIncomeSubmit(event)">
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label">Date</label>
+          <input class="control" type="date" id="inc-date" required>
+        </div>
+        <div class="field">
+          <label class="field__label">Amount</label>
+          <input class="control" type="number" id="inc-amount" step="0.01" min="0" required>
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Source / Payer</label>
+          <input class="control" type="text" id="inc-source" required placeholder="e.g. UBS, Client name">
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Description</label>
+          <input class="control" type="text" id="inc-desc" placeholder="Optional">
+        </div>
+        <div class="field">
+          <label class="field__label">Currency</label>
+          <select class="control" id="inc-currency">
+            <option value="CHF">CHF</option><option value="EUR">EUR</option><option value="USD">USD</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Category</label>
+          <select class="control" id="inc-category">
+            <option value="Invoice Payment">Invoice Payment</option>
+            <option value="Bank Deposit">Bank Deposit</option>
+            <option value="Salary">Salary</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Proof of income (optional)</label>
+          <input type="file" id="inc-file" accept="image/*,.pdf">
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('income-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Transfer Dialog -->
+<div id="reimburse-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Reimburse Yourself</h3>
+    <p class="hint" style="margin:4px 0 14px">
+      Company expenses you fronted privately (bills paid by card or personal bank account, and travel
+      expense reports). Selecting items and confirming
+      logs <strong>one GmbH &rarr; Personal transfer</strong> for the total and marks them
+      settled — the Kontokorrent drops accordingly. Pay yourself the same amount from the
+      UBS account with matching date &amp; reference.
+    </p>
+    <div id="reimburse-list" style="max-height:320px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="field">
+      <label class="field__label">Transfer date</label>
+      <input class="control" type="date" id="reimburse-date">
+    </div>
+    <div class="row-split" style="padding:10px 0;border-top:1px solid var(--border)">
+      <span class="hint">Selected total</span>
+      <strong id="reimburse-total" class="mono">CHF 0.00</strong>
+    </div>
+    <div class="form-actions form-grid--full">
+      <button type="button" class="btn btn--ghost" onclick="document.getElementById('reimburse-dialog').classList.remove('show')">Cancel</button>
+      <button type="button" class="btn btn--primary" id="reimburse-submit" onclick="submitReimburse()">Log Reimbursement</button>
+    </div>
+  </div>
+</div>
+
+<div id="vat-settings-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">VAT Deduction Settings</h3>
+    <p class="hint" style="margin:4px 0 14px">Controls how input VAT is simulated when bills don't carry an explicit VAT amount. Everything here only affects the VAT Tracker figures — never the bills themselves.</p>
+    <form onsubmit="handleVatSettingsSubmit(event)">
+      <div class="form-grid">
+        <div class="field form-grid--full">
+          <label class="field__label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="vats-estimate" style="width:auto">
+            Simulate input VAT on bills without a recorded VAT amount
+          </label>
+        </div>
+        <div class="field">
+          <label class="field__label">Assumed VAT rate (%)</label>
+          <input class="control" type="number" id="vats-rate" step="0.1" min="0" max="100" value="8.1">
+        </div>
+        <div class="field">
+          <label class="field__label">Flat extra deduction / quarter (CHF)</label>
+          <input class="control" type="number" id="vats-flat" step="0.01" min="0" value="0">
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">VAT-exempt categories (no simulated deduction)</label>
+          <div id="vats-categories" style="display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 0"></div>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('vat-settings-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="upload-payslip-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Upload Accountant Payslip</h3>
+    <form onsubmit="handleUploadPayslip(event)">
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label">Month</label>
+          <select class="control" id="upl-month" required>
+            <option value="1">January</option><option value="2">February</option>
+            <option value="3">March</option><option value="4">April</option>
+            <option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option>
+            <option value="9">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Year</label>
+          <input class="control" type="number" id="upl-year" min="2020" max="2100" required>
+        </div>
+        <div class="field">
+          <label class="field__label">Payment date (optional)</label>
+          <input class="control" type="date" id="upl-payment-date">
+        </div>
+        <div class="field"></div>
+        <div class="field">
+          <label class="field__label">Gross (optional — from the slip)</label>
+          <input class="control" type="number" id="upl-gross" step="0.01" min="0" placeholder="e.g. 13000.00">
+        </div>
+        <div class="field">
+          <label class="field__label">Net (optional — from the slip)</label>
+          <input class="control" type="number" id="upl-net" step="0.01" min="0" placeholder="e.g. 9123.98">
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Payslip PDF</label>
+          <input type="file" id="upl-file" accept=".pdf" required>
+        </div>
+        <div class="field form-grid--full hint">
+          If a payslip already exists for that month, its PDF is replaced by the accountant's version
+          (numbers stay unless you enter gross/net). For a new month, the contribution breakdown is
+          estimated from your payroll settings and your gross/net entries take precedence.
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('upload-payslip-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="transfer-dialog" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Log Transfer</h3>
+    <form onsubmit="handleTransferSubmit(event)">
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label">Date</label>
+          <input class="control" type="date" id="xfer-date" required>
+        </div>
+        <div class="field">
+          <label class="field__label">Amount</label>
+          <input class="control" type="number" id="xfer-amount" step="0.01" min="0" required>
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Direction</label>
+          <select class="control" id="xfer-direction" required>
+            <option value="personal_to_gmbh">Personal &rarr; GmbH (you paid the company)</option>
+            <option value="gmbh_to_personal">GmbH &rarr; Personal (company paid you)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Currency</label>
+          <select class="control" id="xfer-currency">
+            <option value="CHF">CHF</option><option value="EUR">EUR</option><option value="USD">USD</option>
+          </select>
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Description</label>
+          <input class="control" type="text" id="xfer-desc" placeholder="e.g. Reimbursement for business trip">
+        </div>
+        <div class="field form-grid--full">
+          <label class="field__label">Bank statement / proof (optional)</label>
+          <input type="file" id="xfer-file" accept="image/*,.pdf">
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:20px">
+        <button type="button" class="btn btn--ghost" onclick="document.getElementById('transfer-dialog').classList.remove('show')">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Budget Config Modal -->
+<div id="budget-config-modal" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Budget Setup</h3>
+    <p class="hint">Set your monthly budgeted amounts per category. These are your spending targets.</p>
+    <div id="budget-config-groups"></div>
+    <div class="form-actions" style="margin-top:20px">
+      <button class="btn btn--ghost" onclick="document.getElementById('budget-config-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn--primary" onclick="saveBudgetConfig()">Save Budget</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div id="share-modal" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Share with Accountant</h3>
+    <p class="hint">Create a read-only link for a specific year. Your accountant can view and download all documents without logging in.</p>
+    <div class="form-grid" style="margin-bottom:16px">
+      <div class="field">
+        <label class="field__label" for="share-year">Year</label>
+        <select class="control" id="share-year" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px"></select>
+      </div>
+      <div class="field">
+        <label class="field__label">&nbsp;</label>
+        <button class="btn btn--primary" onclick="createShareLink()">Generate Link</button>
+      </div>
+    </div>
+    <div id="share-links-list" style="margin-bottom:16px"></div>
+    <div class="form-actions form-grid--full">
+      <button class="btn btn--ghost" onclick="document.getElementById('share-modal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Delete Confirmation Modal -->
+<div id="bulk-delete-modal" class="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 class="modal__title">Delete Selected Expenses</h3>
+    <p id="bulk-delete-msg">Are you sure you want to delete these expenses? This cannot be undone.</p>
+    <div class="form-actions form-grid--full">
+      <button class="btn btn--ghost" onclick="document.getElementById('bulk-delete-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn--danger" id="bulk-delete-confirm" onclick="executeBulkDelete()">Delete All</button>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Dashboard</title>
+<link rel="stylesheet" href="../canonical.css">
+<style>
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);margin:0;font-size:var(--fs-base)}
+.demo-main{max-width:1160px;margin:0 auto;padding:var(--sp-5) var(--sp-6)}
+.demo-theme{position:fixed;top:10px;right:12px;z-index:99}
+a{color:var(--primary)}a:hover{color:var(--primary-hover)}
+</style>
+</head>
+<body>
+<button class="btn btn--outline btn--sm demo-theme" onclick="var d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark'">☾ theme</button>
+<div class="demo-main">
+
+  <div class="page-header">
+    <h1 class="page-title">Dashboard</h1>
+    <div class="btn-group">
+      <select class="control control--auto"><option>Year to date</option></select>
+      <select class="control control--auto"><option>2026</option></select>
+      <button class="btn btn--outline">P&amp;L Report</button>
+      <button class="btn btn--outline">Customize</button>
+    </div>
+  </div>
+
+  <p class="page-intro">Showing: Year to date · 2026-01-01 → 2026-07-27</p>
+
+  <!-- Stat rows. Accent = .stat--*, value color = .stat__value--*.
+       The two lead KPIs use .stat--wide; everything else flows. -->
+  <div class="stats-grid stats-grid--lead" style="margin-bottom:var(--sp-3)">
+    <div class="stat stat--ok">
+      <div class="stat__head"><span class="stat__label">Net profit</span><button class="info-btn" title="Income − costs">i</button></div>
+      <div class="stat__value stat__value--ok">CHF 4'722.35</div>
+    </div>
+    <div class="stat stat--danger">
+      <div class="stat__head"><span class="stat__label">Total costs</span><button class="info-btn">i</button></div>
+      <div class="stat__value stat__value--danger">CHF 26'945.55</div>
+      <div class="stat__hint">Bills CHF 2'727.60 + Obligations CHF 24'217.95</div>
+    </div>
+  </div>
+
+  <div class="stats-grid" style="margin-bottom:var(--sp-3)">
+    <div class="stat stat--ok">
+      <div class="stat__head"><span class="stat__label">Total income</span><button class="info-btn">i</button></div>
+      <div class="stat__value stat__value--ok">CHF 31'667.90</div>
+      <div class="stat__hint">Cash received (incl. paid invoices)</div>
+    </div>
+    <div class="stat stat--info">
+      <div class="stat__head"><span class="stat__label">Profit margin</span><button class="info-btn">i</button></div>
+      <div class="stat__value stat__value--info">14.9%</div>
+    </div>
+    <div class="stat">
+      <div class="stat__head"><span class="stat__label">Avg monthly revenue</span><button class="info-btn">i</button></div>
+      <div class="stat__value">CHF 11'284.83</div>
+      <div class="stat__hint">Across 4 invoiced months</div>
+    </div>
+    <div class="stat stat--danger">
+      <div class="stat__head"><span class="stat__label">Overdue</span><button class="info-btn">i</button></div>
+      <div class="stat__value stat__value--danger">CHF 7'108.42</div>
+    </div>
+    <div class="stat stat--warn">
+      <div class="stat__head"><span class="stat__label">Due next 30 days</span><button class="info-btn">i</button></div>
+      <div class="stat__value stat__value--warn">CHF 3'919.50</div>
+    </div>
+    <div class="stat stat--owner">
+      <div class="stat__head"><span class="stat__label">GmbH owes you</span><button class="info-btn">i</button></div>
+      <div class="stat__value stat__value--owner">CHF 2'506.80</div>
+      <div class="stat__hint">Kontokorrent — Bank Statements → Owner ledger</div>
+    </div>
+  </div>
+
+  <!-- Latest-balance strip -->
+  <div class="panel row-split" style="margin-bottom:var(--sp-3)">
+    <div>
+      <div class="hint">Latest bank balance — UBS Business Current Account CHF</div>
+      <div class="money money--lg" style="text-align:left">CHF 709.75</div>
+      <div class="hint hint--sm">As of 2026-07-01 · 26 days ago</div>
+    </div>
+    <a class="btn btn--outline btn--sm" href="#">All statements →</a>
+  </div>
+
+  <!-- Reserves: panel + meter primitive (draft had no progress bar at all) -->
+  <div class="panel" style="margin-bottom:var(--sp-3)">
+    <div class="row-split" style="margin-bottom:var(--sp-3)">
+      <h3 class="panel__title">Reserves / Sinking Funds</h3>
+      <div class="btn-group">
+        <span class="hint">accrued <b>CHF 8'289.52</b> of CHF 13'580.43 · monthly accrual <b>CHF 1'509.23</b></span>
+        <button class="btn btn--primary btn--sm">+ Add</button>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:var(--sp-1);padding-top:var(--sp-3);border-top:1px solid var(--border)">
+      <div class="row-split">
+        <b>AXA payroll settlement FY2026</b>
+        <span class="hint">target <span class="mono">CHF 3'480.43</span> · due 2026-06-11</span>
+      </div>
+      <div class="hint hint--sm">Annual UVG+UVGZ+KTG premium to AXA (policy 44.204.594).</div>
+      <div class="row-split" style="gap:var(--sp-3)">
+        <div class="meter" style="flex:1"><div class="meter__bar meter__bar--ok" style="width:100%"></div></div>
+        <span class="money">CHF 3'800.60 <span class="hint hint--sm">/ 3'480.43 · +387.00/mo</span></span>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:var(--sp-1);padding-top:var(--sp-3);margin-top:var(--sp-3);border-top:1px solid var(--border)">
+      <div class="row-split">
+        <b>Treuhand (FY2026 accounting)</b>
+        <span class="hint">target <span class="mono">CHF 5'000.00</span> · due 2027-01-31</span>
+      </div>
+      <div class="row-split" style="gap:var(--sp-3)">
+        <div class="meter" style="flex:1"><div class="meter__bar" style="width:44%"></div></div>
+        <span class="money">CHF 2'222.24 <span class="hint hint--sm">/ 5'000.00 · +555.56/mo</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming payments: neutral count chip, money + due hint -->
+  <div class="panel">
+    <div class="row-split">
+      <h3 class="panel__title">Upcoming payments (next 60 days) <span class="chip chip--count">14</span></h3>
+      <span class="hint">from Obligations + Bills due dates</span>
+    </div>
+    <div class="row-split" style="border-top:1px solid var(--border);padding-top:var(--sp-2);margin-top:var(--sp-2)">
+      <span>BVG Employer (2nd pillar) — Q2 2026 <span class="chip chip--sm">AXA</span></span>
+      <span class="money">CHF 3'919.50 <span class="hint hint--sm">due 2026-08-03</span></span>
+    </div>
+    <div class="row-split" style="border-top:1px solid var(--border);padding-top:var(--sp-2);margin-top:var(--sp-2)">
+      <span>VAT — Q2 2026 <span class="chip chip--danger chip--sm">overdue</span></span>
+      <span class="money t-danger">CHF 2'545.72 <span class="hint hint--sm">due 2026-08-29</span></span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

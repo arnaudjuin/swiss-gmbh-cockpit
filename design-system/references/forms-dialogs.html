@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Forms &amp; dialogs</title>
+<link rel="stylesheet" href="../canonical.css">
+<style>
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);margin:0;font-size:var(--fs-base)}
+.demo-main{max-width:1160px;margin:0 auto;padding:var(--sp-5) var(--sp-6)}
+.demo-theme{position:fixed;top:10px;right:12px;z-index:99}
+.demo-modal{position:static;background:none;padding:0;display:block}  /* show dialogs inline */
+a{color:var(--primary)}a:hover{color:var(--primary-hover)}
+</style>
+</head>
+<body>
+<button class="btn btn--outline btn--sm demo-theme" onclick="var d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark'">☾ theme</button>
+<div class="demo-main">
+
+  <div class="page-header">
+    <h1 class="page-title">Add Document</h1>
+    <div class="btn-group"><button class="btn btn--ghost">Cancel</button></div>
+  </div>
+
+  <!-- Full-page form: .panel + .form-grid + .field + .control. No local
+       input CSS — the draft's references had to invent it, which proved
+       §9 was missing. -->
+  <div class="panel" style="max-width:560px">
+    <div class="form-grid">
+      <div class="field"><label class="field__label">Date</label><input class="control" type="date"></div>
+      <div class="field"><label class="field__label">Amount</label><input class="control" placeholder="0.00"></div>
+      <div class="field form-grid--full"><label class="field__label">Vendor / Supplier</label><input class="control" placeholder="e.g. Microsoft, Swisscom, Treuhand"></div>
+      <div class="field form-grid--full"><label class="field__label">Description</label><input class="control" placeholder="e.g. Office 365 annual subscription"></div>
+      <div class="field"><label class="field__label">Currency</label><select class="control"><option>CHF</option></select></div>
+      <div class="field"><label class="field__label">Due date</label><input class="control" type="date"></div>
+      <div class="field"><label class="field__label">Status</label><select class="control"><option>Unpaid</option></select></div>
+      <div class="field"><label class="field__label">Recurrence</label><select class="control"><option>One-time</option></select></div>
+      <div class="field"><label class="field__label">Paid with</label><select class="control"><option>Company account</option></select></div>
+      <div class="field"><label class="field__label">Category</label><select class="control"><option>Office Supplies</option></select></div>
+      <div class="field form-grid--full">
+        <label class="field__label">Document link (optional)</label>
+        <input class="control" placeholder="https://drive.google.com/file/d/…">
+        <span class="hint">Paste a share link (Google Drive, Dropbox, …). It goes into the accountant CSV. Works with or without the upload below.</span>
+      </div>
+      <div class="field form-grid--full">
+        <label class="field__label">Document (receipt, invoice, bill)</label>
+        <div class="file-drop">Drop a file here or click to browse</div>
+      </div>
+      <div class="form-grid--full"><button class="btn btn--outline" style="width:100%">🔍 Scan Swiss QR-bill</button></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn--ghost">Cancel</button>
+      <button class="btn btn--primary">Save document</button>
+    </div>
+  </div>
+
+  <h3 class="panel__title" style="margin:var(--sp-6) 0 var(--sp-3)">Dialogs (14 in index.html — one primitive)</h3>
+
+  <div class="cols-2">
+    <div class="modal-overlay demo-modal">
+      <div class="modal">
+        <h2 class="modal__title">Log Transfer</h2>
+        <div class="form-grid">
+          <div class="field"><label class="field__label">Date</label><input class="control" type="date"></div>
+          <div class="field"><label class="field__label">Amount</label><input class="control" placeholder="0.00"></div>
+          <div class="field form-grid--full"><label class="field__label">Direction</label><select class="control"><option>Personal → GmbH (you paid the company)</option></select></div>
+          <div class="field"><label class="field__label">Currency</label><select class="control"><option>CHF</option></select></div>
+          <div class="field form-grid--full"><label class="field__label">Description</label><input class="control" placeholder="e.g. Reimbursement for business trip"></div>
+          <div class="field form-grid--full"><label class="field__label">Bank statement / proof (optional)</label><div class="file-drop">Choose file…</div></div>
+        </div>
+        <div class="form-actions"><button class="btn btn--ghost">Cancel</button><button class="btn btn--primary">Save</button></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay demo-modal">
+      <div class="modal">
+        <h2 class="modal__title">Upload Accountant Payslip</h2>
+        <div class="form-grid">
+          <div class="field"><label class="field__label">Month</label><select class="control"><option>July</option></select></div>
+          <div class="field"><label class="field__label">Year</label><input class="control" value="2026"></div>
+          <div class="field form-grid--full"><label class="field__label">Payment date (optional)</label><input class="control" type="date"></div>
+          <div class="field"><label class="field__label">Gross (from the slip)</label><input class="control" placeholder="e.g. 13000.00"></div>
+          <div class="field"><label class="field__label">Net (from the slip)</label><input class="control" placeholder="e.g. 9123.98"></div>
+          <div class="field form-grid--full"><label class="field__label">Payslip PDF</label><div class="file-drop">Choose file…</div></div>
+        </div>
+        <div class="notice" style="margin-top:var(--sp-3)">If a payslip already exists for that month, its PDF is replaced by the accountant's version — numbers stay unless you enter gross/net.</div>
+        <div class="form-actions"><button class="btn btn--ghost">Cancel</button><button class="btn btn--primary">Upload</button></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="panel__title" style="margin:var(--sp-6) 0 var(--sp-3)">Notices (§10) — replaces 4 one-off banners</h3>
+  <div style="display:grid;gap:var(--sp-2);max-width:760px">
+    <div class="notice notice--ok"><span>✓</span><span>Plan saved. Treuhand still needs to confirm the actual distributable profit at each GV.</span></div>
+    <div class="notice notice--warn"><span>⚠</span><span>Read-only share link — changes are not saved.</span></div>
+    <div class="notice notice--danger"><span>✕</span><span>Upload failed: the CSV has no recognisable UBS header row.</span></div>
+    <div class="notice notice--info"><span>ⓘ</span><span>Analyze proposes changes only — nothing is written until you Apply.</span></div>
+    <div class="notice"><span>·</span><span>Neutral note, e.g. field help inside a dialog.</span></div>
+  </div>
+
+</div>
+</body>
+</html>

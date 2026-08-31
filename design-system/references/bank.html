@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Bank Statements (headline panel + ledger)</title>
+<link rel="stylesheet" href="../canonical.css">
+<style>
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);margin:0;font-size:var(--fs-base)}
+.demo-main{max-width:1160px;margin:0 auto;padding:var(--sp-5) var(--sp-6)}
+.demo-theme{position:fixed;top:10px;right:12px;z-index:99}
+a{color:var(--primary)}a:hover{color:var(--primary-hover)}
+</style>
+</head>
+<body>
+<button class="btn btn--outline btn--sm demo-theme" onclick="var d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark'">☾ theme</button>
+<div class="demo-main">
+
+  <div class="page-header">
+    <h1 class="page-title">Bank Statements</h1>
+    <div class="btn-group">
+      <select class="control control--auto"><option>All years</option></select>
+      <button class="btn btn--primary">+ Upload Statement</button>
+    </div>
+  </div>
+
+  <!-- Latest balance strip -->
+  <div class="panel row-split" style="margin-bottom:var(--sp-3)">
+    <div><b>Latest balance (2026-07-01):</b> <span class="money money--lg" style="text-align:left">CHF 709.75</span></div>
+    <span class="hint">UBS · UBS Business Current Account CHF</span>
+  </div>
+
+  <!-- Statements table -->
+  <div class="table-card" style="margin-bottom:var(--sp-4)">
+    <table class="table">
+      <thead><tr><th></th><th>Period</th><th>Bank</th><th>Account</th><th class="r">Opening</th><th class="r">Closing</th><th>Notes</th><th class="r">Actions</th></tr></thead>
+      <tbody><tr>
+        <td><button class="btn btn--ghost btn--icon">▶</button></td>
+        <td class="date">2026-02-13 → 2026-07-01</td>
+        <td>UBS</td>
+        <td>UBS Business Current Account CHF<br><span class="ref">CH93 0076 2011 6238 5295 7</span></td>
+        <td class="money r">CHF 0.00</td>
+        <td class="money r">CHF 709.75</td>
+        <td class="hint">UBS CSV export (Feb 13 → Jul 1, 2026). Replaces previous upload.</td>
+        <td class="r" style="white-space:nowrap">
+          <button class="btn btn--ghost btn--icon">🔍</button>
+          <button class="btn btn--ghost btn--icon">📄</button>
+          <button class="btn btn--ghost btn--icon">✎</button>
+          <button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button>
+        </td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <!-- Expanded-statement filters: the segmented control primitive (§2) -->
+  <div class="filter-bar">
+    <div class="seg">
+      <button aria-pressed="true">All</button><button>In only</button><button>Out only</button>
+      <button>Q1</button><button>Q2</button><button>Q3</button><button>Q4</button><button>CSV</button>
+    </div>
+    <span class="hint">31 transactions · in <span class="t-ok">+CHF 58'525.20</span> · out <span class="t-danger">−CHF 57'815.45</span></span>
+  </div>
+
+  <!-- Owner ledger -->
+  <div class="row-split" style="margin-bottom:var(--sp-2)">
+    <h3 class="panel__title">Owner ledger <span class="hint">(Kontokorrent — you ↔ GmbH)</span></h3>
+    <div class="btn-group">
+      <button class="btn btn--outline btn--sm">Export CSV</button>
+      <button class="btn btn--primary btn--sm">+ Log Transfer</button>
+    </div>
+  </div>
+
+  <!-- THE headline-panel reference. Value + inline colored amount, sub line,
+       verify line. Nothing here is inline-styled. -->
+  <div class="panel headline-panel" style="margin-bottom:var(--sp-3)">
+    <div class="headline-panel__value">GmbH owes you <span class="headline-panel__value--ok">CHF 2'506.80</span></div>
+    <div class="headline-panel__sub">you put in CHF 6'306.80 · repaid to you CHF 3'800.00 — salaries excluded (wages, not debt)</div>
+    <div class="headline-panel__verify headline-panel__verify--ok">✓ Verified against 1 bank statement — ledger and bank data agree. <a href="#">▸ how it's calculated</a></div>
+  </div>
+
+  <!-- The other headline state: direction to avoid + unverified -->
+  <div class="panel headline-panel" style="margin-bottom:var(--sp-3)">
+    <div class="headline-panel__value">You owe the GmbH <span class="headline-panel__value--danger">CHF 1'204.00</span></div>
+    <div class="headline-panel__sub">hidden-dividend risk — settle or document before the GV</div>
+    <div class="headline-panel__verify headline-panel__verify--warn">⚠ A difference of CHF 506.80: an owner movement isn't logged. <a href="#">▸ run Analyze</a></div>
+  </div>
+
+  <!-- Ledger table. Direction is COLORED TEXT (.t-*), not a chip: the real
+       screen has no pill there, and chips would fight the status column. -->
+  <div class="table-card" style="margin-bottom:var(--sp-3)">
+    <table class="table">
+      <thead><tr><th>Date</th><th>Direction</th><th>Description</th><th class="r">Amount</th><th class="r">Balance</th><th>File</th><th class="r">Actions</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="date">2026-07-01</td>
+          <td class="t-warn" style="white-space:nowrap">GmbH → Personal</td>
+          <td>Repayment of travel reimbursement balance (partial)</td>
+          <td class="money r">CHF 1'000.00</td>
+          <td class="money r t-ok">+CHF 2'506.80</td>
+          <td class="hint">–</td>
+          <td class="r"><button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button></td>
+        </tr>
+        <tr>
+          <td class="date">2026-06-11</td>
+          <td class="t-info" style="white-space:nowrap">Personal → GmbH</td>
+          <td>Acme travel reimbursements collected by the GmbH on my behalf (reports #21–23)</td>
+          <td class="money r">CHF 4'306.80</td>
+          <td class="money r t-ok">+CHF 4'506.80</td>
+          <td class="hint">–</td>
+          <td class="r"><button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button></td>
+        </tr>
+        <tr class="table__group">
+          <td colspan="7">▾ 3 auto-logged (salary &amp; reimbursements) — CHF 27'951.82 — click to show/hide</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Notice primitive: the salary-detection warning from 17-bank-expanded -->
+  <div class="notice notice--info">
+    <span>↓</span>
+    <span>2 of 5 expected paydays had no salary payment in this account. Either salary lands elsewhere, payroll hadn't started yet, or the payment fell outside ±10% of CHF 9'703.86.</span>
+  </div>
+
+</div>
+</body>
+</html>

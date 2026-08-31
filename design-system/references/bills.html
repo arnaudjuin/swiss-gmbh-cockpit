@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Bills &amp; Documents (chips, buttons, table)</title>
+<link rel="stylesheet" href="../canonical.css">
+<style>
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);margin:0;font-size:var(--fs-base)}
+.demo-main{max-width:1160px;margin:0 auto;padding:var(--sp-5) var(--sp-6)}
+.demo-theme{position:fixed;top:10px;right:12px;z-index:99}
+a{color:var(--primary)}a:hover{color:var(--primary-hover)}
+</style>
+</head>
+<body>
+<button class="btn btn--outline btn--sm demo-theme" onclick="var d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark'">☾ theme</button>
+<div class="demo-main">
+
+  <!-- Header: exactly ONE --primary action. "Export ZIP" was amber in the
+       app; amber is reserved for pending/attention meaning, so it's outline. -->
+  <div class="page-header">
+    <h1 class="page-title">Company Accounting</h1>
+    <div class="btn-group">
+      <button class="btn btn--outline">Generate Recurring</button>
+      <button class="btn btn--outline">💳 Reimburse Yourself</button>
+      <button class="btn btn--outline">Bank CSV</button>
+      <button class="btn btn--outline">Share</button>
+      <button class="btn btn--outline">Export ZIP</button>
+      <button class="btn btn--primary">+ Add Document</button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <label class="hint">Year</label>
+    <select class="control control--auto"><option>All</option></select>
+    <label class="hint">Category</label>
+    <select class="control control--auto"><option>All</option></select>
+    <input class="control control--auto" placeholder="vendor / description…">
+    <span class="hint" style="margin-left:auto">8 documents = <span class="money" style="text-align:left">CHF 7'727.60</span> — of which CHF 99.00 fronted on your personal card, not yet reimbursed</span>
+  </div>
+
+  <!-- Category chips are NEUTRAL; status chips own the color. See
+       DESIGN-NOTES "Challenge: category chips". -->
+  <div class="table-card">
+    <table class="table table--zebra">
+      <thead><tr><th>Date ▾</th><th>Vendor</th><th>Description</th><th>Category</th><th class="r">Amount</th><th>Due</th><th>Status</th><th>File</th><th class="r">Actions</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="date">2027-01-01</td>
+          <td><b>Alpen Treuhand AG</b></td>
+          <td>Annual accounting &amp; tax services</td>
+          <td><span class="chip">Professional Services</span></td>
+          <td class="money r">CHF 5'000.00</td>
+          <td class="date">2027-03-31</td>
+          <td><span class="chip chip--warn">unpaid</span></td>
+          <td class="hint">–</td>
+          <td class="r" style="white-space:nowrap"><button class="btn btn--ghost btn--icon">✎</button><button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button></td>
+        </tr>
+        <tr>
+          <td class="date">2026-07-13</td>
+          <td><b>Hostpoint</b> <span class="chip chip--owner chip--sm">💳 personal</span></td>
+          <td>Web hosting</td>
+          <td><span class="chip">Software/Subscriptions</span></td>
+          <td class="money r">CHF 99.00</td>
+          <td class="hint">–</td>
+          <td><span class="chip chip--ok">paid</span></td>
+          <td><button class="btn btn--ghost btn--icon">📄</button><a class="btn btn--ghost btn--icon" href="#">🔗</a></td>
+          <td class="r" style="white-space:nowrap"><button class="btn btn--ghost btn--icon">✎</button><button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button></td>
+        </tr>
+        <tr>
+          <td class="date">2026-06-15</td>
+          <td><b>Migros</b> <span class="chip chip--ok chip--sm">💳 reimbursed</span></td>
+          <td>Office coffee</td>
+          <td><span class="chip">Office Supplies</span></td>
+          <td class="money r">CHF 42.50</td>
+          <td class="hint">–</td>
+          <td><span class="chip chip--ok">paid</span></td>
+          <td class="hint">–</td>
+          <td class="r" style="white-space:nowrap"><button class="btn btn--ghost btn--icon">✎</button><button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button></td>
+        </tr>
+        <tr>
+          <td class="date">2026-05-12</td>
+          <td><b>AXA Insurance Ltd</b></td>
+          <td>Annual settlement for accrued employee social charges (UVG NBU + UVGZ + KTG). Already reflected as monthly accruals in payroll cost — NOT an additional P&amp;L expense.</td>
+          <td><span class="chip">Payroll Settlement</span></td>
+          <td class="money r">CHF 1'980.00</td>
+          <td class="date">2026-06-11</td>
+          <td><span class="chip chip--ok">paid</span></td>
+          <td><button class="btn btn--ghost btn--icon">📄</button></td>
+          <td class="r" style="white-space:nowrap"><button class="btn btn--ghost btn--icon">✎</button><button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button></td>
+        </tr>
+        <tr>
+          <td class="date">2026-04-01</td>
+          <td><b>Swisscom</b></td>
+          <td>Phone subscription</td>
+          <td><span class="chip">Telecom</span></td>
+          <td class="money r">CHF 80.00</td>
+          <td class="date">2026-04-30</td>
+          <td><span class="chip chip--danger">overdue</span></td>
+          <td class="hint">–</td>
+          <td class="r" style="white-space:nowrap"><button class="btn btn--ghost btn--icon">✎</button><button class="btn btn--ghost btn--icon btn--icon-danger">🗑</button></td>
+        </tr>
+        <tr class="table__total">
+          <td colspan="4">8 documents</td>
+          <td class="money r">CHF 7'727.60</td>
+          <td colspan="4"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Chip inventory: every legal chip, both themes -->
+  <div class="panel" style="margin-top:var(--sp-4)">
+    <h3 class="panel__title">Chip inventory (the complete legal set)</h3>
+    <div class="btn-group">
+      <span class="chip">neutral / category</span>
+      <span class="chip chip--ok">paid · reimbursed · verified</span>
+      <span class="chip chip--warn">unpaid · pending</span>
+      <span class="chip chip--danger">overdue · failed</span>
+      <span class="chip chip--info">info · classification</span>
+      <span class="chip chip--owner">💳 personal / owner money</span>
+      <span class="chip chip--expected">expected / projected</span>
+      <span class="chip chip--count">14</span>
+      <span class="chip chip--ok chip--sm">P1</span>
+    </div>
+  </div>
+
+  <div class="panel empty-state" style="margin-top:var(--sp-4)">
+    <div class="empty-state__icon">📚</div>
+    <div class="empty-state__title">No bills yet</div>
+    <div class="hint" style="margin-bottom:var(--sp-4)">Add your first bill — invoices, subscriptions, taxes, anything you pay for the company.</div>
+    <button class="btn btn--primary">+ Add Document</button>
+  </div>
+
+</div>
+</body>
+</html>

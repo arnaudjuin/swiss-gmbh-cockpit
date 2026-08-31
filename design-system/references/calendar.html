@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Calendar (dark-mode contrast check)</title>
+<link rel="stylesheet" href="../canonical.css">
+<style>
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);margin:0;font-size:var(--fs-base)}
+.demo-main{max-width:1160px;margin:0 auto;padding:var(--sp-5) var(--sp-6)}
+.demo-theme{position:fixed;top:10px;right:12px;z-index:99}
+a{color:var(--primary)}a:hover{color:var(--primary-hover)}
+</style>
+</head>
+<body>
+<button class="btn btn--outline btn--sm demo-theme" onclick="var d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark'">☾ theme</button>
+<div class="demo-main">
+
+  <!-- The calendar family stays (settled decision) but now reads its colors
+       from §1.11 tokens. Toggle the theme: event chips must stay legible —
+       this page is the reason dark status tints became translucent. -->
+  <div class="page-header">
+    <h1 class="page-title">July 2026</h1>
+    <div class="btn-group">
+      <button class="btn btn--outline btn--sm">‹</button>
+      <button class="btn btn--outline btn--sm">Today</button>
+      <button class="btn btn--outline btn--sm">›</button>
+    </div>
+  </div>
+
+  <div class="row-split" style="margin-bottom:var(--sp-2)">
+    <div class="cal-legend">
+      <label><input type="checkbox" checked> <span class="cal-dot" style="background:var(--cal-obligation)"></span> Obligations</label>
+      <label><input type="checkbox" checked> <span class="cal-dot" style="background:var(--cal-bill)"></span> Bills</label>
+      <label><input type="checkbox" checked> <span class="cal-dot" style="background:var(--cal-payroll)"></span> Payroll</label>
+    </div>
+    <div class="cal-legend">
+      <span><span class="chip chip--sm">solid</span> real document</span>
+      <span><span class="chip chip--expected chip--sm">dashed</span> expected / projected</span>
+    </div>
+  </div>
+
+  <div class="cal-grid">
+    <div class="cal-head">Mon</div><div class="cal-head">Tue</div><div class="cal-head">Wed</div>
+    <div class="cal-head">Thu</div><div class="cal-head">Fri</div><div class="cal-head">Sat</div><div class="cal-head">Sun</div>
+
+    <div class="cal-day cal-day--out"></div>
+    <div class="cal-day cal-day--out"></div>
+    <div class="cal-day"><span class="cal-day__n">1</span></div>
+    <div class="cal-day"><span class="cal-day__n">2</span></div>
+    <div class="cal-day"><span class="cal-day__n">3</span></div>
+    <div class="cal-day"><span class="cal-day__n">4</span></div>
+    <div class="cal-day"><span class="cal-day__n">5</span></div>
+
+    <div class="cal-day"><span class="cal-day__n">20</span></div>
+    <div class="cal-day"><span class="cal-day__n">21</span></div>
+    <div class="cal-day"><span class="cal-day__n">22</span></div>
+    <div class="cal-day"><span class="cal-day__n">23</span></div>
+    <div class="cal-day"><span class="cal-day__n">24</span></div>
+    <div class="cal-day">
+      <span class="cal-day__n">25</span>
+      <span class="cal-ev cal-ev--payroll cal-ev--expected"><span class="cal-ev__name">Salary e…</span><span class="cal-ev__amt">9'703.86</span></span>
+      <span class="cal-day__total">= 9'703.86</span>
+    </div>
+    <div class="cal-day"><span class="cal-day__n">26</span></div>
+
+    <div class="cal-day cal-day--today"><span class="cal-day__n">27</span></div>
+    <div class="cal-day"><span class="cal-day__n">28</span></div>
+    <div class="cal-day"><span class="cal-day__n">29</span></div>
+    <div class="cal-day">
+      <span class="cal-day__n">30</span>
+      <span class="cal-ev cal-ev--bill cal-ev--expected"><span class="cal-ev__name">AI Subscr…</span><span class="cal-ev__amt">100.00</span></span>
+      <span class="cal-ev cal-ev--bill cal-ev--expected"><span class="cal-ev__name">Adobe — A…</span><span class="cal-ev__amt">20.00</span></span>
+      <span class="cal-ev cal-ev--bill"><span class="cal-ev__name">Mac Leasi…</span><span class="cal-ev__amt">250.00</span></span>
+      <span class="cal-ev cal-ev--obligation"><span class="cal-ev__name">AHV/AVS</span><span class="cal-ev__amt">1'656.20</span></span>
+      <span class="cal-ev cal-ev--bill cal-ev--done"><span class="cal-ev__name">Swisscom …</span><span class="cal-ev__amt">80.00</span></span>
+      <span class="cal-day__total">= 2'106.20</span>
+    </div>
+    <div class="cal-day"><span class="cal-day__n">31</span></div>
+    <div class="cal-day cal-day--out"></div>
+    <div class="cal-day cal-day--out"></div>
+  </div>
+
+  <div class="row-split" style="margin-top:var(--sp-2)">
+    <h3 class="panel__title">Events this month <span class="chip chip--count">7</span></h3>
+    <span class="hint">Month total: <span class="mono">CHF 10'178.86</span> · still due: <span class="mono t-warn">CHF 10'178.86</span></span>
+  </div>
+
+  <div class="table-card">
+    <table class="table table--compact">
+      <thead><tr><th>Date</th><th>What</th><th class="r">Amount</th><th>Status</th><th>Document</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="date">2026-07-25</td>
+          <td><span class="cal-dot" style="background:var(--cal-payroll)"></span> Salary expected (~net) — July 2026</td>
+          <td class="money r">CHF 9'703.86</td>
+          <td><span class="chip chip--expected">expected</span></td>
+          <td class="hint">—</td>
+        </tr>
+        <tr>
+          <td class="date">2026-07-30</td>
+          <td><span class="cal-dot" style="background:var(--cal-obligation)"></span> AHV/AVS (1st pillar) — June 2026</td>
+          <td class="money r">CHF 1'656.20</td>
+          <td><span class="chip chip--danger">overdue</span></td>
+          <td><button class="btn btn--ghost btn--icon">📄</button></td>
+        </tr>
+        <tr>
+          <td class="date">2026-07-30</td>
+          <td><span class="cal-dot" style="background:var(--cal-bill)"></span> Swisscom — phone subscription</td>
+          <td class="money r">CHF 80.00</td>
+          <td><span class="chip chip--ok">paid</span></td>
+          <td><button class="btn btn--ghost btn--icon">📄</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

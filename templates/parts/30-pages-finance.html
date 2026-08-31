@@ -1,0 +1,436 @@
+<!-- 30-pages-finance.html — balances, financial overview, accounting (+form), obligations, calendar, reports (assembled in name order by app.py) -->
+  <!-- ══════ Forecast (next 12 months of cash) ══════ -->
+  <div id="page-budget" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Forecast</h1>
+      <div class="btn-group">
+        <label class="hint" for="fc-income">Expected income / month</label>
+        <input type="number" id="fc-income" class="control forecast__income" min="0" step="100" onchange="setForecastIncome(this.value)">
+        <button class="btn btn--outline btn--sm" onclick="setForecastIncome('')" title="Use the average of the last 6 invoiced months">Use average</button>
+        <select id="fc-year" class="control forecast__horizon" onchange="setForecastYear(this.value)" title="Forecast year"></select>
+      </div>
+    </div>
+    <div id="fc-stats" class="stats-grid" data-panel="stats" data-panel-label="Summary cards"></div>
+    <div class="chart-card" data-panel="chart" data-panel-label="Chart">
+      <div class="chart-card__head"><h3>Cash month by month</h3><div id="fc-legend"></div></div>
+      <div class="chart-wrap forecast__chart"><canvas id="fc-chart"></canvas></div>
+    </div>
+    <div class="table-card" data-panel="table" data-panel-label="Month table">
+      <table class="table table--compact">
+        <thead><tr>
+          <th>Month</th><th class="text-right">Income (edit)</th><th class="text-right">Net salary</th>
+          <th class="text-right">Obligations</th><th class="text-right">Bills</th><th class="text-right">Pots</th>
+          <th class="text-right">Net</th><th class="text-right">Cash at end</th><th>What's due</th>
+        </tr></thead>
+        <tbody id="fc-tbody"></tbody>
+      </table>
+    </div>
+    <div id="fc-assumptions" class="notice notice--info" data-panel="assumptions" data-panel-label="How this is built"></div>
+  </div>
+
+  <!-- ══════ Company Accounting ══════ -->
+  <!-- ══════ Cash Allocation ══════ -->
+  <div id="page-cash" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Cash Allocation</h1>
+      <div class="btn-group">
+        <button class="btn btn--outline" onclick="showCashBalance()">Update bank balance</button>
+        <button class="btn btn--primary" onclick="navigateTo('bank')">Bank statements &rarr;</button>
+      </div>
+    </div>
+    <p class="page-intro" data-panel="intro" data-panel-label="Intro text">The real bank balance, split into what's already spoken for. Envelopes are virtual —
+      the money stays on the UBS account; earmarking just stops it from looking spendable.</p>
+    <div id="cash-allocation-panel" style="margin-bottom:14px" data-panel="waterfall" data-panel-label="Bank balance waterfall"></div>
+    <div class="finance-section" data-panel="envelopes" data-panel-label="Envelopes">
+      <h3>Envelopes</h3>
+      <div id="cash-pots"></div>
+    </div>
+
+    <!-- Informal month-by-month plan to year end (merged from Payroll) -->
+    <div class="finance-section" data-panel="plan" data-panel-label="Month-by-month plan">
+      <h3>Month-by-month plan — to year end</h3>
+      <p class="hint">Projection from current payroll settings and the obligations' expected bills — nothing here is issued or booked. Each card = what actually leaves the bank (or gets set aside) that month.</p>
+      <div id="payroll-cash-plan" class="cols-2"></div>
+    </div>
+
+  </div>
+
+  <div id="page-accounting" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Company Accounting</h1>
+      <div class="btn-group">
+        <button class="btn btn--outline" onclick="generateRecurringBills()">Generate Recurring</button>
+        <button class="btn btn--outline" id="btn-reimburse" onclick="openReimburseDialog()" style="display:none">&#128179; Reimburse Yourself</button>
+        <button class="btn btn--outline" onclick="openBankCsv()">Bank CSV</button>
+        <button class="btn btn--outline" onclick="document.getElementById('bulk-upload-input').click()">Bulk Upload</button>
+        <input type="file" id="bulk-upload-input" multiple accept="image/*,.pdf" style="display:none" onchange="handleBulkUpload(this.files)">
+        <button class="btn btn--outline" onclick="showShareModal('accounting')">Share</button>
+        <button class="btn btn--outline" onclick="exportAccountingZip()">Export ZIP</button>
+        <button class="btn btn--primary" onclick="clearAccountingForm(); navigateTo('accounting-form')">+ Add Document</button>
+      </div>
+    </div>
+    <div class="filter-bar" style="flex-wrap:wrap" data-panel="filters" data-panel-label="Filters & totals">
+      <label>Year:</label>
+      <select id="acct-year-filter" onchange="applyAccountingFilters()">
+        <option value="">All</option>
+      </select>
+      <label>Category:</label>
+      <select id="acct-cat-filter" onchange="applyAccountingFilters()">
+        <option value="">All</option>
+        <option value="Office Supplies">Office Supplies</option>
+        <option value="Software/Subscriptions">Software/Subscriptions</option>
+        <option value="Professional Services">Professional Services</option>
+        <option value="Insurance">Insurance</option>
+        <option value="Vehicle">Vehicle</option>
+        <option value="Rent">Rent</option>
+        <option value="Telecom">Telecom</option>
+        <option value="Legal">Legal</option>
+        <option value="Bank Fees">Bank Fees</option>
+        <option value="Other">Other</option>
+      </select>
+      <span id="acct-total" style="margin-left:auto;font-weight:600;color:var(--text-muted)"></span>
+    </div>
+    <div class="page-search" data-panel="search" data-panel-label="Search bar">
+      <input type="search" id="acct-search" class="control page-search__input" autocomplete="off"
+             placeholder='Search bills & documents — vendor, text, "exact phrase", 1500, >1000, 2026-07, last month, paid / unpaid'
+             oninput="acctSearchInput(this.value)">
+      <div id="acct-search-chips" class="page-search__chips"></div>
+    </div>
+    <div class="table-card" data-panel="table" data-panel-label="Documents table">
+      <table>
+        <thead><tr>
+          <th class="sortable" onclick="sortAccounting('doc_date')">Date <span id="sort-acct-doc_date"></span></th>
+          <th class="sortable" onclick="sortAccounting('vendor')">Vendor <span id="sort-acct-vendor"></span></th>
+          <th class="sortable" onclick="sortAccounting('description')">Description <span id="sort-acct-description"></span></th>
+          <th class="sortable" onclick="sortAccounting('category')">Category <span id="sort-acct-category"></span></th>
+          <th class="sortable text-right" onclick="sortAccounting('amount')">Amount <span id="sort-acct-amount"></span></th>
+          <th class="sortable" onclick="sortAccounting('due_date')">Due <span id="sort-acct-due_date"></span></th>
+          <th>Status</th>
+          <th>File</th>
+          <th class="text-right">Actions</th>
+        </tr></thead>
+        <tbody id="acct-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════ Add / Edit Accounting Doc ══════ -->
+  <div id="page-accounting-form" class="page">
+    <h1 class="page-title" id="acct-form-title">Add Document</h1>
+    <div class="form-card">
+      <form id="accounting-form" onsubmit="handleAccountingSubmit(event)">
+        <input type="hidden" id="acct-edit-id">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label" for="acct-date">Date</label>
+            <input class="control" type="date" id="acct-date" required>
+          </div>
+          <div class="field">
+            <label class="field__label" for="acct-amount">Amount</label>
+            <input class="control" type="number" id="acct-amount" step="0.01" min="0" required>
+          </div>
+          <div class="field form-grid--full">
+            <label class="field__label" for="acct-vendor">Vendor / Supplier</label>
+            <input class="control" type="text" id="acct-vendor" list="vendor-list" required placeholder="e.g. Microsoft, Swisscom, Treuhand" onchange="onVendorChange()">
+            <datalist id="vendor-list"></datalist>
+            <div id="acct-duplicate-warn" style="display:none;font-size:12px;color:var(--warn-text);margin-top:4px"></div>
+          </div>
+          <div class="field form-grid--full">
+            <label class="field__label" for="acct-desc">Description</label>
+            <input class="control" type="text" id="acct-desc" required placeholder="e.g. Office 365 annual subscription">
+          </div>
+          <div class="field">
+            <label class="field__label" for="acct-currency">Currency</label>
+            <select class="control" id="acct-currency" onchange="updateAcctFx()">
+              <option value="CHF" selected>CHF</option>
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+              <option value="GBP">GBP</option>
+              <option value="AED">AED</option>
+            </select>
+          </div>
+          <div class="field" id="acct-fx-group" style="display:none">
+            <label class="field__label" for="acct-fx-rate">Rate (CHF per 1 unit)</label>
+            <input class="control" type="number" id="acct-fx-rate" step="0.0001" min="0" placeholder="e.g. 0.95" oninput="updateAcctFx()">
+            <div class="hint" id="acct-fx-preview"></div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="acct-due">Due Date</label>
+            <input class="control" type="date" id="acct-due" onchange="updateAcctStatusPreview()">
+          </div>
+          <div class="field">
+            <label class="field__label" for="acct-status">Status <span id="acct-status-preview" style="font-size:11px;font-weight:400"></span></label>
+            <select class="control" id="acct-status" onchange="updateAcctStatusPreview()">
+              <option value="unpaid">Unpaid</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="acct-recurrence">Recurrence</label>
+            <select class="control" id="acct-recurrence">
+              <option value="none">One-time</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="acct-paid-via">Paid with</label>
+            <select class="control" id="acct-paid-via">
+              <option value="company">Company account</option>
+              <option value="personal">Private card / bank account (GmbH owes you)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="acct-cat">Category</label>
+            <select class="control" id="acct-cat" required>
+              <option value="Office Supplies">Office Supplies</option>
+              <option value="Software/Subscriptions">Software/Subscriptions</option>
+              <option value="Professional Services">Professional Services</option>
+              <option value="Insurance">Insurance</option>
+              <option value="Vehicle">Vehicle</option>
+              <option value="Rent">Rent</option>
+              <option value="Telecom">Telecom</option>
+              <option value="Legal">Legal</option>
+              <option value="Bank Fees">Bank Fees</option>
+              <option value="Taxes / VAT">Taxes / VAT</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field form-grid--full">
+            <label class="field__label" for="acct-doc-url">Document link (optional)</label>
+            <input class="control" type="url" id="acct-doc-url" placeholder="https://drive.google.com/file/d/… — link to the PDF/PNG wherever it lives">
+            <div class="form-help">Paste a share link (Google Drive, Dropbox, …) to this bill's document. It goes into the accountant CSV. Works with or without the file upload below.</div>
+          </div>
+          <div class="field form-grid--full">
+            <label class="field__label" for="acct-file">Document (receipt, invoice, bill)</label>
+            <div class="file-drop" id="acct-file-drop">
+              <span class="file-status">Drop a file here or click to browse</span>
+              <input type="file" id="acct-file" accept="image/*,.pdf">
+            </div>
+            <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('qr-bill-input').click()" style="margin-top:8px">
+              &#128270; Scan Swiss QR-bill
+            </button>
+            <input type="file" id="qr-bill-input" accept="image/*" style="display:none" onchange="scanQrBill(this.files[0])">
+          </div>
+        </div>
+        <div class="form-actions form-grid--full">
+          <button type="submit" class="btn btn--primary" id="acct-submit-btn">Save Document</button>
+          <button type="button" class="btn btn--ghost" onclick="navigateTo('accounting')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════ Obligations (AHV/BVG/Corporate Tax) ══════ -->
+  <div id="page-obligations" class="page">
+    <div class="page-header">
+      <h1 class="page-title">GmbH Obligations</h1>
+      <div class="btn-group">
+        <button class="btn btn--outline" onclick="generateRecurringObligations()">Generate Recurring</button>
+        <button class="btn btn--primary" onclick="showObligationDialog()">+ Add Obligation</button>
+      </div>
+    </div>
+
+    <!-- Upcoming overview -->
+    <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))" data-panel="stats" data-panel-label="Summary cards">
+      <div class="stat stat--danger">
+        <div class="stat__label">Overdue</div>
+        <div class="stat__value stat__value--danger" id="obl-overdue">CHF 0</div>
+      </div>
+      <div class="stat stat--warn">
+        <div class="stat__label">Due Next 60 Days</div>
+        <div class="stat__value" id="obl-upcoming">CHF 0</div>
+      </div>
+      <div class="stat stat--ok">
+        <div class="stat__label">Paid This Year</div>
+        <div class="stat__value stat__value--ok" id="obl-paid">CHF 0</div>
+      </div>
+      <div class="stat">
+        <div class="stat__label">Remaining This Year</div>
+        <div class="stat__value" id="obl-remaining">CHF 0</div>
+        <div class="stat__hint" id="obl-remaining-hint"></div>
+      </div>
+    </div>
+
+    <!-- Overdue — grouped by due date, settle first -->
+    <div class="finance-section" id="obl-overdue-section" style="display:none" data-panel="overdue" data-panel-label="Overdue">
+      <h3 class="t-danger">Overdue — settle these first <span id="obl-od-count" class="count">0</span></h3>
+      <div id="obl-overdue-list"></div>
+    </div>
+
+    <!-- Coming up — grouped by due date -->
+    <div class="finance-section" data-panel="upcoming" data-panel-label="Coming up (60 days)">
+      <h3>Coming Up (Next 60 Days) <span id="obl-up-count" class="count">0</span></h3>
+      <div id="obl-upcoming-list"></div>
+      <p class="hint" id="obl-later-hint" style="margin-top:8px"></p>
+    </div>
+
+    <!-- Breakdown by type -->
+    <div class="finance-section" data-panel="by-type" data-panel-label="This year by type">
+      <h3>This Year by Type</h3>
+      <div id="obl-by-type"></div>
+    </div>
+
+    <!-- Full list -->
+    <div class="finance-section" data-panel="all" data-panel-label="All obligations">
+      <h3>All Obligations</h3>
+      <div class="filter-bar" style="flex-wrap:wrap">
+        <label>Year:</label>
+        <select id="obl-year-filter" onchange="loadObligationsList()">
+          <option value="">All</option>
+        </select>
+        <label>Type:</label>
+        <select id="obl-type-filter" onchange="renderObligationsList()">
+          <option value="">All</option>
+        </select>
+        <label>Status:</label>
+        <select id="obl-status-filter" onchange="renderObligationsList()">
+          <option value="">All</option>
+          <option value="unpaid">Unpaid</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Type</th><th>Period</th><th>Due</th>
+            <th class="text-right">Amount</th>
+            <th title="When the real invoice is expected, and at what amount (bills can differ from the accrual)">Expected Bill</th>
+            <th>Status</th><th>File</th>
+            <th class="text-right">Actions</th>
+          </tr></thead>
+          <tbody id="obligations-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Calendar (obligations / bills / payroll) ══════ -->
+  <div id="page-calendar" class="page">
+    <div class="page-header">
+      <h1 class="page-title" id="cal-month-title">Calendar</h1>
+      <div class="btn-group">
+        <button class="btn btn--outline" onclick="calShift(-1)" title="Previous month">&#8249;</button>
+        <button class="btn btn--outline" onclick="calToday()">Today</button>
+        <button class="btn btn--outline" onclick="calShift(1)" title="Next month">&#8250;</button>
+      </div>
+    </div>
+
+    <div class="filter-bar" style="flex-wrap:wrap;row-gap:8px">
+      <label class="cal-filter"><input type="checkbox" id="cal-f-obligation" checked onchange="renderCalendar()"> <span class="cal-dot" style="background:var(--cal-obligation)"></span> Obligations</label>
+      <label class="cal-filter"><input type="checkbox" id="cal-f-bill" checked onchange="renderCalendar()"> <span class="cal-dot" style="background:var(--cal-bill)"></span> Bills</label>
+      <label class="cal-filter"><input type="checkbox" id="cal-f-payroll" checked onchange="renderCalendar()"> <span class="cal-dot" style="background:var(--cal-payroll)"></span> Payroll</label>
+      <span style="flex:1"></span>
+      <span class="cal-legend"><span class="cal-ev-sample real"></span> real document &nbsp; <span class="cal-ev-sample expected"></span> expected / projected</span>
+    </div>
+
+    <div class="table-card" style="padding:0;overflow:hidden" data-panel="grid" data-panel-label="Month grid">
+      <div class="cal-weekdays">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>
+      <div id="cal-grid" class="cal-grid"></div>
+      <div id="cal-month-total" class="cal-month-total"></div>
+    </div>
+
+    <div class="finance-section" data-panel="events" data-panel-label="Events list">
+      <h3>Events this month <span class="count" id="cal-count">0</span>
+        <span style="float:right;font-size:0.85rem;color:var(--text-muted)" id="cal-total-due"></span></h3>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>What</th><th class="text-right">Amount</th>
+            <th>Status</th><th>Document</th>
+          </tr></thead>
+          <tbody id="cal-list-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Reports (VAT / Tax / Quarterly) ══════ -->
+  <div id="page-reports" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Reports</h1>
+      <div class="btn-group">
+        <select id="reports-year" onchange="loadReports()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card);color:var(--text)"></select>
+        <button class="btn btn--outline" onclick="showReportsConfig()">Customize</button>
+      </div>
+    </div>
+
+    <div id="reports-widgets">
+      <!-- Quarterly tabs -->
+      <div class="finance-section" data-report-widget="quarterly">
+        <div class="report-widget-header">
+          <h3 style="margin:0">Quarterly Summary (AHV / BVG / Filings)</h3>
+          <button class="info-btn" onclick="showReportSettings('quarterly')" title="Settings & info" aria-label="Settings">&#9432;</button>
+        </div>
+        <div style="display:flex;gap:8px;margin:12px 0">
+          <button class="btn btn--outline" onclick="loadQuarterly(1)" id="q-btn-1">Q1</button>
+          <button class="btn btn--outline" onclick="loadQuarterly(2)" id="q-btn-2">Q2</button>
+          <button class="btn btn--outline" onclick="loadQuarterly(3)" id="q-btn-3">Q3</button>
+          <button class="btn btn--outline" onclick="loadQuarterly(4)" id="q-btn-4">Q4</button>
+        </div>
+        <div id="quarterly-content"></div>
+      </div>
+
+      <!-- VAT Tracker -->
+      <div class="finance-section" data-report-widget="vat">
+        <div class="report-widget-header">
+          <h3 style="margin:0">VAT Tracker</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn--outline btn--sm" onclick="openVatSettings()">&#9881; Deductions</button>
+            <button class="info-btn" onclick="showReportSettings('vat')" title="Settings & info" aria-label="Settings">&#9432;</button>
+          </div>
+        </div>
+        <p class="hint" style="margin:8px 0 12px 0">Quarterly filings (effective method, payment due 60 days after quarter end). Output VAT = charged on your invoices. Deductions = recorded bill VAT + simulated input VAT for bills without one + your flat allowance.</p>
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))" id="vat-stats"></div>
+      </div>
+
+      <!-- Tax Estimator -->
+      <div class="finance-section" data-report-widget="tax">
+        <div class="report-widget-header">
+          <h3 style="margin:0">Corporate Tax Estimate</h3>
+          <button class="info-btn" onclick="showReportSettings('tax')" title="Settings & info" aria-label="Settings">&#9432;</button>
+        </div>
+        <p class="hint" style="margin:8px 0 12px 0">Rough estimate based on YTD profit. Federal 8.5% + Cantonal ~13% (Zurich baseline). Actual depends on canton.</p>
+        <div id="tax-content"></div>
+      </div>
+
+      <!-- Google Sheets sync -->
+      <div class="chart-card" style="padding:0;margin-bottom:16px" data-report-widget="sheets">
+        <div class="report-widget-header" style="padding:14px 20px;cursor:pointer" onclick="if(event.target.tagName!=='BUTTON'){this.querySelector('.collapsible-arrow')&&null;document.getElementById('sheets-body').classList.toggle('collapsed')}">
+          <h3 style="margin:0;font-size:14px">&#128202; Google Sheets sync</h3>
+          <button class="info-btn" onclick="event.stopPropagation(); showReportSettings('sheets')" title="Settings & info" aria-label="Settings">&#9432;</button>
+        </div>
+        <div id="sheets-body" class="collapsible-body collapsed" style="padding:0 20px 16px 20px;border-top:1px solid var(--border)">
+          <p class="hint" style="margin:12px 0">Live URLs that auto-refresh in Google Sheets via <code>=IMPORTDATA(url)</code>. Requires a share link to be created first (Bills & Documents → Share).</p>
+          <div id="sheets-urls"></div>
+        </div>
+      </div>
+
+      <!-- Accountant Package -->
+      <div class="chart-card" data-report-widget="accountant-package">
+        <div class="report-widget-header">
+          <h3 style="margin:0">Accountant Package</h3>
+          <button class="info-btn" onclick="showReportSettings('accountant-package')" title="Settings & info" aria-label="Settings">&#9432;</button>
+        </div>
+        <p class="hint" style="margin:8px 0 12px 0">One-click export: all invoices (PDF), bills (with files), expense report, obligations summary — everything your accountant needs.</p>
+        <button class="btn btn--primary" onclick="downloadAccountantPackage()">Download full package (ZIP)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports Customize Modal -->
+  <div id="reports-config-modal" class="modal-overlay">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3 class="modal__title">Customize Reports</h3>
+      <p class="hint">Select which sections to show. Drag the section header on the page to reorder.</p>
+      <div id="reports-config-widgets"></div>
+      <div class="form-actions" style="margin-top:20px">
+        <button class="btn btn--ghost" onclick="document.getElementById('reports-config-modal').classList.remove('show')">Cancel</button>
+        <button class="btn btn--primary" onclick="saveReportsConfig()">Save</button>
+      </div>
+    </div>
+  </div>
+
