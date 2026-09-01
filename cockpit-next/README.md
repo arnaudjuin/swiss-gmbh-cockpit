@@ -36,10 +36,14 @@ non-default backend.
 - Auth (login, token, 401 handling), app shell, dark mode
 - **Dashboard**: headline stats, the per-page recap strip, reserves,
   Income-vs-Costs / Cash-forecast / Costs-by-Category charts, recent invoices
+- **Forecast**: per-year cash projection with editable per-month income
+  (writes the same server-backed preference the classic page reads)
+- **Obligations**: payment-day groups on the payable date, mark paid/unpaid,
+  by-type and full tables
 
 ## Roadmap (page order)
 
-Forecast → Obligations → Bills & Documents (incl. the segmented search) →
+Bills & Documents (incl. the segmented search) →
 Invoices → Payroll → Cash Allocation → Bank → Calendar → Reports → Dividends →
 Expenses/Trips. Then: widget customization (drag, per-widget settings) and the
 per-page Display dialog, both of which already have server-side state shared

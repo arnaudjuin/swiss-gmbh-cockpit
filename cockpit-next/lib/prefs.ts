@@ -9,6 +9,18 @@ export async function loadPrefs(): Promise<Record<string, unknown>> {
   return cache;
 }
 
+export async function setPref(path: string, value: unknown): Promise<void> {
+  const prefs = await loadPrefs();
+  const keys = path.split(".");
+  let cur = prefs as Record<string, unknown>;
+  for (const k of keys.slice(0, -1)) {
+    if (typeof cur[k] !== "object" || cur[k] === null) cur[k] = {};
+    cur = cur[k] as Record<string, unknown>;
+  }
+  cur[keys[keys.length - 1]] = value;
+  await api("/preferences", { method: "PUT", body: JSON.stringify(prefs) });
+}
+
 export function pref<T>(prefs: Record<string, unknown>, path: string, fallback: T): T {
   let cur: unknown = prefs;
   for (const key of path.split(".")) {

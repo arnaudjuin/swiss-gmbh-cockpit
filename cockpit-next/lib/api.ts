@@ -54,10 +54,25 @@ export interface Overview {
 
 export interface Reserve { id: number; name: string; purpose: string; target_amount: number; target_date: string | null; monthly_accrual: number; accumulated: number; remaining: number; progress_pct: number }
 export interface Runway { runway_months: number | null; monthly_burn: number; description: string }
+export interface ForecastMonth {
+  key: string; label: string; income: number; income_override: boolean;
+  payroll_net: number; obligations: number; bills: number; reserves: number;
+  out: number; net: number; cash_end: number;
+  items: { label: string; amount: number; date: string; kind: string }[];
+}
 export interface Forecast {
   opening: number; bank_balance: number; as_of: string; source: string;
-  income_monthly: number; income_source: string; payroll_net: number;
+  income_monthly: number; income_source: string; avg_income: number; payroll_net: number;
+  pots: { name: string; monthly_accrual: number }[];
+  pots_fund_after: string | null; carried_from: string | null;
   year: number; end_cash: number; horizon_months: number;
   lowest: { label: string; cash_end: number } | null;
-  months: { key: string; label: string; income: number; out: number; cash_end: number }[];
+  months: ForecastMonth[];
+}
+
+export interface Obligation {
+  id: number; obligation_type: string; period_label: string; period_year: number;
+  amount: number; currency: string; due_date: string | null; status: "paid" | "unpaid";
+  notes: string; expected_bill_date: string | null; expected_bill_amount: number | null;
+  payable_date: string | null;
 }
