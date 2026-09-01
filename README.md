@@ -44,6 +44,7 @@ design-system/          canonical.css + reference pages + migration notes
 design-audit/           Playwright screenshot harness (31 shots, both themes)
 docs/                   in-app documentation (feeds the viewer, checklists & AI chat)
 tests/test_smoke.py     172 route/behavior smoke tests
+cockpit-next/           Next.js 15 frontend (port in progress: auth + dashboard) over the same API
 ```
 
 Design rules worth stealing: every color comes from semantic token families (`--ok/--danger/--warn/--info/--owner`), every CHF figure is `tabular-nums`, charts read their palette from CSS tokens at render time so the theme toggle re-skins them, and "color = meaning" is enforced (green success, red danger, purple = owner money — never decoration).
@@ -56,6 +57,12 @@ Bookkeeping invariants the code protects: invoice **subtotal** is revenue (VAT b
 |---|---|
 | ![Forecast](docs/screenshots/forecast.png) | ![Obligations](docs/screenshots/obligations.png) |
 | ![Payroll](docs/screenshots/payroll.png) | ![Dark mode](docs/screenshots/dark.png) |
+
+## Next.js frontend
+
+`cockpit-next/` is an incremental React/TypeScript port of the frontend over the same FastAPI backend — typed API client, the canonical CSS reused verbatim, charts reading their palette from the design tokens. Dashboard and auth are ported; the rest is roadmapped in [cockpit-next/README.md](cockpit-next/README.md).
+
+![Next.js dashboard](docs/screenshots/next-dashboard.png)
 
 ## Configuration
 
