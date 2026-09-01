@@ -8,11 +8,23 @@ let chart = null;
 
 // ── Helpers ──
 
+// Display settings (Settings page → server-backed prefs). Applied after
+// Prefs.load(); the currency is a LABEL — amounts are never converted.
+const AppSettings = { currency: 'CHF', locale: 'de-CH' };
+
+function applyAppSettings() {
+  AppSettings.currency = Prefs.get('app.currency', 'CHF');
+  AppSettings.locale = Prefs.get('app.locale', 'de-CH');
+  const name = Prefs.get('app.companyName', '');
+  const el = document.querySelector('.sidebar-header');
+  if (el && name) el.textContent = name;
+}
+
 function chf(n) {
   // Defensive: a missing field (e.g. API/JS version skew during a deploy)
   // renders as an em dash instead of crashing the whole page render.
-  if (n == null || Number.isNaN(Number(n))) return 'CHF —';
-  return 'CHF ' + Number(n).toLocaleString('de-CH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  if (n == null || Number.isNaN(Number(n))) return AppSettings.currency + ' —';
+  return AppSettings.currency + ' ' + Number(n).toLocaleString(AppSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 function authHeaders() {
   const token = localStorage.getItem('session_token');
@@ -177,6 +189,7 @@ async function showApp() {
   document.getElementById('app-main').style.display = 'block';
   setupSidebarResize();
   await Prefs.load();
+  applyAppSettings();
   loadDashboard();
 }
 

@@ -6,7 +6,7 @@ import {
   BarController, LineController,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
-import { chf, vizToken } from "@/lib/money";
+import { chf, chfWhole, vizToken } from "@/lib/money";
 import type { Forecast, Overview } from "@/lib/api";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, CjsLegend, ArcElement, BarController, LineController);
@@ -29,8 +29,7 @@ function axis() {
     ticks: { color: vizToken("--text-muted"), font: { size: 11 } },
   };
 }
-const moneyTick = (v: number | string) =>
-  "CHF " + Number(v).toLocaleString("de-CH", { maximumFractionDigits: 0 });
+const moneyTick = (v: number | string) => chfWhole(v);
 
 const barShape = { borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: "bottom" as const, categoryPercentage: 0.7, barPercentage: 0.9 };
 

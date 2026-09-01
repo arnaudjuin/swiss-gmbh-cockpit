@@ -1,6 +1,18 @@
+// Display settings (Settings page). Currency is a label — no conversion.
+let _currency = "CHF";
+let _locale = "de-CH";
+export function setMoneyFormat(currency: string, locale: string) {
+  if (currency) _currency = currency;
+  if (locale) _locale = locale;
+}
+
+export function chfWhole(n: number | string): string {
+  return `${_currency} ` + Number(n).toLocaleString(_locale, { maximumFractionDigits: 0 });
+}
+
 export function chf(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "CHF —";
-  return "CHF " + Number(n).toLocaleString("de-CH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (n == null || Number.isNaN(Number(n))) return `${_currency} —`;
+  return `${_currency} ` + Number(n).toLocaleString(_locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function daysUntil(iso: string): number {
