@@ -41,10 +41,9 @@ non-default backend.
 - **Obligations**: payment-day groups on the payable date, mark paid/unpaid,
   by-type and full tables
 
-## Roadmap (page order)
+## Still in the classic frontend
 
-
-Invoices → Payroll → Cash Allocation → Bank → Calendar → Reports → Dividends →
-Expenses/Trips. Then: widget customization (drag, per-widget settings) and the
-per-page Display dialog, both of which already have server-side state shared
-with the classic frontend.
+Create/edit dialogs (invoices, bills, obligations, reserves), the dividend
+plan editor, docs viewer and checklists, dashboard customization and the
+per-page Display dialog — all state is server-side, so both frontends stay
+consistent while those migrate.

@@ -277,6 +277,14 @@ async def backup_data():
             zf.write(fp, str(rel))
 
     buf.seek(0)
+    # Retention: keep the newest 3 backups — a 300 MB daily zip fills a disk
+    # fast (it did). Sorted by name == sorted by date thanks to the ISO stamp.
+    existing = sorted(backups_dir.glob("*_backup_*.zip"))
+    for old_zip in existing[:-2]:   # newest 2 kept; today's makes 3
+        try:
+            old_zip.unlink()
+        except OSError:
+            pass
     backup_name = f"cockpit_backup_{date.today().isoformat()}.zip"
     bp = backups_dir / backup_name
     bp.write_bytes(buf.getvalue())

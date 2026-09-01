@@ -21,14 +21,17 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <aside className="sidebar">
         <div className="sidebar-header"><h2>Muster Consulting GmbH</h2></div>
         <nav className="sidebar-nav">
-          {[["/dashboard", "▪", "Dashboard"], ["/forecast", "📈", "Forecast"], ["/obligations", "🏛", "Obligations"], ["/bills", "🧾", "Bills"]].map(([href, icon, label]) => (
+          {[["/dashboard", "▪", "Dashboard"], ["/forecast", "📈", "Forecast"], ["/cash", "💰", "Cash Allocation"],
+            ["/bills", "🧾", "Bills & Documents"], ["/obligations", "🏛", "Obligations"], ["/calendar", "📅", "Calendar"],
+            ["/payroll", "👤", "Payroll"], ["/reports", "📊", "Reports"], ["/dividends", "⚡", "Dividends"],
+            ["/invoices", "☰", "Invoices"], ["/customers", "◉", "Customers"], ["/expenses", "🧳", "Expenses"],
+            ["/bank", "🏦", "Bank Statements"]].map(([href, icon, label]) => (
             <a key={href} href={href} className={path === href ? "active" : ""}>
               <span className="icon">{icon}</span> {label}
             </a>
           ))}
           <div className="hint" style={{ padding: "10px 20px" }}>
-            Next.js port in progress — the remaining pages live in the classic
-            frontend on <a href="http://127.0.0.1:8000" style={{ color: "var(--primary)" }}>:8000</a>.
+            Docs, checklists and the edit dialogs still live in the classic frontend.
           </div>
         </nav>
         <div className="sidebar-footer" style={{ padding: "12px 20px", display: "flex", gap: 14 }}>

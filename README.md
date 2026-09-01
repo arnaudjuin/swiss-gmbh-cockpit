@@ -60,7 +60,7 @@ Bookkeeping invariants the code protects: invoice **subtotal** is revenue (VAT b
 
 ## Next.js frontend
 
-`cockpit-next/` is an incremental React/TypeScript port of the frontend over the same FastAPI backend — typed API client, the canonical CSS reused verbatim, charts reading their palette from the design tokens. Auth, Dashboard, Forecast, Obligations and Bills are ported; the rest is roadmapped in [cockpit-next/README.md](cockpit-next/README.md).
+`cockpit-next/` is an incremental React/TypeScript port of the frontend over the same FastAPI backend — typed API client, the canonical CSS reused verbatim, charts reading their palette from the design tokens. All thirteen pages are ported (Dashboard, Forecast, Cash, Bills, Obligations, Calendar, Payroll, Reports, Dividends, Invoices, Customers, Expenses, Bank); create/edit dialogs and the docs viewer remain in the classic frontend — see [cockpit-next/README.md](cockpit-next/README.md).
 
 ![Next.js dashboard](docs/screenshots/next-dashboard.png)
 

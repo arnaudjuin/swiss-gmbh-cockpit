@@ -60,6 +60,43 @@ export interface Bill {
   original_currency: string | null; has_file: boolean; file_type: string | null;
 }
 
+export interface Invoice {
+  id: number; invoice_number: number; year: number; month: number; month_name: string;
+  hours: number; rate: number; subtotal: number; tax: number; total: number;
+  issued_date: string; due_date: string; notes: string | null;
+  paid_status: "paid" | "unpaid" | null; paid_date: string | null;
+}
+
+export interface Payslip {
+  id: number; year: number; month: number; month_name: string;
+  issued_date: string; payment_date: string; gross: number;
+  emp_total_deductions: number; net_salary: number; total_employer_cost: number;
+  status: string; has_pdf: boolean;
+}
+
+export interface PayrollPreview {
+  settings: { employer_name: string; employee_name: string; gross_monthly: number; payment_day: number; employment_start: string };
+  calculation: { gross: number; emp_ahv: number; emp_alv: number; emp_bvg: number; emp_uvg: number; emp_ktg: number;
+    emp_source_tax: number; emp_total_deductions: number; net_salary: number;
+    employer_ahv: number; employer_alv: number; employer_bvg: number; employer_uvg: number; employer_ktg: number;
+    employer_fak: number; employer_total: number; total_employer_cost: number };
+}
+
+export interface BankStatement {
+  id: number; bank: string; account_label: string; iban: string;
+  period_start: string; period_end: string; opening_balance: number;
+  closing_balance: number; currency: string; has_pdf: boolean; has_xml: boolean;
+}
+
+export interface CashBalance { balance: number | null; as_of: string | null; source: string }
+
+export interface CalendarEvent {
+  date: string; kind: "obligation" | "bill" | "payroll"; title: string;
+  amount: number; status: string; real: boolean; projected: boolean; doc_url: string | null;
+}
+
+export interface Customer { id: number; name: string; address: string; city: string; country: string; email: string | null; reference: string | null }
+
 export interface SearchResult { type: string; id: number; title: string; subtitle: string; page: string }
 export interface SearchResponse { results: SearchResult[]; parsed: { kind: string; label: string }[] | null }
 
