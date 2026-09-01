@@ -1,0 +1,10 @@
+.venv
+__pycache__
+*.pyc
+invoices.db
+documents
+cockpit-next/node_modules
+cockpit-next/.next
+design-audit/tools/node_modules
+design-audit/screenshots
+.git

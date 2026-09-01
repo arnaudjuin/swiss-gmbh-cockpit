@@ -18,6 +18,7 @@ Self-hosted financial operations suite for a founder-run Swiss GmbH — invoicin
 - **Forecast** — per-calendar-year cash projection: editable expected income per month − net salary − obligations on their payable date − bills − pot accruals; later years carry cash forward.
 - **Reports** — quarterly summary, VAT tracker, corporate-tax estimate, accountant package (ZIP of everything the fiduciary needs).
 - **Dividends** — multi-year distribution planner with Swiss partial-taxation math (qualified holding) and withholding-tax timing.
+- **Settings** — display currency & number format, company branding, hourly rate, VAT rate and the invoice identity block (server-backed, honored by both frontends).
 - **Extras** — travel expense reports with reimbursement flow, trips log, per-page display setup, dark mode, keyboard shortcuts, in-app docs viewer, optional AI chat over the app's own API (bring your own `ANTHROPIC_API_KEY`).
 
 ## Quick start
@@ -63,6 +64,13 @@ Bookkeeping invariants the code protects: invoice **subtotal** is revenue (VAT b
 `cockpit-next/` is an incremental React/TypeScript port of the frontend over the same FastAPI backend — typed API client, the canonical CSS reused verbatim, charts reading their palette from the design tokens. All thirteen pages are ported (Dashboard, Forecast, Cash, Bills, Obligations, Calendar, Payroll, Reports, Dividends, Invoices, Customers, Expenses, Bank); create/edit dialogs and the docs viewer remain in the classic frontend — see [cockpit-next/README.md](cockpit-next/README.md).
 
 ![Next.js dashboard](docs/screenshots/next-dashboard.png)
+
+## Docs
+
+[MANUAL](docs/MANUAL.md) — how to actually run your GmbH with it ·
+[ARCHITECTURE](ARCHITECTURE.md) — how it's built and the bookkeeping invariants ·
+[DEPLOY](DEPLOY.md) — local, Docker (`docker compose up`), tunnels ·
+[CONTRIBUTING](CONTRIBUTING.md) — design-system and code rules.
 
 ## Configuration
 

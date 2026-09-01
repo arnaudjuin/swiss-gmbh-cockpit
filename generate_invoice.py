@@ -60,16 +60,34 @@ DEFAULT_CUSTOMER = {
 }
 
 
-def generate(year: int, month: int, hours: int, invoice_num: int, customer: dict | None = None) -> bytes:
+# Defaults for the identity block on invoice PDFs. Overridable per install
+# via Settings → Business (stored in preferences under app.business).
+BIZ_DEFAULTS = {
+    "company": COMPANY,
+    "rate": RATE,
+    "vat_rate": VAT_RATE,
+    "from_lines": ["Max MUSTER", "c/o Alpen Treuhand AG", "Musterstrasse 1",
+                    "8000 Zurich", "Switzerland", "", "owner@example.com",
+                    "+41 79 123 45 67", "CHE-123.456.789"],
+    "account_name": "Muster Consulting GmbH",
+    "iban": "CH93 0076 2011 6238 5295 7",
+    "bic": "UBSWCHZH80A",
+    "bank": "UBS Switzerland AG",
+}
+
+
+def generate(year: int, month: int, hours: int, invoice_num: int, customer: dict | None = None,
+             biz: dict | None = None) -> bytes:
     customer = customer or DEFAULT_CUSTOMER
+    b = {**BIZ_DEFAULTS, **{k: v for k, v in (biz or {}).items() if v not in (None, "", [])}}
     month_name = calendar.month_name[month]
     issued = date(year, month, calendar.monthrange(year, month)[1])
     due_m = month + 1 if month < 12 else 1
     due_y = year if month < 12 else year + 1
     due = date(due_y, due_m, calendar.monthrange(due_y, due_m)[1])
 
-    subtotal = hours * RATE
-    tax = round(subtotal * VAT_RATE, 2)
+    subtotal = hours * b["rate"]
+    tax = round(subtotal * b["vat_rate"], 2)
     total = round(subtotal + tax, 2)
 
     pdf = InvoicePDF()
@@ -80,7 +98,7 @@ def generate(year: int, month: int, hours: int, invoice_num: int, customer: dict
     pdf.set_xy(15, 13)
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(20, 20, 20)
-    pdf.cell(100, 7, COMPANY)
+    pdf.cell(100, 7, b["company"])
 
     # ── Invoice number (top right) ──
     pdf.set_font("Helvetica", "B", 28)
@@ -105,18 +123,7 @@ def generate(year: int, month: int, hours: int, invoice_num: int, customer: dict
 
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(50, 50, 50)
-    from_lines = [
-        COMPANY,
-        "Max MUSTER",
-        "c/o Alpen Treuhand AG",
-        "Musterstrasse 1",
-        "8000 Zurich",
-        "Switzerland",
-        "",
-        "owner@example.com",
-        "+41 79 123 45 67",
-        "CHE-123.456.789",
-    ]
+    from_lines = [b["company"], *b["from_lines"]]
     for line in from_lines:
         pdf.set_xy(15, y)
         pdf.cell(90, 4.5, line)
@@ -190,7 +197,7 @@ def generate(year: int, month: int, hours: int, invoice_num: int, customer: dict
     hours_str = f"{hours:g}"
     pdf.cell(30, 5, hours_str, align="C")
     pdf.set_xy(118, row_mid)
-    pdf.cell(30, 5, f"CHF {RATE:.2f}", align="C")
+    pdf.cell(30, 5, f"CHF {b['rate']:.2f}", align="C")
     pdf.set_xy(148, row_mid)
     pdf.cell(20, 5, "8.1%", align="C")
     pdf.set_font("Helvetica", "B", 10)
@@ -247,10 +254,10 @@ def generate(year: int, month: int, hours: int, invoice_num: int, customer: dict
     terms_y = 243
     terms = [
         "Payment Information",
-        "Account Name: Muster Consulting GmbH",
-        "IBAN: CH93 0076 2011 6238 5295 7",
-        "BIC: UBSWCHZH80A",
-        "Bank: UBS Switzerland AG",
+        f"Account Name: {b['account_name']}",
+        f"IBAN: {b['iban']}",
+        f"BIC: {b['bic']}",
+        f"Bank: {b['bank']}",
     ]
     for line in terms:
         pdf.set_xy(15, terms_y)

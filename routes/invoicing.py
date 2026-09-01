@@ -15,7 +15,9 @@ from pydantic import BaseModel
 
 from db import get_db, next_invoice_number, row_to_dict
 from helpers import compute_dates
-from generate_invoice import generate
+import json
+
+from generate_invoice import BIZ_DEFAULTS, generate
 
 router = APIRouter(tags=["invoicing"])
 
@@ -56,6 +58,29 @@ class CustomerCreate(BaseModel):
     reference: str | None = None
 
 
+def _biz(db) -> dict:
+    """Business settings for invoice generation: Settings → Business overrides
+    (preferences key app.business) on top of the shipped defaults."""
+    row = db.execute("SELECT prefs FROM user_preferences WHERE id=1").fetchone()
+    try:
+        stored = (json.loads(row["prefs"]) if row else {}).get("app", {}).get("business", {}) or {}
+    except (json.JSONDecodeError, TypeError):
+        stored = {}
+    biz = {**BIZ_DEFAULTS}
+    for k in biz:
+        v = stored.get(k)
+        if v not in (None, "", []):
+            biz[k] = v
+    if isinstance(biz.get("from_lines"), str):
+        biz["from_lines"] = [l for l in biz["from_lines"].splitlines() if l.strip()]
+    for k in ("rate", "vat_rate"):
+        try:
+            biz[k] = float(biz[k])
+        except (TypeError, ValueError):
+            biz[k] = BIZ_DEFAULTS[k]
+    return biz
+
+
 def get_customer(db, customer_id=None):
     if customer_id:
         row = db.execute("SELECT * FROM customers WHERE id=?", (customer_id,)).fetchone()
@@ -80,14 +105,16 @@ async def create_invoice(data: InvoiceCreate):
     inv_num = data.invoice_number or next_invoice_number()
     issued, due = compute_dates(data.year, data.month)
 
-    subtotal = data.hours * _ctx["RATE"]
-    tax = round(subtotal * _ctx["VAT_RATE"], 2)
+    with get_db() as db:
+        biz = _biz(db)
+    subtotal = data.hours * biz["rate"]
+    tax = round(subtotal * biz["vat_rate"], 2)
     total = round(subtotal + tax, 2)
 
     with get_db() as db:
         customer = get_customer(db, data.customer_id)
 
-    pdf_bytes = generate(data.year, data.month, data.hours, inv_num, customer=customer)
+    pdf_bytes = generate(data.year, data.month, data.hours, inv_num, customer=customer, biz=biz)
     (_paths["PDF_DIR"] / f"invoice_{inv_num:04d}.pdf").write_bytes(pdf_bytes)
 
     with get_db() as db:
@@ -97,7 +124,7 @@ async def create_invoice(data: InvoiceCreate):
                    (invoice_number, year, month, hours, rate, vat_rate,
                     subtotal, tax, total, issued_date, due_date, notes)
                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (inv_num, data.year, data.month, data.hours, _ctx["RATE"], _ctx["VAT_RATE"],
+                (inv_num, data.year, data.month, data.hours, biz["rate"], biz["vat_rate"],
                  subtotal, tax, total, str(issued), str(due), data.notes or ""),
             )
         except sqlite3.IntegrityError:
@@ -125,12 +152,13 @@ async def update_invoice(id: int, data: InvoiceUpdate):
         inv_num = row["invoice_number"]
         issued, due = compute_dates(data.year, data.month)
 
-        subtotal = data.hours * _ctx["RATE"]
-        tax = round(subtotal * _ctx["VAT_RATE"], 2)
+        biz = _biz(db)
+        subtotal = data.hours * biz["rate"]
+        tax = round(subtotal * biz["vat_rate"], 2)
         total = round(subtotal + tax, 2)
 
         customer = get_customer(db, data.customer_id)
-        pdf_bytes = generate(data.year, data.month, data.hours, inv_num, customer=customer)
+        pdf_bytes = generate(data.year, data.month, data.hours, inv_num, customer=customer, biz=biz)
         (_paths["PDF_DIR"] / f"invoice_{inv_num:04d}.pdf").write_bytes(pdf_bytes)
 
         db.execute(

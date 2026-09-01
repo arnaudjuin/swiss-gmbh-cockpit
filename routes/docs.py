@@ -12,6 +12,7 @@ router = APIRouter(tags=["docs"])
 
 # Title is what shows up in the sidebar; order matters (display order).
 DOCS = [
+    {"name": "MANUAL.md",         "title": "User Manual"},
     {"name": "GUIDE.md",          "title": "Setup & API Reference"},
     {"name": "FEATURES.md",       "title": "Feature Reference"},
     {"name": "TAB_BANK_STATEMENTS.md", "title": "Tab · Bank Statements"},

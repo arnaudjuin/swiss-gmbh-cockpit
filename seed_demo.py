@@ -23,6 +23,12 @@ from db import init_db  # noqa: E402
 
 init_db()
 
+from db import get_db  # noqa: E402
+with get_db() as _db:
+    if _db.execute("SELECT COUNT(*) AS n FROM invoices").fetchone()["n"] > 0:
+        print("Demo data already present — nothing to do. (Delete invoices.db to reseed.)")
+        raise SystemExit(0)
+
 c = TestClient(app)
 r = c.post("/api/login", json={"password": os.environ["ADMIN_PASSWORD"]})
 r.raise_for_status()
