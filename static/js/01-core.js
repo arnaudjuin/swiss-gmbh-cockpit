@@ -10,11 +10,17 @@ let chart = null;
 
 // Display settings (Settings page → server-backed prefs). Applied after
 // Prefs.load(); the currency is a LABEL — amounts are never converted.
-const AppSettings = { currency: 'CHF', locale: 'de-CH' };
+const AppSettings = { currency: 'CHF', locale: 'de-CH', divTax: { wht: 0.35, fedIncl: 0.70, cantIncl: 0.50 } };
 
 function applyAppSettings() {
   AppSettings.currency = Prefs.get('app.currency', 'CHF');
   AppSettings.locale = Prefs.get('app.locale', 'de-CH');
+  const dt = Prefs.get('app.dividendTax', {}) || {};
+  AppSettings.divTax = {
+    wht: Number.isFinite(+dt.wht_pct) ? +dt.wht_pct / 100 : 0.35,
+    fedIncl: Number.isFinite(+dt.fed_inclusion_pct) ? +dt.fed_inclusion_pct / 100 : 0.70,
+    cantIncl: Number.isFinite(+dt.cant_inclusion_pct) ? +dt.cant_inclusion_pct / 100 : 0.50,
+  };
   const name = Prefs.get('app.companyName', '');
   const el = document.querySelector('.sidebar-header');
   if (el && name) el.textContent = name;

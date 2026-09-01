@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api, type Overview, type Reserve, type Runway, type Forecast } from "@/lib/api";
-import { loadPrefs, pref } from "@/lib/prefs";
+import { loadPrefs, pref, divTax } from "@/lib/prefs";
 import { chf } from "@/lib/money";
 import { Stat, ChartCard, Legend, Meter } from "@/components/ui";
 import RecapStrip from "@/components/RecapStrip";
@@ -20,7 +20,8 @@ function dividendSummary(prefs: Record<string, unknown>) {
   const months = 12 - Math.max(1, Math.min(12, y.startMonth || 1)) + 1;
   const monthlyAmt = (y.amounts || []).reduce((s, a) => s + (Number(a) || 0), 0);
   const gross = monthlyAmt * months;
-  const eff = 0.7 * ((saved.fedRatePct ?? 12) / 100) + 0.5 * ((saved.cantRatePct ?? 21.5) / 100);
+  const dt = divTax(prefs);
+  const eff = dt.fedIncl * ((saved.fedRatePct ?? 12) / 100) + dt.cantIncl * ((saved.cantRatePct ?? 21.5) / 100);
   return { gross, net: gross - gross * eff, monthly: monthlyAmt, months, payout: `Jun ${fy + 1}` };
 }
 

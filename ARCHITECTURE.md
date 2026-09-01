@@ -67,6 +67,26 @@ finance tool.
 danger, amber pending, blue info, purple owner-money), `tabular-nums` for all
 money, light + dark at token level. `static/app.css` is the live copy.
 
+## Localization boundary
+
+Configurable per install (Settings, server-backed preferences): currency
+label & number format (any BCP-47 locale), company branding, hourly rate,
+VAT rate, the invoice identity/payment block, dividend-tax parameters
+(withholding %, federal/cantonal inclusion %) and the display label of every
+obligation type. Amounts are never converted between currencies.
+
+Still structurally Swiss — documented on purpose rather than half-abstracted:
+
+1. **Payroll deduction lines** (AHV/ALV/BVG/UVG/KTG/FAK/source tax) are fixed
+   columns in the payslip schema/PDF and in the obligations they book. Rates
+   and amounts are configurable; the *set of lines* is not. Making it generic
+   means "deduction lines as data" — the main refactor for another country.
+2. **Corporate-tax estimate** assumes the Swiss federal + cantonal split.
+3. **UI language** is English (with Swiss terms); there is no i18n layer.
+   A translation pass would start with `cockpit-next` (extractable strings)
+   before the classic SPA (template literals).
+4. Bank import favors CAMT.053 (EU-wide) plus a UBS CSV dialect.
+
 ## Testing
 
 `tests/test_smoke.py` walks every GET route plus behavior flows (172 cases)

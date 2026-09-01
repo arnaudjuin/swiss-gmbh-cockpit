@@ -3,6 +3,7 @@
 // The currency is a display label: amounts are stored as-is, never converted.
 import { useEffect, useState } from "react";
 import { loadPrefs, pref, setPref } from "@/lib/prefs";
+import { api } from "@/lib/api";
 import { setMoneyFormat } from "@/lib/money";
 
 const CURRENCIES = ["CHF", "EUR", "USD", "GBP"];
@@ -11,7 +12,9 @@ const LOCALES: [string, string][] = [
   ["de-DE", "1.234,56  (German)"],
   ["en-US", "1,234.56  (US/UK)"],
   ["fr-CH", "1 234.56  (French CH)"],
+  ["custom", "Custom locale…"],
 ];
+function localeValid(l: string) { try { (0).toLocaleString(l); return true; } catch { return false; } }
 
 interface Biz {
   company: string; rate: string; vat_rate_pct: string; from_lines: string;
@@ -25,6 +28,10 @@ export default function SettingsPage() {
   const [currency, setCurrency] = useState("CHF");
   const [locale, setLocale] = useState("de-CH");
   const [biz, setBiz] = useState<Biz>(EMPTY_BIZ);
+  const [customLocale, setCustomLocale] = useState("");
+  const [divWht, setDivWht] = useState(""); const [divFed, setDivFed] = useState(""); const [divCant, setDivCant] = useState("");
+  const [obBase, setObBase] = useState<Record<string, string>>({});
+  const [obLabels, setObLabels] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -42,19 +49,36 @@ export default function SettingsPage() {
         account_name: String(b.account_name ?? ""),
         iban: String(b.iban ?? ""), bic: String(b.bic ?? ""), bank: String(b.bank ?? ""),
       });
+      const dt = pref<Record<string, unknown>>(p, "app.dividendTax", {}) || {};
+      setDivWht(dt.wht_pct != null ? String(dt.wht_pct) : "");
+      setDivFed(dt.fed_inclusion_pct != null ? String(dt.fed_inclusion_pct) : "");
+      setDivCant(dt.cant_inclusion_pct != null ? String(dt.cant_inclusion_pct) : "");
+      setObLabels(pref<Record<string, string>>(p, "app.obligationLabels", {}) || {});
+      const loc = pref(p, "app.locale", "de-CH");
+      if (!LOCALES.some(([v]) => v === loc)) setCustomLocale(loc);
       setLoaded(true);
     });
+    api<Record<string, string>>("/obligations/types/base").then(setObBase).catch(() => {});
   }, []);
 
   if (!loaded) return <div className="hint" style={{ padding: 24 }}>Loading…</div>;
 
-  const preview = `${currency} ${(1234567.89).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const effLocale = (customLocale || (locale === "custom" ? "de-CH" : locale));
+  const safeLocale = localeValid(effLocale) ? effLocale : "de-CH";
+  const preview = `${currency} ${(1234567.89).toLocaleString(safeLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     await setPref("app.companyName", company.trim() || null);
     await setPref("app.currency", currency);
-    await setPref("app.locale", locale);
+    await setPref("app.locale", safeLocale);
+    await setPref("app.dividendTax", {
+      wht_pct: divWht === "" ? null : parseFloat(divWht),
+      fed_inclusion_pct: divFed === "" ? null : parseFloat(divFed),
+      cant_inclusion_pct: divCant === "" ? null : parseFloat(divCant),
+    });
+    await setPref("app.obligationLabels",
+      Object.fromEntries(Object.entries(obLabels).filter(([, v]) => v && v.trim())));
     await setPref("app.business", {
       company: biz.company.trim() || null,
       rate: biz.rate === "" ? null : parseFloat(biz.rate),
@@ -63,7 +87,7 @@ export default function SettingsPage() {
       account_name: biz.account_name.trim() || null,
       iban: biz.iban.trim() || null, bic: biz.bic.trim() || null, bank: biz.bank.trim() || null,
     });
-    setMoneyFormat(currency, locale);
+    setMoneyFormat(currency, safeLocale);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -93,9 +117,15 @@ export default function SettingsPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor="s-locale">Number format</label>
-            <select id="s-locale" className="control" value={locale} onChange={e => setLocale(e.target.value)}>
+            <select id="s-locale" className="control"
+                    value={customLocale ? "custom" : locale}
+                    onChange={e => { setLocale(e.target.value); if (e.target.value !== "custom") setCustomLocale(""); }}>
               {LOCALES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
+            {(customLocale || locale === "custom") && (
+              <input className="control" style={{ marginTop: 6 }} placeholder="BCP-47 tag, e.g. nl-NL"
+                     value={customLocale} onChange={e => setCustomLocale(e.target.value)} />
+            )}
           </div>
         </div>
 
@@ -159,6 +189,42 @@ export default function SettingsPage() {
             <input id="b-bic" className="control" placeholder="UBSWCHZH80A"
                    value={biz.bic} onChange={bset("bic")} />
           </div>
+        </div>
+
+        <div className="section-label" style={{ marginTop: 20 }}>Localization</div>
+        <p className="hint">Country parameters. Blank = the shipped Swiss defaults. The payroll deduction
+          structure and UI language stay Swiss/English for now — see ARCHITECTURE.md → Localization boundary.</p>
+
+        <div className="cols-2">
+          <div className="field">
+            <label className="field__label" htmlFor="d-wht">Dividend withholding tax %</label>
+            <input id="d-wht" className="control" type="number" min={0} max={60} step="0.1"
+                   placeholder="35" value={divWht} onChange={e => setDivWht(e.target.value)} />
+          </div>
+          <div className="field">
+            <label className="field__label" htmlFor="d-fed">Federal inclusion % (qualified holding)</label>
+            <input id="d-fed" className="control" type="number" min={0} max={100} step="1"
+                   placeholder="70" value={divFed} onChange={e => setDivFed(e.target.value)} />
+          </div>
+          <div className="field">
+            <label className="field__label" htmlFor="d-cant">Cantonal/state inclusion %</label>
+            <input id="d-cant" className="control" type="number" min={0} max={100} step="1"
+                   placeholder="50" value={divCant} onChange={e => setDivCant(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="field">
+          <label className="field__label">Obligation type labels</label>
+          <p className="hint">Rename any type (e.g. &quot;AHV/AVS&quot; → &quot;Social security&quot;) — used across
+            every page, both frontends. Blank = default.</p>
+          {Object.entries(obBase).map(([key, base]) => (
+            <div key={key} className="row-split" style={{ gap: 10, padding: "3px 0" }}>
+              <span className="hint mono" style={{ minWidth: 170 }}>{key}</span>
+              <input className="control" style={{ flex: 1 }} placeholder={base}
+                     value={obLabels[key] ?? ""}
+                     onChange={e => setObLabels({ ...obLabels, [key]: e.target.value })} />
+            </div>
+          ))}
         </div>
 
         <div className="form-actions">

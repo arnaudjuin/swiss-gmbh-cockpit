@@ -109,11 +109,13 @@ function divSummaryFromPrefs() {
 
 // Effective personal tax rate on a gross dividend (qualified holding ≥ 10%):
 // 70% of it is taxable federally, 50% cantonally in ZH, each at marginal rate.
-const DIV_FED_INCLUSION = 0.70;
-const DIV_CANT_INCLUSION = 0.50;
+// Country parameters — Settings → Localization (defaults: Swiss qualified holding)
+const DIV_FED_INCLUSION = () => AppSettings.divTax.fedIncl;
+const DIV_CANT_INCLUSION = () => AppSettings.divTax.cantIncl;
+const DIV_WHT = () => AppSettings.divTax.wht;
 function _divEffectiveRate(i) {
-  return DIV_FED_INCLUSION * (i.fedRatePct / 100)
-       + DIV_CANT_INCLUSION * (i.cantRatePct / 100);
+  return DIV_FED_INCLUSION() * (i.fedRatePct / 100)
+       + DIV_CANT_INCLUSION() * (i.cantRatePct / 100);
 }
 
 function _divFillInputs(saved) {
@@ -361,7 +363,7 @@ function recalcDividends() {
   // income tax = gross × (0.70 × federal marginal + 0.50 × cantonal marginal);
   // the 35% WHT is a timing effect only (refunded once declared).
   const effRate = _divEffectiveRate(i);
-  const wht = grossPot * 0.35;                         // withheld, refundable
+  const wht = grossPot * DIV_WHT();                         // withheld, refundable
   const netToShareholder = grossPot - wht;             // hits personal account
   const personalTax = grossPot * effRate;
   const netAfterTax = grossPot - personalTax;          // WHT refund credited
@@ -424,14 +426,14 @@ function recalcDividends() {
           <td><em>Starting pot</em></td>
           <td class="money">—</td>
           <td class="money">${chf(i.starting)}</td>
-          <td class="money money--danger">−${chf(i.starting * 0.35)}</td>
+          <td class="money money--danger">−${chf(i.starting * DIV_WHT())}</td>
           <td class="money money--danger">−${chf(i.starting * taxRate)}</td>
           <td class="money" style="color:var(--ok-text);font-weight:600">${chf(startingNet)}</td>
           <td class="money">${chf(cumulative)}</td>
         </tr>`;
       }
       for (const y of sortedPerYear) {
-        const wht = y.gross * 0.35;
+        const wht = y.gross * DIV_WHT();
         const tax = y.gross * taxRate;
         const net = y.gross - tax;
         cumulative += net;

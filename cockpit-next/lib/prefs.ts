@@ -21,6 +21,13 @@ export async function setPref(path: string, value: unknown): Promise<void> {
   await api("/preferences", { method: "PUT", body: JSON.stringify(prefs) });
 }
 
+export interface DivTax { wht: number; fedIncl: number; cantIncl: number }
+export function divTax(prefs: Record<string, unknown>): DivTax {
+  const d = pref<Record<string, unknown>>(prefs, "app.dividendTax", {}) || {};
+  const num = (v: unknown, f: number) => (Number.isFinite(Number(v)) && v !== null && v !== "" ? Number(v) / 100 : f);
+  return { wht: num(d.wht_pct, 0.35), fedIncl: num(d.fed_inclusion_pct, 0.70), cantIncl: num(d.cant_inclusion_pct, 0.50) };
+}
+
 export function pref<T>(prefs: Record<string, unknown>, path: string, fallback: T): T {
   let cur: unknown = prefs;
   for (const key of path.split(".")) {

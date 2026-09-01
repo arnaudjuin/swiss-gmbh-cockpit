@@ -17,7 +17,10 @@ router = APIRouter(tags=["obligations"])
 _paths = {}
 
 
-OBLIGATION_TYPES = {
+# Base (Swiss) labels. Installs can rename any of them in Settings →
+# Localization; overrides live in preferences under app.obligationLabels and
+# flow through every API response via the dict subclass below.
+_BASE_OBLIGATION_TYPES = {
     "ahv": "AHV/AVS (1st pillar)",
     "bvg_employee": "BVG Employee (2nd pillar)",
     "bvg_employer": "BVG Employer (2nd pillar)",
@@ -30,6 +33,51 @@ OBLIGATION_TYPES = {
     "accounting": "Treuhand",
     "other": "Other",
 }
+
+_label_cache: dict | None = None
+
+
+def invalidate_label_cache():
+    global _label_cache
+    _label_cache = None
+
+
+def _label_overrides() -> dict:
+    global _label_cache
+    if _label_cache is None:
+        import json as _json
+        try:
+            with get_db() as db:
+                row = db.execute("SELECT prefs FROM user_preferences WHERE id=1").fetchone()
+            stored = (_json.loads(row["prefs"]) if row else {}).get("app", {}).get("obligationLabels", {}) or {}
+        except Exception:
+            stored = {}
+        _label_cache = {k: str(v).strip() for k, v in stored.items()
+                        if k in _BASE_OBLIGATION_TYPES and str(v).strip()}
+    return _label_cache
+
+
+class _ObligationTypes(dict):
+    """Reads like a plain dict of type → label, with Settings overrides applied."""
+
+    def get(self, key, default=None):
+        ov = _label_overrides()
+        if key in ov:
+            return ov[key]
+        return super().get(key, default)
+
+    def __getitem__(self, key):
+        ov = _label_overrides()
+        if key in ov:
+            return ov[key]
+        return super().__getitem__(key)
+
+    def merged(self) -> dict:
+        return {**self, **_label_overrides()}
+
+
+OBLIGATION_TYPES = _ObligationTypes(_BASE_OBLIGATION_TYPES)
+
 
 
 def configure(acct_dir: Path):
@@ -84,7 +132,13 @@ async def list_obligations(year: int | None = None):
 
 @router.get("/obligations/types")
 async def obligation_types():
-    return OBLIGATION_TYPES
+    return OBLIGATION_TYPES.merged()
+
+
+@router.get("/obligations/types/base")
+async def obligation_types_base():
+    """Shipped default labels — the Settings page shows these as placeholders."""
+    return dict(_BASE_OBLIGATION_TYPES)
 
 
 @router.get("/obligations/summary")

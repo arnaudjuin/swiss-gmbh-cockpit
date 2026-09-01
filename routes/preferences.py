@@ -32,6 +32,9 @@ async def replace_preferences(request: Request):
     if not isinstance(body, dict):
         raise HTTPException(400, "Preferences must be a JSON object")
     payload = json.dumps(body, separators=(",", ":"))
+    # Obligation labels may have changed — drop the routes-level cache.
+    from routes.obligations import invalidate_label_cache
+    invalidate_label_cache()
     with get_db() as db:
         db.execute(
             "UPDATE user_preferences SET prefs=?, updated_at=datetime('now') WHERE id=1",

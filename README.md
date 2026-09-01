@@ -18,7 +18,7 @@ Self-hosted financial operations suite for a founder-run Swiss GmbH — invoicin
 - **Forecast** — per-calendar-year cash projection: editable expected income per month − net salary − obligations on their payable date − bills − pot accruals; later years carry cash forward.
 - **Reports** — quarterly summary, VAT tracker, corporate-tax estimate, accountant package (ZIP of everything the fiduciary needs).
 - **Dividends** — multi-year distribution planner with Swiss partial-taxation math (qualified holding) and withholding-tax timing.
-- **Settings** — display currency & number format, company branding, hourly rate, VAT rate and the invoice identity block (server-backed, honored by both frontends).
+- **Settings** — display currency & number format (any BCP-47 locale), company branding, hourly rate, VAT rate, the invoice identity block, dividend-tax parameters and renameable obligation labels (server-backed, honored by both frontends). What stays Swiss and why: [ARCHITECTURE.md → Localization boundary](ARCHITECTURE.md#localization-boundary).
 - **Extras** — travel expense reports with reimbursement flow, trips log, per-page display setup, dark mode, keyboard shortcuts, in-app docs viewer, optional AI chat over the app's own API (bring your own `ANTHROPIC_API_KEY`).
 
 ## Quick start
