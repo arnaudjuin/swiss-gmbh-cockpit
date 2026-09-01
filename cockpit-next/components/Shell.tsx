@@ -21,7 +21,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <aside className="sidebar">
         <div className="sidebar-header"><h2>Muster Consulting GmbH</h2></div>
         <nav className="sidebar-nav">
-          {[["/dashboard", "▪", "Dashboard"], ["/forecast", "📈", "Forecast"], ["/obligations", "🏛", "Obligations"]].map(([href, icon, label]) => (
+          {[["/dashboard", "▪", "Dashboard"], ["/forecast", "📈", "Forecast"], ["/obligations", "🏛", "Obligations"], ["/bills", "🧾", "Bills"]].map(([href, icon, label]) => (
             <a key={href} href={href} className={path === href ? "active" : ""}>
               <span className="icon">{icon}</span> {label}
             </a>

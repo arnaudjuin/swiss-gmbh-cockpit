@@ -43,7 +43,7 @@ non-default backend.
 
 ## Roadmap (page order)
 
-Bills & Documents (incl. the segmented search) →
+
 Invoices → Payroll → Cash Allocation → Bank → Calendar → Reports → Dividends →
 Expenses/Trips. Then: widget customization (drag, per-widget settings) and the
 per-page Display dialog, both of which already have server-side state shared

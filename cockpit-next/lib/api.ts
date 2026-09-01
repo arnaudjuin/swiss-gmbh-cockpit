@@ -52,6 +52,17 @@ export interface Overview {
   };
 }
 
+export interface Bill {
+  id: number; doc_date: string; vendor: string; description: string;
+  amount: number; currency: string; category: string; due_date: string | null;
+  status: "paid" | "unpaid"; paid_via: "company" | "personal";
+  reimbursed_at: string | null; original_amount: number | null;
+  original_currency: string | null; has_file: boolean; file_type: string | null;
+}
+
+export interface SearchResult { type: string; id: number; title: string; subtitle: string; page: string }
+export interface SearchResponse { results: SearchResult[]; parsed: { kind: string; label: string }[] | null }
+
 export interface Reserve { id: number; name: string; purpose: string; target_amount: number; target_date: string | null; monthly_accrual: number; accumulated: number; remaining: number; progress_pct: number }
 export interface Runway { runway_months: number | null; monthly_burn: number; description: string }
 export interface ForecastMonth {
