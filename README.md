@@ -65,6 +65,14 @@ Bookkeeping invariants the code protects: invoice **subtotal** is revenue (VAT b
 
 ![Next.js dashboard](docs/screenshots/next-dashboard.png)
 
+## Interactive course
+
+**[Next.js for the Angular Engineer](docs/course/index.html)** — a 16-lesson interactive
+course taught through this repo's own source: every concept mapped to its Angular
+counterpart, a quiz per lesson, progress saved in your browser. Serve it with GitHub Pages
+(Settings → Pages → deploy from `master` `/docs`) at
+`https://arnaudjuin.github.io/swiss-gmbh-cockpit/course/`, or just open the file locally.
+
 ## Docs
 
 [MANUAL](docs/MANUAL.md) — how to actually run your GmbH with it ·

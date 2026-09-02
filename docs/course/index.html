@@ -1,0 +1,1146 @@
+<title>The cockpit-next Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f1f5f9; --card: #ffffff; --ink: #0f172a; --muted: #5b6b80;
+  --border: #dbe3ec; --accent: #2f6fe0; --accent-bg: #e3edfb;
+  --code-bg: #0f172a; --code-ink: #dbe6f5; --code-accent: #7db8e8;
+  --ng: #c3002f; --ng-bg: #fbe9ec; --ok-bg: #ddf3e7; --ok-ink: #14683c;
+  --warn-bg: #fdf3dd; --warn-ink: #8a5b00;
+  --f-display: 'Sora', 'Helvetica Neue', sans-serif;
+  --f-body: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1220; --card: #162032; --ink: #e8eef7; --muted: #93a4bb;
+    --border: #2a3850; --accent: #6ba3f5; --accent-bg: #1c3050;
+    --code-bg: #0a101c; --code-ink: #d5e2f2; --code-accent: #7db8e8;
+    --ng: #ff7285; --ng-bg: #3a1c26; --ok-bg: #143526; --ok-ink: #7fd8a6;
+    --warn-bg: #3a2f14; --warn-ink: #ecc36a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1220; --card: #162032; --ink: #e8eef7; --muted: #93a4bb;
+  --border: #2a3850; --accent: #6ba3f5; --accent-bg: #1c3050;
+  --code-bg: #0a101c; --code-ink: #d5e2f2; --code-accent: #7db8e8;
+  --ng: #ff7285; --ng-bg: #3a1c26; --ok-bg: #143526; --ok-ink: #7fd8a6;
+  --warn-bg: #3a2f14; --warn-ink: #ecc36a;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body);
+  font-size: 16px; line-height: 1.65; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+header.hero { margin-bottom: 40px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.12; margin: 0 0 14px; text-wrap: balance; letter-spacing: -.015em; }
+.lede { font-size: 18px; color: var(--muted); max-width: 64ch; margin: 0; }
+.lede b { color: var(--ink); }
+nav.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px 22px; margin: 28px 0 48px; }
+nav.toc .t { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 40px; }
+nav.toc li { margin: 3px 0; break-inside: avoid; }
+nav.toc a { color: var(--ink); text-decoration: none; }
+nav.toc a:hover { color: var(--accent); }
+nav.toc .part { list-style: none; margin: 10px 0 4px -22px; font-family: var(--f-mono);
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+@media (max-width: 640px) { nav.toc ol { columns: 1; } }
+section { margin: 60px 0; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 26px; line-height: 1.2;
+  margin: 0 0 6px; text-wrap: balance; scroll-margin-top: 24px; }
+h2 .no { color: var(--accent); font-family: var(--f-mono); font-weight: 500;
+  font-size: 18px; margin-right: 10px; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 18px; margin: 32px 0 6px; }
+h4 { font-family: var(--f-display); font-weight: 600; font-size: 15px; margin: 22px 0 4px; }
+p { max-width: 74ch; margin: 12px 0; }
+p code, li code, td code { font-family: var(--f-mono); font-size: .88em;
+  background: var(--accent-bg); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--accent); }
+.filecap { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin: 18px 0 0; }
+pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px;
+  padding: 16px 18px; overflow-x: auto; font-family: var(--f-mono); font-size: 13px;
+  line-height: 1.6; margin: 6px 0 18px; }
+pre .c { color: #7a8aa3; } pre .k { color: var(--code-accent); } pre .s { color: #b8e0a0; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0 22px; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.tblwrap { overflow-x: auto; }
+.tag { display: inline-block; font-family: var(--f-mono); font-size: 11px;
+  padding: 1px 8px; border-radius: 99px; font-weight: 500; }
+.tag--ng { background: var(--ng-bg); color: var(--ng); }
+.tag--nx { background: var(--accent-bg); color: var(--accent); }
+.box { border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  background: var(--card); border-radius: 8px; padding: 14px 18px; margin: 20px 0; max-width: 78ch; }
+.box .bt { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.box--gotcha { border-left-color: var(--warn-ink); } .box--gotcha .bt { color: var(--warn-ink); }
+.box--ex { border-left-color: var(--ok-ink); } .box--ex .bt { color: var(--ok-ink); }
+.box--ng { border-left-color: var(--ng); } .box--ng .bt { color: var(--ng); }
+.box p:first-of-type { margin-top: 0; } .box p:last-child { margin-bottom: 0; }
+ul, ol { max-width: 74ch; } li { margin: 5px 0; }
+hr { border: 0; border-top: 1px solid var(--border); margin: 48px 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+/* ── interactive shell ── */
+.appgrid { display: grid; grid-template-columns: 270px 1fr; gap: 32px; align-items: start; }
+@media (max-width: 900px) { .appgrid { grid-template-columns: 1fr; } aside.side { position: static !important; } }
+aside.side { position: sticky; top: 16px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; }
+.progresswrap { margin-bottom: 12px; }
+.progressbar { height: 8px; border-radius: 99px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
+.progressbar > div { height: 100%; background: var(--accent); width: 0%; transition: width .3s; }
+.progresstxt { font-family: var(--f-mono); font-size: 11px; color: var(--muted); margin-top: 6px; }
+.lessonlist { list-style: none; margin: 0; padding: 0; }
+.lessonlist .part { font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--accent); margin: 12px 0 4px; }
+.lessonlist button { display: flex; gap: 8px; align-items: baseline; width: 100%; text-align: left;
+  background: none; border: 0; padding: 5px 8px; border-radius: 6px; color: var(--ink);
+  font: inherit; font-size: 13.5px; cursor: pointer; }
+.lessonlist button:hover { background: var(--accent-bg); }
+.lessonlist button.cur { background: var(--accent-bg); font-weight: 600; }
+.lessonlist .no { font-family: var(--f-mono); font-size: 11px; color: var(--muted); min-width: 18px; }
+.lessonlist .done-mark { margin-left: auto; color: var(--ok-ink); font-size: 12px; visibility: hidden; }
+.lessonlist button.is-done .done-mark { visibility: visible; }
+.lesson { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 8px 28px 20px; }
+.lesson-nav { display: flex; gap: 10px; margin-top: 32px; border-top: 1px solid var(--border); padding-top: 18px; }
+.btn-nav, .btn-done { font: inherit; font-size: 14px; padding: 8px 16px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--ink); cursor: pointer; }
+.btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+.btn-nav--next { margin-left: auto; background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-nav--next:hover { color: #fff; filter: brightness(1.08); }
+.btn-done { border-color: var(--ok-ink); color: var(--ok-ink); background: var(--ok-bg); }
+.btn-done.is-done { opacity: .6; }
+.quiz { border: 1px solid var(--border); border-left: 4px solid var(--accent); background: var(--bg);
+  border-radius: 8px; padding: 14px 18px; margin: 28px 0 8px; }
+.quiz .bt { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 4px; }
+.qq { margin: 14px 0; }
+.qtext { font-weight: 600; margin: 6px 0 8px; }
+.qopts { display: grid; gap: 6px; max-width: 60ch; }
+.qopt { font: inherit; font-size: 14px; text-align: left; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--card); color: var(--ink); cursor: pointer; }
+.qopt:hover { border-color: var(--accent); }
+.qopt.right { border-color: var(--ok-ink); background: var(--ok-bg); color: var(--ok-ink); font-weight: 600; }
+.qopt.wrong { border-color: var(--ng); background: var(--ng-bg); color: var(--ng); }
+.qwhy { font-size: 14px; color: var(--muted); border-left: 3px solid var(--ok-ink); padding-left: 10px; }
+.hero-cta { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+.hero-cta a, .hero-cta button { font: inherit; font-size: 14px; text-decoration: none; padding: 9px 18px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--ink); cursor: pointer; }
+.hero-cta .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); border: 1px solid var(--border);
+  border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; }
+
+</style>
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">swiss-gmbh-cockpit / cockpit-next · an interactive code-reading course</div>
+  <h1>Next.js for the Angular Engineer</h1>
+  <p class="lede">Sixteen lessons taught through <b>real source from this repository</b> — every
+  concept mapped to the Angular idea you already own, with a quiz per lesson and your progress
+  saved locally. Built for engineers evaluating (or joining) the
+  <a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit">swiss-gmbh-cockpit</a> codebase.</p>
+  <div class="hero-cta">
+    <button class="primary" id="start">Start / resume the course</button>
+    <a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit">View the repo</a>
+    <button id="reset">Reset progress</button>
+  </div>
+  <p class="progresstxt" style="margin-top:10px">Navigate with <kbd>←</kbd> <kbd>→</kbd> · answer every quiz right and the lesson checks itself off.</p>
+</header>
+
+<div class="appgrid">
+  <aside class="side">
+    <div class="progresswrap">
+      <div class="progressbar"><div id="pbar"></div></div>
+      <div class="progresstxt" id="ptxt"></div>
+    </div>
+    <ul class="lessonlist" id="lessonlist"></ul>
+  </aside>
+  <main>
+    <article class="lesson" id="lesson-0" hidden>
+<h2><span class="no">01</span>The architecture decision</h2>
+<p>The repo has <b>two frontends over one FastAPI backend</b>. The classic SPA
+(<code>static/js/01–09</code>) renders template strings into hidden
+<code>&lt;div class="page"&gt;</code> elements. <code>cockpit-next/</code> replaces that layer
+with Next.js 15 + React 19 + TypeScript, <b>without touching the backend</b>.</p>
+<p>This is the single most important thing to understand: here, Next.js is used as a
+<b>frontend framework with a build server</b>, not as a full-stack framework. There are no API
+routes, no server actions, no database access from Node. All domain logic — Swiss payroll, VAT,
+the payable-date rule, the forecast — stays in Python, where it has 173 tests. If you have ever
+put an Angular app in front of a Spring or .NET API, you already know this shape.</p>
+<p>The bridge is one rewrite rule:</p>
+<p class="filecap">cockpit-next/next.config.mjs — complete file</p>
+<pre>/** @type {import('next').NextConfig} */
+const API = process.env.API_URL || "http://127.0.0.1:8000";
+
+<span class="c">// The FastAPI backend stays the single source of truth. In dev (and behind a
+// single reverse proxy in prod) every /api call is forwarded there, so the
+// browser talks same-origin and the Bearer token flows through untouched.</span>
+const nextConfig = {
+  async rewrites() {
+    return [{ source: "/api/:path*", destination: `${API}/api/:path*` }];
+  },
+};
+
+export default nextConfig;</pre>
+<p>Every browser call to <code>/api/…</code> is proxied server-side to FastAPI. Same origin, so
+no CORS, and the auth header travels untouched. This is exactly Angular's
+<code>proxy.conf.json</code> — except it also runs in production, and it is resolved at
+<i>build</i> time (lesson 14 tells that war story).</p>
+<h3>Why two frontends at once is not madness</h3>
+<p>Both frontends read and write the same server-side state: the SQLite DB through the same
+endpoints, and the same <code>/preferences</code> document for UI state (widget layouts,
+forecast inputs, settings). Nothing lives only in a browser. That single decision is what makes
+an incremental port safe: any page can be used from either frontend on any day, and they cannot
+disagree. When you plan a migration at work — AngularJS→Angular, Angular→React, monolith
+frontend→micro-frontends — this is the property to engineer first.</p>
+<div class="box">
+<div class="bt">Repo map for this course</div>
+<pre style="margin:0">cockpit-next/
+  next.config.mjs        <span class="c">proxy + build config (lesson 1, 14)</span>
+  app/
+    layout.tsx           <span class="c">html shell + theme bootstrap (lesson 4, 12)</span>
+    login/page.tsx       <span class="c">auth (lesson 6)</span>
+    dashboard/ … settings/   <span class="c">14 route folders (lesson 4)</span>
+  components/
+    Shell.tsx            <span class="c">sidebar, nav, theme toggle</span>
+    ui.tsx               <span class="c">Stat, Chip, Meter, RecapTile… (lesson 10)</span>
+    charts.tsx           <span class="c">Chart.js wrappers (lesson 13)</span>
+    RecapStrip.tsx       <span class="c">the dashboard tile strip</span>
+  lib/
+    api.ts               <span class="c">typed fetch client + interfaces (lesson 7)</span>
+    prefs.ts             <span class="c">server-backed shared state (lesson 11)</span>
+    money.ts             <span class="c">chf(), locale, viz tokens (lesson 12)</span></pre>
+</div>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="0" data-q="0" data-a="1">
+<p class="qtext">Where does the Swiss payroll logic run in this architecture?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">In Next.js server actions</button>
+<button type="button" class="qopt" data-o="1">In the FastAPI backend, unchanged</button>
+<button type="button" class="qopt" data-o="2">Duplicated in TypeScript for the new frontend</button>
+</div>
+<p class="qwhy" hidden>Next is used purely as a frontend layer. All domain logic stays in Python behind /api — that's what made the incremental port safe.</p></div>
+<div class="qq" data-l="0" data-q="1" data-a="1">
+<p class="qtext">What is next.config.mjs's rewrites() closest to in Angular?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">An HTTP interceptor</button>
+<button type="button" class="qopt" data-o="1">proxy.conf.json</button>
+<button type="button" class="qopt" data-o="2">environment.ts</button>
+</div>
+<p class="qwhy" hidden>It forwards /api/* to the backend so the browser talks same-origin — exactly proxy.conf.json, except it also runs in production.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="0">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-1" hidden>
+<h2><span class="no">02</span>React in one lesson, for Angular hands</h2>
+<p>Angular separates a component into a class (state + logic), a template (its own language:
+<code>*ngIf</code>, <code>*ngFor</code>, pipes, bindings) and DI-provided collaborators. React
+collapses all three into one construct: <b>a function that returns its UI</b>.</p>
+<pre>function Meter({ pct, mod }: { pct: number; mod?: "ok" | "warn" | "danger" }) {
+  return (
+    &lt;div className="meter"&gt;
+      &lt;div className={`meter__bar${mod ? ` meter__bar--${mod}` : ""}`}
+           style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} /&gt;
+    &lt;/div&gt;
+  );
+}</pre>
+<p>Read this as: the component <i>is</i> the template, and the template is plain TypeScript.
+The consequences replace half of Angular's template language:</p>
+<ul>
+<li><code>*ngIf</code> → a boolean expression: <code>{error &amp;&amp; &lt;div&gt;…&lt;/div&gt;}</code>, or a ternary,
+or an early <code>return</code> from the function (this project uses early returns for
+loading/error states — a pattern Angular templates cannot express).</li>
+<li><code>*ngFor</code> → <code>{rows.map(r =&gt; &lt;tr key={r.id}&gt;…&lt;/tr&gt;)}</code>. The
+<code>key</code> is your <code>trackBy</code>, except <b>mandatory in spirit</b>: without it React
+diffs list children by position and re-mounts on reorder.</li>
+<li>Pipes → function calls: <code>{chf(m.income)}</code>. No registration, no purity rules;
+it's just an import.</li>
+<li>Attribute bindings → props: <code>className=</code> (not <code>class</code>),
+<code>style</code> takes an object, <code>onChange</code>/<code>onClick</code> take functions.</li>
+</ul>
+<h3>The rendering model, in three sentences</h3>
+<p>When state changes, React <b>re-runs the whole component function</b>, gets a new element
+tree, diffs it against the previous one, and patches the real DOM minimally. Angular instead
+keeps your class instance alive and re-evaluates template bindings when zone.js signals that
+something async happened. So: Angular = long-lived instance + automatic dirty checking;
+React = re-executed function + explicit state setters. Nothing re-renders unless
+<i>you</i> call a setter.</p>
+<p>Because the function re-runs, anything computed inline is automatically fresh — the
+project's pages derive filtered lists as plain <code>const</code>s on every render
+(lesson 8) where Angular would reach for pipes or memoized selectors. At this app's scale
+that's free; <code>useMemo</code> exists for when it isn't.</p>
+<div class="box box--ng">
+<div class="bt">The habit to unlearn</div>
+<p>In Angular you mutate: <code>this.rows.push(x)</code>, and change detection finds it. In
+React state is <b>replaced, never mutated</b>: <code>setRows([...rows, x])</code>,
+<code>setBiz({ ...biz, iban: v })</code>. Every state update in this repo is a spread for
+exactly that reason — a mutated object is reference-equal, so React (and its diffing) treats
+it as unchanged.</p>
+</div>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="1" data-q="0" data-a="2">
+<p class="qtext">In React, what triggers a re-render?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Any async operation, via zone.js</button>
+<button type="button" class="qopt" data-o="1">Mutating a component field</button>
+<button type="button" class="qopt" data-o="2">Calling a state setter like setRows(...)</button>
+</div>
+<p class="qwhy" hidden>There is no zone. Nothing re-renders unless a setter is called — which is also why state is replaced (spread), never mutated.</p></div>
+<div class="qq" data-l="1" data-q="1" data-a="0">
+<p class="qtext">What does key={r.id} in a .map() correspond to in Angular?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">trackBy in *ngFor</button>
+<button type="button" class="qopt" data-o="1">The element's DOM id</button>
+<button type="button" class="qopt" data-o="2">A route parameter</button>
+</div>
+<p class="qwhy" hidden>It tells the differ which rendered item is which. Without it, React diffs by position and re-mounts rows on reorder.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="1">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-2" hidden>
+<h2><span class="no">03</span>Angular → Next, the full mapping</h2>
+<div class="tblwrap"><table>
+<tr><th><span class="tag tag--ng">Angular</span></th><th><span class="tag tag--nx">This project</span></th><th>Lesson</th></tr>
+<tr><td>Router config + <code>&lt;router-outlet&gt;</code></td><td>Folders: <code>app/bills/page.tsx</code> <i>is</i> <code>/bills</code>; layout's <code>children</code> is the outlet</td><td>04</td></tr>
+<tr><td>App shell component</td><td><code>layout.tsx</code> + <code>Shell.tsx</code>, persists across navigations</td><td>04</td></tr>
+<tr><td><code>routerLinkActive</code></td><td><code>usePathname()</code> + a class ternary</td><td>04</td></tr>
+<tr><td><code>CanActivate</code> guards</td><td>401-driven redirect in the API client (data-level, not route-level)</td><td>06</td></tr>
+<tr><td><code>HttpClient</code> + interceptors</td><td>30-line typed <code>fetch</code> wrapper</td><td>07</td></tr>
+<tr><td>Models / DTO interfaces</td><td>Hand-written interfaces next to the client</td><td>07</td></tr>
+<tr><td>Injectable services (<code>providedIn:'root'</code>)</td><td>Plain ES modules with module-level state</td><td>11</td></tr>
+<tr><td>NgRx / component-store</td><td>None — server state + local state cover the app</td><td>11</td></tr>
+<tr><td>Templates, <code>*ngIf/*ngFor</code>, pipes</td><td>JSX + plain functions</td><td>02</td></tr>
+<tr><td><code>[(ngModel)]</code> / Reactive Forms</td><td>Controlled inputs; uncontrolled + <code>key</code> for server-reset cells</td><td>09</td></tr>
+<tr><td><code>@Input()</code> / <code>@Output()</code></td><td>Props / callback props; <code>children</code> ≈ content projection</td><td>10</td></tr>
+<tr><td><code>ng-content</code></td><td><code>{children}</code></td><td>10</td></tr>
+<tr><td><code>ngOnInit</code> / <code>ngOnDestroy</code></td><td><code>useEffect(fn, [])</code> / its returned cleanup function</td><td>08</td></tr>
+<tr><td><code>valueChanges.pipe(debounceTime, switchMap)</code></td><td><code>setTimeout</code> held in a <code>useRef</code></td><td>08</td></tr>
+<tr><td>ViewEncapsulation / component SCSS</td><td>Deliberately global token CSS, shared with the classic SPA</td><td>12</td></tr>
+<tr><td><code>ng2-charts</code></td><td><code>react-chartjs-2</code> + explicit Chart.js registration</td><td>13</td></tr>
+<tr><td><code>environment.ts</code> (build-time)</td><td><code>API_URL</code> env, also baked at build</td><td>14</td></tr>
+<tr><td><code>proxy.conf.json</code> (dev only)</td><td><code>rewrites()</code> (dev <i>and</i> prod)</td><td>01</td></tr>
+<tr><td>NgModules / standalone bootstrap</td><td>Nothing — an exporting file is the unit</td><td>—</td></tr>
+<tr><td>zone.js change detection</td><td><code>setState</code> re-renders; explicit by design</td><td>02</td></tr>
+<tr><td>Angular Universal / SSR add-on</td><td>Built in — every page prerenders its shell</td><td>05</td></tr>
+<tr><td>i18n (<code>@angular/localize</code>)</td><td>Not wired; documented boundary + exercise 4</td><td>16</td></tr>
+</table></div>
+<p>The two big deletions deserve emphasis. There is <b>no DI container</b>: React answers
+"where do I get my collaborators" with the module system, and testability with function
+arguments. And there is <b>no zone</b>: Angular's most magical subsystem simply has no
+counterpart — the render loop is driven only by setter calls you can grep for.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="2" data-q="0" data-a="1">
+<p class="qtext">What replaces Angular's DI container in this project?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">React Context everywhere</button>
+<button type="button" class="qopt" data-o="1">The ES module system — imports are cached singletons</button>
+<button type="button" class="qopt" data-o="2">A service-locator library</button>
+</div>
+<p class="qwhy" hidden>lib/api.ts and lib/prefs.ts are plain modules. Module-level state is app-wide state; imports give you the singleton for free.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="2">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-3" hidden>
+<h2><span class="no">04</span>Routing is the filesystem</h2>
+<p>The App Router's convention: a folder under <code>app/</code> is a URL segment; the
+<code>page.tsx</code> inside it is the component for that URL. This project's entire "router
+config" is the directory listing:</p>
+<pre>app/
+  layout.tsx          <span class="c">← wraps everything</span>
+  page.tsx            <span class="c">← "/" → redirect("/dashboard")</span>
+  login/page.tsx
+  dashboard/page.tsx
+  forecast/ cash/ bills/ obligations/ calendar/
+  payroll/ reports/ dividends/ invoices/
+  customers/ expenses/ bank/ settings/</pre>
+<p class="filecap">app/page.tsx — the whole file</p>
+<pre>import { redirect } from "next/navigation";
+export default function Home() { redirect("/dashboard"); }</pre>
+<p><code>redirect()</code> in a server component runs during rendering — the Angular
+equivalent of a default route <code>{ path: '', redirectTo: 'dashboard' }</code>, but expressed
+as code, and it happens on the server before any JS ships.</p>
+<h3>The layout is your persistent shell</h3>
+<p><code>layout.tsx</code> renders once and <b>persists across navigations</b> — the sidebar
+does not re-mount when you move from Bills to Payroll, exactly like a component outside the
+<code>router-outlet</code>. The current page arrives as <code>children</code>:</p>
+<p class="filecap">app/layout.tsx</p>
+<pre>export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;head&gt;&lt;script dangerouslySetInnerHTML={{ __html: themeInit }} /&gt;&lt;/head&gt;
+      &lt;body&gt;&lt;Shell&gt;{children}&lt;/Shell&gt;&lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</pre>
+<p>(That inline script applies the saved dark-mode class before first paint — the classic
+flash-of-wrong-theme fix; lesson 12.) Layouts nest: a folder can carry its own
+<code>layout.tsx</code> wrapping only its subtree, the analogue of a child route with its own
+shell component. This app needs only the root one.</p>
+<h3>Navigation: three mechanisms, two used</h3>
+<ul>
+<li><b><code>&lt;Link href&gt;</code></b> — client-side navigation with prefetching, the
+<code>routerLink</code> equivalent. </li>
+<li><b><code>useRouter().push()</code></b> — imperative navigation, used after login:
+<code>router.push("/dashboard")</code>. Your <code>Router.navigate()</code>.</li>
+<li><b>Plain <code>&lt;a href&gt;</code></b> — full page load. The Shell's sidebar
+deliberately uses these: every page fetches fresh on mount anyway, the app is 103&nbsp;kB,
+and during the port some links pointed at the classic frontend on another origin, where
+<code>Link</code> can't help. A conscious trade of SPA-smoothness for simplicity — swapping
+them for <code>Link</code> later is a find-and-replace.</li>
+</ul>
+<h3>What this project doesn't use (but you should know exists)</h3>
+<div class="tblwrap"><table>
+<tr><th>Convention</th><th>What it does</th><th>Angular analogue</th></tr>
+<tr><td><code>[id]/page.tsx</code></td><td>Dynamic segment: <code>/invoices/[id]</code>; the component receives <code>params</code></td><td><code>:id</code> route param</td></tr>
+<tr><td><code>loading.tsx</code></td><td>Automatic suspense fallback per segment</td><td>route-level skeleton you hand-roll</td></tr>
+<tr><td><code>error.tsx</code></td><td>Error boundary per segment</td><td><code>ErrorHandler</code>, scoped</td></tr>
+<tr><td><code>(group)/</code></td><td>Folder grouping without a URL segment</td><td>routing module organization</td></tr>
+<tr><td><code>route.ts</code></td><td>API endpoint in the Next server</td><td>— (this project's backend is FastAPI, on purpose)</td></tr>
+</table></div>
+<p>The pages here render loading and error states inline instead
+(<code>if (!data) return &lt;div className="hint"&gt;Loading…&lt;/div&gt;</code>) — fewer files,
+same result at this scale.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="3" data-q="0" data-a="1">
+<p class="qtext">How is the route /bills defined?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">In a central routes array</button>
+<button type="button" class="qopt" data-o="1">By the existence of app/bills/page.tsx</button>
+<button type="button" class="qopt" data-o="2">Via a @Route decorator on the component</button>
+</div>
+<p class="qwhy" hidden>The filesystem is the router config. A folder is a segment; its page.tsx is the component.</p></div>
+<div class="qq" data-l="3" data-q="1" data-a="1">
+<p class="qtext">The sidebar uses plain <a href> instead of <Link>. What's the consequence?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Navigation breaks in production</button>
+<button type="button" class="qopt" data-o="1">Full page loads between pages — a deliberate simplicity trade</button>
+<button type="button" class="qopt" data-o="2">Prefetching happens twice</button>
+</div>
+<p class="qwhy" hidden>Each click reloads the app (~103 kB, prerendered shell), which the project accepted during the port. Swapping to <Link> is a find-and-replace later.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="3">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-4" hidden>
+<h2><span class="no">05</span>Rendering: server components, hydration, and what ○ Static means</h2>
+<p>The App Router's headline feature: components are <b>server components by default</b>. They
+run only on the server (at build or request time), emit HTML, ship zero JS, and cannot use
+state, effects, or browser APIs. A file that needs interactivity declares
+<code>"use client"</code> on line one — and that directive marks a <b>boundary</b>: everything
+it imports becomes client code too.</p>
+<h3>The timeline for a page in this app</h3>
+<ol>
+<li><b>Build time</b> — <code>next build</code> renders each page's static shell (the
+component tree up to the first data fetch: sidebar, headers, "Loading…" state) to HTML. That's
+the <code>○ (Static)</code> in the build output.</li>
+<li><b>Request</b> — the server returns that HTML instantly. First paint shows the full chrome
+with the loading hint. No white screen, no spinner-only page.</li>
+<li><b>Hydration</b> — React attaches to the server HTML and the components become live.
+The Angular analogue is Universal + <code>provideClientHydration()</code>, except here it's
+the default, not an add-on.</li>
+<li><b>Data</b> — <code>useEffect</code> fires, <code>api()</code> calls FastAPI through the
+rewrite, state fills, the page re-renders with numbers.</li>
+</ol>
+<h3>Why this app is 95% client components</h3>
+<ul>
+<li><b>The auth token lives in <code>localStorage</code></b> (parity with the classic SPA
+against the same backend). Server components cannot read it, so they cannot fetch
+authenticated data on the user's behalf.</li>
+<li><b>Everything on screen is live user data.</b> There is nothing meaningful to render at
+build time beyond the shell — and the shell <i>does</i> prerender.</li>
+<li><b>One mental model during a port.</b> A client component behaves like an Angular
+component: mount → fetch → render → update. The port stayed mechanical because every page
+follows the same skeleton.</li>
+</ul>
+<div class="box">
+<div class="bt">The serialization rule at the boundary</div>
+<p>Props crossing from a server component into a <code>"use client"</code> component must be
+serializable — plain data, no functions, no class instances, no <code>Date</code> methods you
+rely on. This project's boundary is trivial (the root layout passes only
+<code>children</code>), but the rule is the #1 source of confusion in mixed apps; it is why
+"just pass a callback down" sometimes fails across the boundary.</p>
+</div>
+<div class="box box--gotcha">
+<div class="bt">Hydration mismatches</div>
+<p>Server HTML and the client's first render must be identical, or React warns and patches.
+Classic trap: rendering <code>new Date()</code>, random values, or theme-dependent markup.
+This app sidesteps the theme case by setting <code>data-theme</code> in a
+<code>&lt;head&gt;</code> script <i>before</i> paint, and keeping theme out of React state
+entirely — CSS tokens react to the attribute, React never knows (lesson 12).</p>
+</div>
+<h3>If you rebuilt it server-first</h3>
+<p>Move the token to an <code>httpOnly</code> cookie, make each <code>page.tsx</code> an
+<code>async</code> server component that awaits FastAPI directly (forwarding
+<code>cookies()</code>), and keep only the interactive leaves — search boxes, paid-toggles,
+the forecast cells — as small client islands. The CSS and the backend wouldn't change a line.
+That is exercise 3, and it's the highest-value one.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="4" data-q="0" data-a="1">
+<p class="qtext">Why can't this app's pages be server components today?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">FastAPI can't be called from Node</button>
+<button type="button" class="qopt" data-o="1">The auth token lives in localStorage, which the server can't read</button>
+<button type="button" class="qopt" data-o="2">Server components don't support tables</button>
+</div>
+<p class="qwhy" hidden>Server components can't read localStorage, so they can't fetch authenticated data. Moving the token to an httpOnly cookie unlocks the server-first rebuild (exercise 3).</p></div>
+<div class="qq" data-l="4" data-q="1" data-a="1">
+<p class="qtext">What does ○ (Static) in the build output mean for /dashboard?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">The page never updates without a rebuild</button>
+<button type="button" class="qopt" data-o="1">Its shell (chrome + loading state) is prerendered; data still loads client-side</button>
+<button type="button" class="qopt" data-o="2">It is served from a CDN only</button>
+</div>
+<p class="qwhy" hidden>The static part is the pre-data render. Hydration attaches React, then useEffect fetches live data.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="4">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-5" hidden>
+<h2><span class="no">06</span>Auth: the login flow and its trade-offs</h2>
+<p class="filecap">app/login/page.tsx (core)</p>
+<pre>const submit = async (e: React.FormEvent) =&gt; {
+  e.preventDefault();
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  if (!res.ok) { setError("Wrong password"); return; }
+  const data = await res.json();
+  localStorage.setItem("session_token", data.token);
+  router.push("/dashboard");
+};</pre>
+<p>FastAPI issues an opaque token held in an in-memory session table; the client stores it in
+<code>localStorage</code> and sends it as <code>Authorization: Bearer</code>. Route protection
+is <b>data-level, not route-level</b>: any 401 anywhere clears the token and hard-redirects to
+<code>/login</code> (lesson 7). Coarser than <code>CanActivate</code>, and honest about what is
+actually being protected — the data, not the empty page shell.</p>
+<h3>localStorage vs httpOnly cookie — the adult conversation</h3>
+<div class="tblwrap"><table>
+<tr><th></th><th>localStorage + Bearer (this app)</th><th>httpOnly cookie</th></tr>
+<tr><td>XSS steals token</td><td>Yes — any injected script can read it</td><td>No (script can't read it; it can still <i>use</i> it while on-page)</td></tr>
+<tr><td>CSRF</td><td>Immune (header must be attached explicitly)</td><td>Needs SameSite/CSRF tokens</td></tr>
+<tr><td>Server components can auth?</td><td>No</td><td>Yes — <code>cookies()</code> is readable server-side</td></tr>
+<tr><td>File downloads (<code>&lt;a href&gt;</code>)</td><td>Needs the <code>?token=</code> query fallback</td><td>Just works</td></tr>
+<tr><td>Why chosen here</td><td colspan="2">Parity: the classic SPA already used it; both frontends share one backend session model during the port. The backend <i>also</i> accepts cookie sessions, so exercise 3 needs no backend work.</td></tr>
+</table></div>
+<p>Note the download detail — you cannot attach a header to a plain link, so PDFs and files use
+the backend's query-token fallback:</p>
+<p class="filecap">app/invoices/page.tsx</p>
+<pre>&lt;a href={`/api/invoices/${i.id}/pdf?token=${encodeURIComponent(token())}`}
+   target="_blank" rel="noreferrer"&gt;📄&lt;/a&gt;</pre>
+<p>In Angular you have hit this exact wall the first time an interceptor-authenticated app
+needed a download link.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="5" data-q="0" data-a="1">
+<p class="qtext">Which attack does the localStorage token model NOT protect against?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">CSRF</button>
+<button type="button" class="qopt" data-o="1">XSS reading the token</button>
+<button type="button" class="qopt" data-o="2">Password brute force</button>
+</div>
+<p class="qwhy" hidden>Bearer-from-localStorage is CSRF-immune but XSS-readable. httpOnly cookies flip the trade — and would enable server-side auth.</p></div>
+<div class="qq" data-l="5" data-q="1" data-a="1">
+<p class="qtext">Why do PDF links carry ?token=… instead of a header?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Headers are stripped by the rewrite</button>
+<button type="button" class="qopt" data-o="1">You can't attach headers to a plain <a> navigation</button>
+<button type="button" class="qopt" data-o="2">FastAPI only reads query params</button>
+</div>
+<p class="qwhy" hidden>A plain link can't send Authorization. The backend accepts a query token exactly for downloads.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="5">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-6" hidden>
+<h2><span class="no">07</span>The data layer — your HttpClient in 30 lines</h2>
+<p>Angular gives you <code>HttpClient</code> (typed via generics) plus interceptors for auth
+and errors. Here the same three jobs are one function:</p>
+<p class="filecap">lib/api.ts</p>
+<pre>export class ApiError extends Error {
+  constructor(public status: number, message: string) { super(message); }
+}
+
+export async function api&lt;T = unknown&gt;(path: string, opts: RequestInit = {}): Promise&lt;T&gt; {
+  const token = typeof window !== "undefined" ? localStorage.getItem("session_token") : null;
+  const res = await fetch(`/api${path}`, {
+    ...opts,
+    headers: {
+      <span class="c">// FormData must set its own multipart boundary — don't force JSON on it</span>
+      ...(opts.body &amp;&amp; !(opts.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),      <span class="c">// auth interceptor</span>
+      ...(opts.headers || {}),
+    },
+  });
+  if (res.status === 401) {                                        <span class="c">// error interceptor</span>
+    localStorage.removeItem("session_token");
+    window.location.href = "/login";
+    throw new ApiError(401, "Not authenticated");
+  }
+  if (!res.ok) {
+    let detail = res.statusText;
+    try { detail = (await res.json()).detail ?? detail; } catch { <span class="c">/* keep statusText */</span> }
+    throw new ApiError(res.status, String(detail));
+  }
+  return (res.headers.get("content-type") || "").includes("json") ? res.json() : (undefined as T);
+}</pre>
+<p>Worth pausing on each defensive line: the <code>typeof window</code> guard keeps the module
+importable during server rendering; the <code>FormData</code> branch exists because setting
+<code>Content-Type</code> manually on multipart bodies breaks the boundary parameter (a bug
+every framework's users rediscover); the <code>detail</code> dance surfaces FastAPI's error
+messages instead of "Unprocessable Entity".</p>
+<h3>The types</h3>
+<p>Below the function sit ~10 hand-written interfaces — <code>Overview</code>,
+<code>Forecast</code>, <code>Obligation</code>, <code>Bill</code>, <code>Payslip</code>… —
+slices of what FastAPI actually returns:</p>
+<pre>export interface Obligation {
+  id: number; obligation_type: string; period_label: string; period_year: number;
+  amount: number; currency: string; due_date: string | null; status: "paid" | "unpaid";
+  expected_bill_date: string | null; expected_bill_amount: number | null;
+  payable_date: string | null;      <span class="c">// ← the domain rule, surfaced as data</span>
+}</pre>
+<p>Your instinct to generate these from OpenAPI is right — FastAPI serves
+<code>openapi.json</code> for free, and <code>npx openapi-typescript</code> would emit the lot.
+Hand-written was chosen so each type documents <i>what the page actually consumes</i>; if you
+extend the API surface, switch to generation and delete the hand copies (exercise 5).</p>
+<h3>Call-site patterns</h3>
+<pre>const [o, r, rw, fc] = await Promise.all([
+  api&lt;Overview&gt;(`/dashboard/overview?range=${encodeURIComponent(savedRange)}`),
+  api&lt;Reserve[]&gt;("/reserves").catch(() =&gt; []),       <span class="c">// optional widget → degrade</span>
+  api&lt;Runway&gt;("/runway").catch(() =&gt; null),
+  api&lt;Forecast&gt;("/finance/forecast").catch(() =&gt; null),
+]);</pre>
+<p><code>forkJoin</code> with per-stream <code>catchError(of(null))</code>, in one line of
+platform. And no observables anywhere: for request/response data, promises cover everything
+RxJS did in your services. Streams earn their keep for genuinely continuous sources
+(websockets, drag events) — this app has none.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="6" data-q="0" data-a="1">
+<p class="qtext">Why does api() skip Content-Type for FormData bodies?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">FormData is always GET</button>
+<button type="button" class="qopt" data-o="1">The browser must set the multipart boundary itself</button>
+<button type="button" class="qopt" data-o="2">FastAPI rejects JSON headers</button>
+</div>
+<p class="qwhy" hidden>Forcing application/json (or even multipart/form-data without the boundary) breaks the request. Letting the browser set it is the fix every framework's users rediscover.</p></div>
+<div class="qq" data-l="6" data-q="1" data-a="1">
+<p class="qtext">api<Reserve[]>("/reserves").catch(() => []) is the promise version of…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">retry(3)</button>
+<button type="button" class="qopt" data-o="1">catchError(() => of([])) on one stream in a forkJoin</button>
+<button type="button" class="qopt" data-o="2">finalize()</button>
+</div>
+<p class="qwhy" hidden>An optional widget degrades to empty instead of failing the whole Promise.all — per-source error isolation.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="6">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-7" hidden>
+<h2><span class="no">08</span>State, effects, refs — the four hooks actually used</h2>
+<p>The whole app is built from four hooks. Master these against their Angular counterparts and
+you have read every page.</p>
+<h3>useState — the field <i>and</i> the change detector</h3>
+<pre>const [all, setAll] = useState&lt;Obligation[] | null&gt;(null);</pre>
+<p><code>null</code> doubles as the loading flag — the early-return pattern replaces both
+<code>*ngIf="loading"</code> and skeleton templates:</p>
+<pre>if (error) return &lt;div className="notice notice--danger"&gt;{error}&lt;/div&gt;;
+if (!all)  return &lt;div className="hint"&gt;Loading…&lt;/div&gt;;</pre>
+<p>Two forms of setter: <code>setAll(rows)</code> replaces; <code>setV(x =&gt; x + 1)</code>
+(the functional form, used by the chart theme hook) reads the <i>current</i> value — required
+whenever the update depends on previous state, because the closed-over variable may be stale.</p>
+<h3>useEffect — ngOnInit and ngOnDestroy in one</h3>
+<pre>useEffect(() =&gt; {
+  const bump = () =&gt; setV(x =&gt; x + 1);
+  window.addEventListener("themechange", bump);
+  return () =&gt; window.removeEventListener("themechange", bump);   <span class="c">// ← ngOnDestroy</span>
+}, []);   <span class="c">// [] = run once on mount = ngOnInit</span></pre>
+<p>The dependency array is the contract Angular never asks you to write: it lists every
+reactive value the effect reads. <code>[]</code> means "on mount". A wrong array is the
+React equivalent of a subscription leak — which is why the pages wrap their loaders in
+<code>useCallback</code>:</p>
+<pre>const reload = useCallback(() =&gt; {
+  api&lt;Obligation[]&gt;("/obligations").then(setAll).catch(e =&gt; setError(String(e)));
+}, []);                       <span class="c">// stable identity across re-renders</span>
+useEffect(reload, [reload]);  <span class="c">// satisfies the lint contract, runs once</span></pre>
+<p>Why the ceremony: a function declared inline is a <i>new</i> function on every render; as an
+effect dependency it would re-fire the effect each time. <code>useCallback</code> pins its
+identity — think of it as promoting a template lambda to a bound class method. The Obligations
+page also calls <code>reload()</code> after a paid-toggle, the same refetch-after-mutate you'd
+write in a service.</p>
+<h3>useRef — the instance field that must not re-render</h3>
+<p>The Bills search debounce, complete:</p>
+<p class="filecap">app/bills/page.tsx</p>
+<pre>const timer = useRef&lt;ReturnType&lt;typeof setTimeout&gt;&gt;(undefined);
+
+const search = (value: string) =&gt; {
+  setQ(value);                                  <span class="c">// input echoes immediately</span>
+  clearTimeout(timer.current);                  <span class="c">// ≈ switchMap cancelling the previous inner</span>
+  if (value.trim().length &lt; 2) { setIds(null); setChips([]); return; }
+  timer.current = setTimeout(async () =&gt; {
+    const d = await api&lt;SearchResponse&gt;(
+      `/search?q=${encodeURIComponent("type:bill " + value.trim())}&amp;limit=1000`);
+    setIds(new Set(d.results.filter(r =&gt; r.type === "bill").map(r =&gt; r.id)));
+    setChips((d.parsed ?? []).filter(c =&gt; c.kind !== "type"));
+  }, 250);
+};</pre>
+<p>Six lines replace <code>valueChanges.pipe(debounceTime(250), switchMap(…))</code>. The ref
+holds the timer because putting it in state would re-render pointlessly on every keystroke's
+timer swap. Note what the server gives back: matching <i>ids</i> plus <i>parsed filter
+chips</i> — the query language lives in Python; the page only intersects sets:</p>
+<pre>let rows = all;
+if (year) rows = rows.filter(b =&gt; b.doc_date.startsWith(year));
+if (cat)  rows = rows.filter(b =&gt; b.category === cat);
+if (ids)  rows = rows.filter(b =&gt; ids.has(b.id));      <span class="c">// server search result</span></pre>
+<p>Derived data as plain consts — recomputed each render, no memo, no selectors. Reach for
+<code>useMemo</code> only when profiling says so; premature memoization is React's version of
+premature <code>OnPush</code>.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="7" data-q="0" data-a="1">
+<p class="qtext">Why wrap the page loader in useCallback before passing it to useEffect?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">It makes the function async-safe</button>
+<button type="button" class="qopt" data-o="1">Inline functions get a new identity each render and would re-fire the effect</button>
+<button type="button" class="qopt" data-o="2">It caches the HTTP response</button>
+</div>
+<p class="qwhy" hidden>useCallback pins the function's identity so the dependency array stays stable — the render-loop contract Angular never asks you to write.</p></div>
+<div class="qq" data-l="7" data-q="1" data-a="1">
+<p class="qtext">The search debounce keeps its timer in useRef because…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">setTimeout doesn't work with useState</button>
+<button type="button" class="qopt" data-o="1">storing it in state would pointlessly re-render on every keystroke</button>
+<button type="button" class="qopt" data-o="2">refs persist across page navigations</button>
+</div>
+<p class="qwhy" hidden>A ref is the instance field that must not trigger re-renders. clearTimeout+setTimeout gives you debounceTime+switchMap in six lines.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="7">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-8" hidden>
+<h2><span class="no">09</span>Forms without FormsModule</h2>
+<p>No <code>FormsModule</code>, no <code>FormBuilder</code>, no validators framework. Three
+patterns cover every form in the app:</p>
+<h3>1 · Controlled inputs (the default)</h3>
+<p class="filecap">app/settings/page.tsx</p>
+<pre>const [currency, setCurrency] = useState("CHF");
+…
+&lt;select value={currency} onChange={e =&gt; setCurrency(e.target.value)}&gt;
+  {CURRENCIES.map(c =&gt; &lt;option key={c} value={c}&gt;{c}&lt;/option&gt;)}
+&lt;/select&gt;</pre>
+<p>This <i>is</i> <code>[(ngModel)]</code>, spelled out: value down, event up. The Settings
+page manages a dozen of these plus one object-valued group with a curried setter —
+worth reading because it is exactly what a <code>FormGroup</code> would have hidden:</p>
+<pre>const bset = (k: keyof Biz) =&gt; (e: React.ChangeEvent&lt;HTMLInputElement | HTMLTextAreaElement&gt;) =&gt;
+  setBiz({ ...biz, [k]: e.target.value });
+…
+&lt;input value={biz.iban} onChange={bset("iban")} /&gt;</pre>
+<h3>2 · Uncontrolled + key (server-recomputed cells)</h3>
+<p>The Forecast's per-month income cells would fight a controlled binding: the user types, the
+server recomputes, the cell must then show server truth. The escape hatch:</p>
+<p class="filecap">app/forecast/page.tsx</p>
+<pre>&lt;input type="number" defaultValue={Math.round(m.income)} key={`${m.key}-${m.income}`}
+       onBlur={e =&gt; { if (Number(e.target.value) !== Math.round(m.income))
+                        setMonthIncome(m.key, e.target.value); }} /&gt;</pre>
+<p><code>defaultValue</code> makes it uncontrolled (the DOM owns the text while typing);
+changing the <code>key</code> after a save <b>re-mounts</b> the input with fresh server data.
+Commit on <code>blur</code>, not on every keystroke. File the trick: "uncontrolled with reset
+key" solves every editable-cell-against-computed-data case.</p>
+<h3>3 · Validation where it's cheap</h3>
+<pre>function localeValid(l: string) { try { (0).toLocaleString(l); return true; } catch { return false; } }
+const safeLocale = localeValid(effLocale) ? effLocale : "de-CH";</pre>
+<p>Native HTML constraints (<code>type="number" min={0} step="0.1"</code>) plus tiny predicate
+functions. The heavyweight validation lives where it must anyway: the backend rejects bad
+payloads, and <code>ApiError</code> surfaces the message. If a form grows past ~15 fields with
+cross-field rules, that's when <code>react-hook-form</code> (the ecosystem's Reactive Forms)
+earns its dependency — none here does.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="8" data-q="0" data-a="1">
+<p class="qtext">The Forecast income cells use defaultValue plus a changing key. Why?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Controlled inputs can't hold numbers</button>
+<button type="button" class="qopt" data-o="1">The input stays uncontrolled while typing, and the key change re-mounts it with fresh server truth after save</button>
+<button type="button" class="qopt" data-o="2">It avoids TypeScript errors</button>
+</div>
+<p class="qwhy" hidden>'Uncontrolled with reset key' is the pattern for editable cells the server recomputes — a controlled binding would fight the user mid-typing.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="8">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-9" hidden>
+<h2><span class="no">10</span>Component patterns in ui.tsx</h2>
+<p><code>components/ui.tsx</code> is the project's shared component library — seven components,
+80 lines, no decorators. The patterns generalize:</p>
+<h3>Props are typed inline; unions replace enums-of-config</h3>
+<pre>export type Accent = "ok" | "danger" | "warn" | "info" | "owner" | null;
+
+export function Stat({ label, value, mod = null, hint }: {
+  label: string; value: string; mod?: Accent; hint?: React.ReactNode;
+}) { … }</pre>
+<p><code>mod</code> maps 1:1 onto the CSS design system's modifier classes — the type system
+enforcing the design system. <code>hint?: React.ReactNode</code> is the loose slot: callers
+pass a string or markup, which is <code>ng-content</code>-select in prop form.</p>
+<h3>children is content projection</h3>
+<pre>export function ChartCard({ title, legend, height = 320, children }: …) {
+  return (
+    &lt;div className="chart-card"&gt;
+      &lt;div className="chart-card__head"&gt;&lt;h3&gt;{title}&lt;/h3&gt;{legend}&lt;/div&gt;
+      &lt;div className="chart-wrap" style={{ height }}&gt;{children}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+<span class="c">// usage:</span>
+&lt;ChartCard title={`Cash forecast · ${forecast.year}`} legend={&lt;Legend items={…} /&gt;}&gt;
+  &lt;ForecastChart months={forecast.months} /&gt;
+&lt;/ChartCard&gt;</pre>
+<p>Two projection slots: a named one (<code>legend</code> — a prop that takes JSX, the analogue
+of <code>ng-content select</code>) and the default (<code>children</code>). No
+<code>@ContentChild</code>, no template refs — elements are values, so you pass them like
+values.</p>
+<h3>Composition over configuration: RecapStrip</h3>
+<p><code>RecapStrip.tsx</code> renders eleven dashboard tiles by calling one
+<code>RecapTile</code> with different data — conditionals and all — as a plain function body.
+The classic frontend builds the same strip by concatenating template strings. Reading the two
+side by side (<code>static/js/02-dashboard.js</code> → <code>renderPanelsRecap</code>) is the
+best single before/after in the repo: identical logic, but one version is type-checked,
+and its conditional markup is expressions instead of string surgery.</p>
+<h3>Events are just typed callbacks</h3>
+<pre>&lt;button onClick={() =&gt; onToggle(o)}&gt;Pay&lt;/button&gt;
+<span class="c">// parent:</span>
+const toggle = async (o: Obligation) =&gt; {
+  await api(`/obligations/${o.id}/status`, { method: "PATCH",
+    body: JSON.stringify({ status: o.status === "paid" ? "unpaid" : "paid" }) });
+  reload();
+};</pre>
+<p><code>@Output() toggled = new EventEmitter&lt;Obligation&gt;()</code> becomes "pass a
+function". The mutation pattern is optimistic-free on purpose: PATCH, then refetch — boring,
+correct, and consistent with the backend being the only source of truth. Exercise 2 adds the
+optimistic version and lets you feel the difference.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="9" data-q="0" data-a="0">
+<p class="qtext">What is {children} closest to in Angular?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">ng-content</button>
+<button type="button" class="qopt" data-o="1">a structural directive</button>
+<button type="button" class="qopt" data-o="2">ViewChild</button>
+</div>
+<p class="qwhy" hidden>Content projection. A named slot is just another prop that accepts JSX — elements are values.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="9">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-10" hidden>
+<h2><span class="no">11</span>Shared services without DI</h2>
+<p><code>providedIn: 'root'</code> gives Angular a lazy singleton. In React-land a plain module
+already is one — ES imports are cached, so module-level state is app-wide state:</p>
+<p class="filecap">lib/prefs.ts</p>
+<pre>let cache: Record&lt;string, unknown&gt; | null = null;    <span class="c">// the singleton's private field</span>
+
+export async function loadPrefs(): Promise&lt;Record&lt;string, unknown&gt;&gt; {
+  if (!cache) cache = await api&lt;Record&lt;string, unknown&gt;&gt;("/preferences");
+  return cache;
+}
+
+export function pref&lt;T&gt;(prefs: Record&lt;string, unknown&gt;, path: string, fallback: T): T {
+  let cur: unknown = prefs;
+  for (const key of path.split(".")) {
+    if (cur == null || typeof cur !== "object") return fallback;
+    cur = (cur as Record&lt;string, unknown&gt;)[key];
+  }
+  return (cur === undefined ? fallback : cur) as T;
+}
+
+export async function setPref(path: string, value: unknown): Promise&lt;void&gt; {
+  const prefs = await loadPrefs();
+  <span class="c">// walk/create the path, set the leaf…</span>
+  await api("/preferences", { method: "PUT", body: JSON.stringify(prefs) });
+}</pre>
+<p>The important design choice is <i>where the real state lives</i>: <b>on the server</b>. The
+same <code>/preferences</code> document drives the classic SPA's widgets, the forecast's
+per-month income entries, the Settings page, even the dividend-tax parameters. That's why a
+number typed in the old frontend appears in the new one — and why there is no Redux, no
+NgRx-equivalent, no client store at all. When state must be shared, this app shares it through
+the API.</p>
+<h3>When you would add more</h3>
+<div class="tblwrap"><table>
+<tr><th>Need</th><th>Reach for</th><th>Angular analogue</th></tr>
+<tr><td>Value many components read, few write (theme, current user)</td><td>React Context</td><td>a lightweight injected service</td></tr>
+<tr><td>Server data with caching, revalidation, optimistic updates</td><td>SWR / TanStack Query</td><td>your hand-rolled caching service, done right</td></tr>
+<tr><td>Complex client-only state machines</td><td>Zustand / Redux Toolkit</td><td>NgRx</td></tr>
+</table></div>
+<p>The module-cache has one honest weakness the code accepts: it never invalidates during a
+session (a second browser tab writing prefs won't be seen until reload). SWR would fix that in
+an afternoon — exercise 2.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="10" data-q="0" data-a="2">
+<p class="qtext">Where does the app's shared UI state (widgets, forecast inputs, settings) actually live?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">A Redux store</button>
+<button type="button" class="qopt" data-o="1">localStorage</button>
+<button type="button" class="qopt" data-o="2">On the server, in the /preferences document</button>
+</div>
+<p class="qwhy" hidden>Both frontends read/write the same server document — that's why they can't disagree, and why no client store exists.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="10">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-11" hidden>
+<h2><span class="no">12</span>Styling: one CSS file, two frontends</h2>
+<p>Angular scopes styles per component (ViewEncapsulation); Next offers CSS Modules for the
+same job — and this project deliberately uses <b>neither</b>. <code>app/app.css</code> is a
+copy of the classic frontend's stylesheet: one global file built on design tokens, with BEM-ish
+class names supplying the discipline that encapsulation would otherwise enforce.</p>
+<p>Why: the two frontends had to be <b>pixel-identical during the port</b>, and the design
+system predates it. React components are thin wrappers over canonical classes (lesson 10), so a
+designer's change lands in both frontends. The cost is stated in the code's own comment: the
+file is <i>copied, not imported</i> (Next won't bundle CSS from outside its root), so changes
+must be mirrored — a documented trade, not an accident.</p>
+<h3>Theming without React</h3>
+<p>Dark mode is a <code>data-theme</code> attribute plus token redefinition. React is kept out
+of it almost entirely:</p>
+<p class="filecap">app/layout.tsx — before first paint, no flash</p>
+<pre>const themeInit = `
+try { if (localStorage.getItem('theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch {}
+`;
+&lt;head&gt;&lt;script dangerouslySetInnerHTML={{ __html: themeInit }} /&gt;&lt;/head&gt;</pre>
+<p class="filecap">components/Shell.tsx — the toggle</p>
+<pre>const toggleTheme = () =&gt; {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem("theme", next);
+  window.dispatchEvent(new Event("themechange"));   <span class="c">// only the charts care (lesson 13)</span>
+};</pre>
+<p>CSS custom properties respond to the attribute; components reference tokens; nothing
+re-renders except the charts, which must repaint canvas pixels. Compare with the Angular habit
+of a ThemeService + observable + async pipes — the platform (CSS) was already the reactive
+system needed.</p>
+<h3>Display settings flow through one module</h3>
+<p><code>lib/money.ts</code> holds the currency label and locale as module state, set once from
+preferences in the Shell; every <code>chf()</code> call in every page then formats accordingly.
+Change "CHF · de-CH" to "EUR · en-US" in Settings and the entire app — cards, tables, chart
+ticks — re-formats. One module, no injection token, no pipe re-registration.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="11" data-q="0" data-a="0">
+<p class="qtext">Why is app.css a copy of the classic stylesheet instead of an import?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Next can't bundle CSS from outside its root</button>
+<button type="button" class="qopt" data-o="1">CSS Modules forbid global styles</button>
+<button type="button" class="qopt" data-o="2">Licensing</button>
+</div>
+<p class="qwhy" hidden>A stated trade: pixel parity between frontends beats DRY here; the copy must be mirrored manually and the code says so.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="11">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-12" hidden>
+<h2><span class="no">13</span>Charts and the registration gotcha</h2>
+<p>Chart.js is wrapped by <code>react-chartjs-2</code> the way <code>ng2-charts</code> wraps it
+for Angular. Chart.js v4 is tree-shakeable, which means <b>you register every piece you use</b> —
+scales, elements, plugins, <i>and controllers</i>:</p>
+<p class="filecap">components/charts.tsx</p>
+<pre>ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement,
+  Tooltip, Legend, ArcElement, BarController, LineController);
+                       <span class="c">// ↑ the two everyone forgets</span></pre>
+<div class="box box--gotcha">
+<div class="bt">Gotcha we actually hit</div>
+<p>The first build compiled clean and crashed at runtime with
+<code>Error: "bar" is not a registered controller</code>. Elements and scales are not enough —
+mixed-type charts (<code>type: "bar"</code> dataset + <code>type: "line"</code> overlay, which
+both money charts use) also need their controllers registered. TypeScript cannot catch it;
+only opening the page can. Budget one E2E smoke per chart-bearing page.</p>
+</div>
+<h3>Theme-reactive canvas</h3>
+<p>Canvas pixels don't respond to CSS variables, so the chart components read tokens at render
+time and subscribe to the toggle's event:</p>
+<pre>function vizToken(name: string) {           <span class="c">// lib/money.ts</span>
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function useThemeVersion() {                <span class="c">// components/charts.tsx</span>
+  const [v, setV] = useState(0);
+  useEffect(() =&gt; {
+    const bump = () =&gt; setV(x =&gt; x + 1);
+    window.addEventListener("themechange", bump);
+    return () =&gt; window.removeEventListener("themechange", bump);
+  }, []);
+  return v;
+}</pre>
+<p>Bumping a counter nobody reads is the idiomatic "force re-render on external event" — on the
+next render <code>vizToken("--viz-income")</code> returns the other theme's value and the
+dataset colors rebuild. The design system stays the single source of truth for color; the
+charts just ask.</p>
+<p>Also note what the chart config <i>doesn't</i> do: no dual axes (income, outflow and
+running cash share one CHF scale), tooltips formatted through the same <code>chf()</code> as
+the tables, and category colors pinned to semantic tokens — the data-viz rules from the design
+system, enforced by shared helpers rather than review comments.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="12" data-q="0" data-a="1">
+<p class="qtext">The first chart build compiled clean but crashed at runtime. Why?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Canvas isn't supported in SSR</button>
+<button type="button" class="qopt" data-o="1">BarController/LineController weren't registered — tree-shaken Chart.js needs every piece registered</button>
+<button type="button" class="qopt" data-o="2">react-chartjs-2 requires React 18</button>
+</div>
+<p class="qwhy" hidden>Elements and scales weren't enough; mixed-type charts need their controllers too. TypeScript can't catch it — only opening the page can.</p></div>
+<div class="qq" data-l="12" data-q="1" data-a="1">
+<p class="qtext">How do charts follow the theme toggle?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">A ThemeService observable</button>
+<button type="button" class="qopt" data-o="1">They re-read CSS tokens on a themechange event that bumps a state counter</button>
+<button type="button" class="qopt" data-o="2">Chart.js has a dark-mode flag</button>
+</div>
+<p class="qwhy" hidden>Canvas pixels can't use CSS variables, so charts call getComputedStyle at render and re-render when the event fires.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="12">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-13" hidden>
+<h2><span class="no">14</span>Build, env, Docker, CI</h2>
+<h3>The three commands</h3>
+<div class="tblwrap"><table>
+<tr><th>Command</th><th>What it is</th><th>Angular analogue</th></tr>
+<tr><td><code>next dev</code></td><td>Dev server, fast refresh, compiles on demand</td><td><code>ng serve</code></td></tr>
+<tr><td><code>next build</code></td><td>Production compile + type-check + prerender; prints the route table</td><td><code>ng build</code></td></tr>
+<tr><td><code>next start</code></td><td>Node server serving the built app (rewrites live here)</td><td>Universal's <code>serve:ssr</code>; static Angular has no equivalent because there's no server</td></tr>
+</table></div>
+<pre>Route (app)                    Size     First Load JS
+┌ ○ /                          123 B     103 kB
+├ ○ /dashboard                71.4 kB    174 kB       <span class="c">← charts live here</span>
+├ ○ /bills                    3.13 kB    106 kB
+└ ○ /settings                 2.18 kB    105 kB
+○ (Static) prerendered as static content</pre>
+<p>Per-route code splitting is automatic — each folder becomes its own chunk, which Angular
+gives you only when you structure lazy-loaded route modules by hand. The 103&nbsp;kB shared
+baseline is React + Next runtime; the dashboard pays 71&nbsp;kB more, almost entirely
+Chart.js.</p>
+<div class="box box--gotcha">
+<div class="bt">The env-var trap that cost a debugging loop</div>
+<p><code>rewrites()</code> is executed during <code>next build</code> and the result is baked
+into the routes manifest. Setting <code>API_URL</code> when running <code>next start</code>
+<b>does nothing</b> — the freshly started server kept proxying to the old backend while the
+login kept failing with the right password. Identical mental model to
+<code>environment.ts</code>: build-time, not runtime. The Docker build therefore takes it as a
+build <code>ARG</code>; changing backends means rebuilding the image (or fronting both with
+one reverse proxy and never baking a URL at all).</p>
+</div>
+<h3>Docker: two processes, honest split</h3>
+<p class="filecap">cockpit-next/Dockerfile (multi-stage)</p>
+<pre>FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+ARG API_URL=http://backend:8000     <span class="c">← baked here</span>
+ENV API_URL=$API_URL
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./
+CMD ["npx", "next", "start", "-p", "3000"]</pre>
+<p><code>docker-compose.yml</code> pairs it with the FastAPI container (which self-seeds demo
+data on an empty DB) — backend on :8000, frontend on :3000, database and documents in a bind
+mount.</p>
+<h3>CI as a type gate</h3>
+<p>The GitHub workflow runs two jobs: backend (seed + 173 smoke tests) and frontend
+(<code>npm ci &amp;&amp; next build</code>). The build type-checks every page — so when the
+backend job's API shape and a frontend interface drift apart, the compile fails <i>before</i>
+any frontend test exists. Cheap insurance; the same role <code>ng build</code> plays in an
+Nx monorepo pipeline.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="13" data-q="0" data-a="1">
+<p class="qtext">Setting API_URL when running `next start` does nothing because…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Node caches env vars</button>
+<button type="button" class="qopt" data-o="1">rewrites() is resolved during `next build` and baked into the manifest</button>
+<button type="button" class="qopt" data-o="2">Docker overrides it</button>
+</div>
+<p class="qwhy" hidden>Build-time, not runtime — the same mental model as environment.ts. The Docker build takes it as a build ARG for exactly this reason.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="13">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-14" hidden>
+<h2><span class="no">15</span>Performance: what actually ships, what would be next</h2>
+<ul>
+<li><b>First paint</b> is prerendered HTML — chrome and loading state — then one request per
+data source. The classic SPA, by contrast, ships a blank shell and builds everything in JS;
+the port's first paint is objectively better without anyone optimizing.</li>
+<li><b>Bundle discipline</b> comes from the route table: any PR that balloons a page shows up
+as a number in the build output. The one heavy route (dashboard, +71&nbsp;kB) is heavy for a
+reason — three canvases.</li>
+<li><b>Re-render hygiene</b> is structural rather than tuned: state lives in the page that
+uses it, so typing in the Bills search re-renders the Bills page, not the shell. No
+<code>OnPush</code>-style annotations exist because nothing global re-renders in the first
+place.</li>
+</ul>
+<p>The honest next steps, in order of value: swap sidebar <code>&lt;a&gt;</code> for
+<code>Link</code> (kills full-page reloads between pages), <code>next/dynamic</code> the chart
+components (moves Chart.js out of the dashboard's first load), and SWR for cache-and-revalidate
+navigation (data appears instantly from cache, refreshes behind). Each is an hour, none was
+needed to ship.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="14" data-q="0" data-a="1">
+<p class="qtext">Why doesn't the app need OnPush-style render tuning?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">React is always faster</button>
+<button type="button" class="qopt" data-o="1">State lives in the page that uses it, so typing in a search re-renders only that page</button>
+<button type="button" class="qopt" data-o="2">The pages are memoized</button>
+</div>
+<p class="qwhy" hidden>Re-render hygiene is structural: no global state → no global re-renders. Optimization starts only when the build-table numbers say so.</p></div>
+</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="14">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-15" hidden>
+<h2><span class="no">16</span>Exercises, with hints</h2>
+<div class="box box--ex">
+<div class="bt">1 · Port a dialog (warm-up)</div>
+<p>The classic "Log other income" dialog posts to <code>POST /api/income</code> as form data.
+Build it on the Invoices page. <b>Hints:</b> a <code>&lt;dialog&gt;</code> element or a
+conditional <code>{open &amp;&amp; &lt;div className="modal-overlay"&gt;}</code>; build a
+<code>FormData</code> and pass it as <code>body</code> — <code>api()</code> already handles the
+header correctly; on success call the page's <code>reload()</code> and close. ~60 lines.</p>
+</div>
+<div class="box box--ex">
+<div class="bt">2 · Add SWR (feel the ecosystem)</div>
+<p>Replace hand-rolled fetching on the Obligations page:
+<code>const { data, mutate } = useSWR("/obligations", api&lt;Obligation[]&gt;)</code>.
+Make the paid-toggle optimistic: <code>mutate(rows.map(…), false)</code>, PATCH, then
+<code>mutate()</code>. You get cache-on-navigation and focus revalidation free — then decide
+whether the dependency earns its place, which is the real exercise.</p>
+</div>
+<div class="box box--ex">
+<div class="bt">3 · Go server-first (the real one)</div>
+<p>Move auth to an <code>httpOnly</code> cookie — the FastAPI middleware already accepts
+cookie sessions, so only the login page changes. Then rewrite
+<code>app/customers/page.tsx</code> as
+<code>export default async function CustomersPage()</code> that fetches directly with
+<code>cookies()</code> forwarded. Delete <code>"use client"</code>, the states, the effect.
+Measure with the build table: the route's JS should collapse to nearly zero. This exercise
+teaches more about the App Router than any tutorial.</p>
+</div>
+<div class="box box--ex">
+<div class="bt">4 · i18n (the documented gap)</div>
+<p>ARCHITECTURE.md names UI language a localization boundary. Wire <code>next-intl</code>:
+wrap the layout in its provider, extract one page's strings to <code>messages/de.json</code>,
+add a locale switcher next to the theme toggle. Note what stays untranslated — API-provided
+labels like obligation types, which the backend already lets you rename in Settings; decide
+which layer should own those words and defend it.</p>
+</div>
+<div class="box box--ex">
+<div class="bt">5 · Generate the types</div>
+<p><code>npx openapi-typescript http://127.0.0.1:8000/openapi.json -o lib/schema.d.ts</code>,
+then re-point two interfaces at the generated ones. Compare the hand-written
+<code>Overview</code> with the generated shape and notice what the hand version documents that
+the machine one can't: which fields the UI actually relies on.</p>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="15">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article>
+  </main>
+</div>
+</div>
+
+<script>
+(function () {
+  var TITLES = ["The architecture decision", "React in one lesson, for Angular hands", "Angular \u2192 Next, the full mapping", "Routing is the filesystem", "Rendering: server components, hydration, and what \u25cb Static means", "Auth: the login flow and its trade-offs", "The data layer \u2014 your HttpClient in 30 lines", "State, effects, refs \u2014 the four hooks actually used", "Forms without FormsModule", "Component patterns in ui.tsx", "Shared services without DI", "Styling: one CSS file, two frontends", "Charts and the registration gotcha", "Build, env, Docker, CI", "Performance: what actually ships, what would be next", "Exercises, with hints"];
+  var PARTS = {"0": "Part I \u2014 Foundations", "3": "Part II \u2014 The framework", "6": "Part III \u2014 The application", "11": "Part IV \u2014 The seams"};
+  var N = TITLES.length;
+  var KEY = "cockpit-course-v1";
+  var state = { cur: 0, done: {}, quiz: {} };
+  try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  var list = document.getElementById("lessonlist");
+  for (var i = 0; i < N; i++) {
+    if (PARTS[String(i)]) {
+      var p = document.createElement("li"); p.className = "part"; p.textContent = PARTS[String(i)];
+      list.appendChild(p);
+    }
+    var li = document.createElement("li");
+    li.innerHTML = '<button data-i="' + i + '"><span class="no">' + String(i + 1).padStart(2, "0") +
+      '</span><span>' + TITLES[i] + '</span><span class="done-mark">✓</span></button>';
+    list.appendChild(li);
+  }
+
+  function render() {
+    document.querySelectorAll(".lesson").forEach(function (el, i) { el.hidden = i !== state.cur; });
+    document.querySelectorAll("#lessonlist button").forEach(function (b) {
+      var i = +b.dataset.i;
+      b.classList.toggle("cur", i === state.cur);
+      b.classList.toggle("is-done", !!state.done[i]);
+    });
+    var doneCount = Object.keys(state.done).filter(function (k) { return state.done[k]; }).length;
+    document.getElementById("pbar").style.width = (doneCount / N * 100) + "%";
+    document.getElementById("ptxt").textContent = doneCount + " / " + N + " lessons done";
+    var db = document.querySelector("#lesson-" + state.cur + " .btn-done");
+    if (db) { db.classList.toggle("is-done", !!state.done[state.cur]);
+      db.textContent = state.done[state.cur] ? "Done ✓" : "Mark lesson done ✓"; }
+    window.scrollTo({ top: 0 });
+    save();
+  }
+
+  function go(i) { state.cur = Math.max(0, Math.min(N - 1, i)); render(); }
+
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("button, a"); if (!t) return;
+    if (t.dataset.i !== undefined) go(+t.dataset.i);
+    if (t.dataset.go) go(state.cur + (+t.dataset.go));
+    if (t.dataset.done !== undefined) { state.done[t.dataset.done] = !state.done[t.dataset.done]; render(); }
+    if (t.id === "start") go(0);
+    if (t.id === "reset") { if (confirm("Reset progress?")) { state = { cur: 0, done: {}, quiz: {} }; render(); } }
+    if (t.classList.contains("qopt")) {
+      var qq = t.closest(".qq");
+      var right = +qq.dataset.a === +t.dataset.o;
+      qq.querySelectorAll(".qopt").forEach(function (o, oi) {
+        o.classList.toggle("right", oi === +qq.dataset.a);
+        o.classList.toggle("wrong", o === t && !right);
+        o.disabled = true;
+      });
+      qq.querySelector(".qwhy").hidden = false;
+      state.quiz[qq.dataset.l + ":" + qq.dataset.q] = right;
+      // auto-complete lesson when all its questions answered right
+      var all = document.querySelectorAll('.qq[data-l="' + qq.dataset.l + '"]');
+      var ok = Array.prototype.every.call(all, function (q2) {
+        return state.quiz[q2.dataset.l + ":" + q2.dataset.q] === true;
+      });
+      if (ok) state.done[qq.dataset.l] = true;
+      render();
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.target.matches("input, textarea")) return;
+    if (e.key === "ArrowRight") go(state.cur + 1);
+    if (e.key === "ArrowLeft") go(state.cur - 1);
+  });
+
+  render();
+})();
+</script>
+
