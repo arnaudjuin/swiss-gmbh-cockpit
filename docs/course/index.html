@@ -135,21 +135,60 @@ aside.side { position: sticky; top: 16px; background: var(--card); border: 1px s
 kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); border: 1px solid var(--border);
   border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; }
 
+
+/* ── labs & code tabs ── */
+.lab { border: 1px solid var(--border); border-left: 4px solid var(--accent); background: var(--card);
+  border-radius: 8px; padding: 14px 18px; margin: 24px 0; }
+.lab .bt { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px; }
+.lab .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+.lab button, .lab input[type=text], .lab select { font: inherit; font-size: 14px; padding: 7px 12px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--ink); }
+.lab button { cursor: pointer; } .lab button:hover { border-color: var(--accent); color: var(--accent); }
+.lab button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.lab button.primary:hover { color: #fff; filter: brightness(1.08); }
+.lab .out { font-family: var(--f-mono); font-size: 12.5px; background: var(--code-bg); color: var(--code-ink);
+  border-radius: 8px; padding: 10px 14px; margin-top: 8px; min-height: 20px; white-space: pre-wrap; }
+.lab .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .lab .split { grid-template-columns: 1fr; } }
+.lab .cell { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg); }
+.lab .cell .ct { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px; }
+.lab .stat-num { font-family: var(--f-mono); font-weight: 600; }
+.lab .sw { display: inline-block; width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--border);
+  vertical-align: -4px; margin-right: 6px; }
+.timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
+.timeline .step { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--bg);
+  font-size: 13px; opacity: .45; transition: all .25s; }
+.timeline .step.on { opacity: 1; border-color: var(--accent); background: var(--accent-bg); }
+.timeline .step .st { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--accent); }
+@media (max-width: 640px) { .timeline { grid-template-columns: 1fr 1fr; } }
+.codetabs { margin: 18px 0; }
+.codetabs .tabbtns { display: flex; gap: 6px; margin-bottom: -6px; position: relative; z-index: 1; }
+.codetabs .tabbtns button { font-family: var(--f-mono); font-size: 12px; padding: 6px 14px;
+  border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: 0;
+  background: var(--bg); color: var(--muted); cursor: pointer; }
+.codetabs .tabbtns button.on { background: var(--code-bg); color: var(--code-ink); border-color: var(--code-bg); }
+.codetabs .tabbtns button.tng.on { box-shadow: inset 0 2px 0 var(--ng); }
+.codetabs .tabbtns button.tnx.on { box-shadow: inset 0 2px 0 var(--accent); }
+.codetabs pre { margin-top: 0; border-top-left-radius: 0; }
+.codetabs .pane[hidden] { display: none; }
+
 </style>
 <div class="wrap">
 <header class="hero">
   <div class="eyebrow">swiss-gmbh-cockpit / cockpit-next · an interactive code-reading course</div>
   <h1>Next.js for the Angular Engineer</h1>
   <p class="lede">Sixteen lessons taught through <b>real source from this repository</b> — every
-  concept mapped to the Angular idea you already own, with a quiz per lesson and your progress
-  saved locally. Built for engineers evaluating (or joining) the
+  concept mapped to the Angular idea you already own, with a quiz per lesson, <b>hands-on labs you can poke</b>, Angular↔Next code tabs, and your progress saved locally. Built for engineers evaluating (or joining) the
   <a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit">swiss-gmbh-cockpit</a> codebase.</p>
   <div class="hero-cta">
     <button class="primary" id="start">Start / resume the course</button>
     <a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit">View the repo</a>
     <button id="reset">Reset progress</button>
   </div>
-  <p class="progresstxt" style="margin-top:10px">Navigate with <kbd>←</kbd> <kbd>→</kbd> · answer every quiz right and the lesson checks itself off.</p>
+  <p class="progresstxt" style="margin-top:10px">Navigate with <kbd>←</kbd> <kbd>→</kbd> · answer every quiz right and the lesson checks itself off · labs are live — click them.</p>
 </header>
 
 <div class="appgrid">
@@ -277,6 +316,21 @@ React state is <b>replaced, never mutated</b>: <code>setRows([...rows, x])</code
 exactly that reason — a mutated object is reference-equal, so React (and its diffing) treats
 it as unchanged.</p>
 </div>
+
+<div class="lab" id="lab-render">
+<div class="bt">Lab — why mutation doesn't render</div>
+<p style="margin-top:0">The list below only repaints when the "setter" runs. Click <i>mutate</i> a few times:
+the array really grows (truth counter), but the UI goes stale — exactly what happens in React when you
+<code>push()</code> into state. Then click the setter.</p>
+<div class="row">
+  <button class="mut">rows.push(x) — mutate</button>
+  <button class="set primary">setRows([...rows, x]) — replace</button>
+</div>
+<div class="split">
+  <div class="cell"><div class="ct">Rendered UI</div><span class="rlist stat-num"></span></div>
+  <div class="cell"><div class="ct">Reality</div>actual array length: <span class="alen stat-num"></span> · renders: <span class="rcount stat-num"></span></div>
+</div>
+</div>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="1" data-q="0" data-a="2">
 <p class="qtext">In React, what triggers a re-render?</p><div class="qopts">
@@ -400,12 +454,12 @@ same result at this scale.</p>
 </div>
 <p class="qwhy" hidden>The filesystem is the router config. A folder is a segment; its page.tsx is the component.</p></div>
 <div class="qq" data-l="3" data-q="1" data-a="1">
-<p class="qtext">The sidebar uses plain <a href> instead of <Link>. What's the consequence?</p><div class="qopts">
+<p class="qtext">The sidebar uses plain &lt;a href&gt; instead of &lt;Link&gt;. What's the consequence?</p><div class="qopts">
 <button type="button" class="qopt" data-o="0">Navigation breaks in production</button>
 <button type="button" class="qopt" data-o="1">Full page loads between pages — a deliberate simplicity trade</button>
 <button type="button" class="qopt" data-o="2">Prefetching happens twice</button>
 </div>
-<p class="qwhy" hidden>Each click reloads the app (~103 kB, prerendered shell), which the project accepted during the port. Swapping to <Link> is a find-and-replace later.</p></div>
+<p class="qwhy" hidden>Each click reloads the app (~103 kB, prerendered shell), which the project accepted during the port. Swapping to &lt;Link&gt; is a find-and-replace later.</p></div>
 </div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="3">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-4" hidden>
 <h2><span class="no">05</span>Rendering: server components, hydration, and what ○ Static means</h2>
 <p>The App Router's headline feature: components are <b>server components by default</b>. They
@@ -459,6 +513,18 @@ entirely — CSS tokens react to the attribute, React never knows (lesson 12).</
 <code>cookies()</code>), and keep only the interactive leaves — search boxes, paid-toggles,
 the forecast cells — as small client islands. The CSS and the backend wouldn't change a line.
 That is exercise 3, and it's the highest-value one.</p>
+
+<div class="lab" id="lab-timeline">
+<div class="bt">Lab — the four steps, click through them</div>
+<div class="timeline">
+  <div class="step"><div class="st">1 · build</div>prerender shell</div>
+  <div class="step"><div class="st">2 · request</div>HTML served</div>
+  <div class="step"><div class="st">3 · hydrate</div>React attaches</div>
+  <div class="step"><div class="st">4 · data</div>useEffect → API</div>
+</div>
+<div class="row"><button class="prev">← Back</button><button class="next primary">Advance →</button></div>
+<div class="out"></div>
+</div>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="4" data-q="0" data-a="1">
 <p class="qtext">Why can't this app's pages be server components today?</p><div class="qopts">
@@ -521,7 +587,7 @@ needed a download link.</p>
 <div class="qq" data-l="5" data-q="1" data-a="1">
 <p class="qtext">Why do PDF links carry ?token=… instead of a header?</p><div class="qopts">
 <button type="button" class="qopt" data-o="0">Headers are stripped by the rewrite</button>
-<button type="button" class="qopt" data-o="1">You can't attach headers to a plain <a> navigation</button>
+<button type="button" class="qopt" data-o="1">You can't attach headers to a plain &lt;a&gt; navigation</button>
 <button type="button" class="qopt" data-o="2">FastAPI only reads query params</button>
 </div>
 <p class="qwhy" hidden>A plain link can't send Authorization. The backend accepts a query token exactly for downloads.</p></div>
@@ -587,6 +653,33 @@ extend the API surface, switch to generation and delete the hand copies (exercis
 platform. And no observables anywhere: for request/response data, promises cover everything
 RxJS did in your services. Streams earn their keep for genuinely continuous sources
 (websockets, drag events) — this app has none.</p>
+
+<div class="codetabs">
+  <div class="tabbtns">
+    <button class="tnx on" data-tab="nx">this project (lib/api.ts)</button>
+    <button class="tng" data-tab="ng">the Angular you'd write</button>
+  </div>
+  <pre class="pane" data-pane="nx">const rows = await api&lt;Obligation[]&gt;("/obligations");
+<span class="c">// auth + 401 handling + error surfacing all inside api() — one import, no DI</span></pre>
+  <pre class="pane" data-pane="ng" hidden>// obligation.service.ts
+@Injectable({ providedIn: 'root' })
+export class ObligationService {
+  constructor(private http: HttpClient) {}
+  list(): Observable&lt;Obligation[]&gt; { return this.http.get&lt;Obligation[]&gt;('/api/obligations'); }
+}
+// + auth.interceptor.ts registered in providers
+// + error.interceptor.ts mapping 401 → router.navigate(['/login'])</pre>
+</div>
+<div class="lab" id="lab-request">
+<div class="bt">Lab — what api() actually sends</div>
+<div class="row">
+  <label><input type="radio" name="rb-body" value="none" checked> GET (no body)</label>
+  <label><input type="radio" name="rb-body" value="json"> JSON body</label>
+  <label><input type="radio" name="rb-body" value="form"> FormData body</label>
+  <label style="margin-left:auto"><input type="checkbox" id="rb-token" checked> token in localStorage</label>
+</div>
+<div class="out"></div>
+</div>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="6" data-q="0" data-a="1">
 <p class="qtext">Why does api() skip Content-Type for FormData bodies?</p><div class="qopts">
@@ -596,7 +689,7 @@ RxJS did in your services. Streams earn their keep for genuinely continuous sour
 </div>
 <p class="qwhy" hidden>Forcing application/json (or even multipart/form-data without the boundary) breaks the request. Letting the browser set it is the fix every framework's users rediscover.</p></div>
 <div class="qq" data-l="6" data-q="1" data-a="1">
-<p class="qtext">api<Reserve[]>("/reserves").catch(() => []) is the promise version of…</p><div class="qopts">
+<p class="qtext">api&lt;Reserve[]&gt;("/reserves").catch(() => []) is the promise version of…</p><div class="qopts">
 <button type="button" class="qopt" data-o="0">retry(3)</button>
 <button type="button" class="qopt" data-o="1">catchError(() => of([])) on one stream in a forkJoin</button>
 <button type="button" class="qopt" data-o="2">finalize()</button>
@@ -661,6 +754,34 @@ if (ids)  rows = rows.filter(b =&gt; ids.has(b.id));      <span class="c">// ser
 <p>Derived data as plain consts — recomputed each render, no memo, no selectors. Reach for
 <code>useMemo</code> only when profiling says so; premature memoization is React's version of
 premature <code>OnPush</code>.</p>
+
+<div class="codetabs">
+  <div class="tabbtns">
+    <button class="tnx on" data-tab="nx">this project (6 lines)</button>
+    <button class="tng" data-tab="ng">the RxJS version</button>
+  </div>
+  <pre class="pane" data-pane="nx">clearTimeout(timer.current);
+timer.current = setTimeout(async () =&gt; {
+  const d = await api&lt;SearchResponse&gt;(`/search?q=…`);
+  setIds(new Set(d.results.map(r =&gt; r.id)));
+}, 250);</pre>
+  <pre class="pane" data-pane="ng" hidden>this.search$ = this.control.valueChanges.pipe(
+  debounceTime(250),
+  distinctUntilChanged(),
+  switchMap(q =&gt; this.api.search(q)),
+);  <span class="c">// + async pipe or a managed subscription</span></pre>
+</div>
+<div class="lab" id="lab-debounce">
+<div class="bt">Lab — the Bills search debounce, live</div>
+<p style="margin-top:0">Type fast, then pause. The counter shows how many keystrokes happened versus how many
+requests would actually hit the server.</p>
+<div class="row"><input type="text" placeholder='try: fuel >80' style="flex:1;min-width:200px"></div>
+<div class="split">
+  <div class="cell"><div class="ct">keystrokes</div><span class="keys stat-num">0</span></div>
+  <div class="cell"><div class="ct">requests sent</div><span class="calls stat-num">0</span></div>
+</div>
+<div class="out">(type above)</div>
+</div>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="7" data-q="0" data-a="1">
 <p class="qtext">Why wrap the page loader in useCallback before passing it to useEffect?</p><div class="qopts">
@@ -713,6 +834,22 @@ functions. The heavyweight validation lives where it must anyway: the backend re
 payloads, and <code>ApiError</code> surfaces the message. If a form grows past ~15 fields with
 cross-field rules, that's when <code>react-hook-form</code> (the ecosystem's Reactive Forms)
 earns its dependency — none here does.</p>
+
+<div class="lab" id="lab-forms">
+<div class="bt">Lab — controlled vs uncontrolled-with-key</div>
+<div class="split">
+  <div class="cell"><div class="ct">controlled — value lives in state</div>
+    <input type="text" class="ctl" style="width:90%">
+    <div class="out mirror" style="margin-top:8px"></div>
+    <p class="progresstxt" style="margin:6px 0 0">Non-digits are stripped by the setter — the input can only show what state allows.</p>
+  </div>
+  <div class="cell"><div class="ct">uncontrolled — DOM owns it while typing</div>
+    <input type="text" class="unc" value="9500" style="width:90%">
+    <div class="row" style="margin-top:8px"><button class="reset">server recomputed → change the key</button></div>
+    <p class="progresstxt rmsg" style="margin:6px 0 0">Type freely, then press the button: the field re-mounts with fresh server truth.</p>
+  </div>
+</div>
+</div>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="8" data-q="0" data-a="1">
 <p class="qtext">The Forecast income cells use defaultValue plus a changing key. Why?</p><div class="qopts">
@@ -912,6 +1049,20 @@ charts just ask.</p>
 running cash share one CHF scale), tooltips formatted through the same <code>chf()</code> as
 the tables, and category colors pinned to semantic tokens — the data-viz rules from the design
 system, enforced by shared helpers rather than review comments.</p>
+
+<div class="lab" id="lab-tokens">
+<div class="bt">Lab — vizToken() live: flip the theme, watch the values change</div>
+<p style="margin-top:0">This button does what the app's toggle does — flips <code>data-theme</code> on the
+document — and then re-reads the tokens with <code>getComputedStyle</code>, exactly like the chart components.
+(Yes, it themes this whole course page: it uses the same mechanism.)</p>
+<div class="row"><button class="flip primary">Toggle theme + re-read tokens</button></div>
+<div class="split">
+  <div class="cell"><div class="ct">--bg</div><div class="tokrow"><span class="sw"></span><span class="tv stat-num"></span></div></div>
+  <div class="cell"><div class="ct">--card</div><div class="tokrow"><span class="sw"></span><span class="tv stat-num"></span></div></div>
+  <div class="cell"><div class="ct">--accent</div><div class="tokrow"><span class="sw"></span><span class="tv stat-num"></span></div></div>
+  <div class="cell"><div class="ct">--ok-ink</div><div class="tokrow"><span class="sw"></span><span class="tv stat-num"></span></div></div>
+</div>
+</div>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="12" data-q="0" data-a="1">
 <p class="qtext">The first chart build compiled clean but crashed at runtime. Why?</p><div class="qopts">
@@ -1141,6 +1292,128 @@ the machine one can't: which fields the UI actually relies on.</p>
   });
 
   render();
+
+  // ── labs ─────────────────────────────────────────────────────────────────
+  // code tabs
+  document.addEventListener("click", function (e) {
+    var tb = e.target.closest(".codetabs .tabbtns button"); if (!tb) return;
+    var tabs = tb.closest(".codetabs");
+    tabs.querySelectorAll(".tabbtns button").forEach(function (b) { b.classList.toggle("on", b === tb); });
+    tabs.querySelectorAll(".pane").forEach(function (p) { p.hidden = p.dataset.pane !== tb.dataset.tab; });
+  });
+
+  // L2: render-model sandbox
+  (function () {
+    var root = document.getElementById("lab-render"); if (!root) return;
+    var arr = ["Jan", "Feb"], renders = 0;
+    function paint() {
+      renders++;
+      root.querySelector(".rlist").textContent = "[ " + arr.join(", ") + " ]";
+      root.querySelector(".rcount").textContent = renders;
+      root.querySelector(".alen").textContent = arr.length;
+    }
+    root.querySelector(".mut").addEventListener("click", function () {
+      arr.push("M" + (arr.length + 1));
+      root.querySelector(".alen").textContent = arr.length;   // truth moves…
+      // …but no re-render: the UI is now stale, like React with a mutated array
+    });
+    root.querySelector(".set").addEventListener("click", function () {
+      arr = arr.concat("S" + (arr.length + 1));  // new reference = setState
+      paint();
+    });
+    paint(); renders = 1; root.querySelector(".rcount").textContent = 1;
+  })();
+
+  // L5: hydration timeline
+  (function () {
+    var root = document.getElementById("lab-timeline"); if (!root) return;
+    var i = 0, steps = root.querySelectorAll(".step"), msg = root.querySelector(".out");
+    var texts = [
+      "next build renders the page shell — sidebar, header, 'Loading…' — to static HTML. Zero of your data involved.",
+      "The server answers instantly with that HTML. First paint shows real chrome, not a white screen.",
+      "React attaches to the existing HTML. Buttons start working. (Angular: Universal + provideClientHydration — here it's the default.)",
+      "useEffect fires → api() → FastAPI → setState → the page re-renders with live numbers."];
+    function show() {
+      steps.forEach(function (st, j) { st.classList.toggle("on", j <= i); });
+      msg.textContent = "Step " + (i + 1) + "/4 — " + texts[i];
+    }
+    root.querySelector(".prev").addEventListener("click", function () { i = Math.max(0, i - 1); show(); });
+    root.querySelector(".next").addEventListener("click", function () { i = Math.min(3, i + 1); show(); });
+    show();
+  })();
+
+  // L7: request builder
+  (function () {
+    var root = document.getElementById("lab-request"); if (!root) return;
+    function upd() {
+      var body = root.querySelector("input[name=rb-body]:checked").value;
+      var tok = root.querySelector("#rb-token").checked;
+      var h = [];
+      if (body === "json") h.push('"Content-Type": "application/json"');
+      if (body === "form") h.push("// no Content-Type — the browser sets the multipart boundary");
+      if (tok) h.push('"Authorization": "Bearer eyJh…"');
+      if (!h.length) h.push("// no extra headers");
+      var status = tok ? "→ 200 OK" : "→ 401 → token cleared → window.location = \"/login\"";
+      root.querySelector(".out").textContent = "fetch(\"/api/obligations\", { headers: {\n  " + h.join(",\n  ") + "\n}})\n" + status;
+    }
+    root.addEventListener("change", upd); upd();
+  })();
+
+  // L8: debounce playground
+  (function () {
+    var root = document.getElementById("lab-debounce"); if (!root) return;
+    var keys = 0, calls = 0, timer;
+    var kEl = root.querySelector(".keys"), cEl = root.querySelector(".calls"), log = root.querySelector(".out");
+    root.querySelector("input").addEventListener("input", function (e) {
+      keys++; kEl.textContent = keys;
+      clearTimeout(timer);                                  // switchMap-style cancel
+      var v = e.target.value.trim();
+      if (v.length < 2) { log.textContent = "(need 2+ chars — nothing fired)"; return; }
+      log.textContent = "… " + (250) + " ms of quiet pending";
+      timer = setTimeout(function () {
+        calls++; cEl.textContent = calls;
+        log.textContent = 'GET /api/search?q=type:bill ' + v + '   ← fired after 250 ms idle\nkeystrokes so far: ' + keys + '   ·   requests actually sent: ' + calls;
+      }, 250);
+    });
+  })();
+
+  // L9: controlled vs uncontrolled
+  (function () {
+    var root = document.getElementById("lab-forms"); if (!root) return;
+    var state = "9500";
+    var c = root.querySelector(".ctl"), mirror = root.querySelector(".mirror"), u = root.querySelector(".unc");
+    function paintC() { c.value = state; mirror.textContent = 'state = "' + state + '"'; }
+    c.addEventListener("input", function (e) { state = e.target.value.replace(/[^0-9.]/g, ""); paintC(); });
+    paintC();
+    root.querySelector(".reset").addEventListener("click", function () {
+      var fresh = u.cloneNode();                       // key change = re-mount
+      fresh.value = ""; fresh.defaultValue = "11200";  // server truth
+      u.replaceWith(fresh); u = fresh;
+      root.querySelector(".rmsg").textContent = "re-mounted with server value 11200 (that's the key={} trick)";
+    });
+  })();
+
+  // L13: token re-read
+  (function () {
+    var root = document.getElementById("lab-tokens"); if (!root) return;
+    function read() {
+      var cs = getComputedStyle(root);
+      ["--bg", "--card", "--accent", "--ok-ink"].forEach(function (t, i) {
+        var v = cs.getPropertyValue(t).trim();
+        var row = root.querySelectorAll(".tokrow")[i];
+        row.querySelector(".sw").style.background = v;
+        row.querySelector(".tv").textContent = v;
+      });
+    }
+    root.querySelector(".flip").addEventListener("click", function () {
+      var cur = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = cur;
+      try { localStorage.setItem("theme", cur); } catch (e) {}
+      read();   // ← this is vizToken() re-reading after themechange
+    });
+    read();
+  })();
+
 })();
 </script>
 
