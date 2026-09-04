@@ -39,7 +39,13 @@ against parsed statements/**personal-card outstanding + reimburse** with the
 Kontokorrent-safe transfer tagging) · payroll extras (YTD totals, payslip
 status/delete, **accountant-payslip upload** with settings-estimated
 breakdown) · reserves create + summary · income delete/file · transfers
-file + the annotated `export.csv` · search (query language: text, phrases, amounts, dates,
+file + the annotated `export.csv` · dashboard extras (legacy stats,
+finance dashboard, compare-months, category-trends) · **anomaly detection**
+(vendor mean/stdev deviation + dismiss) · **cashflow** (day-by-day balance
+projection: invoice lag, payroll, recurring bills, VAT quarters) · bank
+csv-match + apply-match · **the whole budget module** (config UPSERT,
+monthly view, ledger-derived balances, contribute/withdraw/adjust,
+ledger CRUD with undo snapshots, health forecast) · search (query language: text, phrases, amounts, dates,
 quarters, status, `type:` — invoice+bill entities) · **payroll generation**
 (payslip upsert + AHV/UVG/KTG + quarterly Quellensteuer obligations + salary
 transfer/income side effects; PDF render pending) · obligations
@@ -60,8 +66,7 @@ Python backend dead.
 - expense-report PDF generation (invoice & payslip PDFs are ported) and
   expense CRUD/report/import endpoints
 - the Excel exports (bank history, P&L, accounting)
-- dashboard extras (category-trends, compare-months), anomalies, cashflow,
-  budget, quarterly report, accountant package, share links / ICS, backup,
+- quarterly report, accountant package, share links / ICS, backup,
   AI chat & receipt OCR, docs viewer, checklist parser
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
   a fresh `DB_PATH` gets the full current DDL + singleton rows on first open
