@@ -1,4 +1,5 @@
-import { MONTH_NAME } from "./db";
+import { db, MONTH_NAME } from "./db";
+import { DEFAULT_CUSTOMER } from "./biz";
 
 export function invoiceToDict(r: any) {
   return {
@@ -9,4 +10,20 @@ export function invoiceToDict(r: any) {
     paid_status: r.paid_status ?? "unpaid", paid_date: r.paid_date ?? null,
     created_at: r.created_at,
   };
+}
+
+export function computeDates(year: number, month: number): [string, string] {
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const issued = `${year}-${String(month).padStart(2, "0")}-${String(last).padStart(2, "0")}`;
+  const [dy, dm] = month < 12 ? [year, month + 1] : [year + 1, 1];
+  const dLast = new Date(Date.UTC(dy, dm, 0)).getUTCDate();
+  return [issued, `${dy}-${String(dm).padStart(2, "0")}-${String(dLast).padStart(2, "0")}`];
+}
+
+export function getCustomer(customerId?: number | null) {
+  if (customerId) {
+    const r = db().prepare("SELECT * FROM customers WHERE id=?").get(customerId) as any;
+    if (r) return r;
+  }
+  return DEFAULT_CUSTOMER;
 }

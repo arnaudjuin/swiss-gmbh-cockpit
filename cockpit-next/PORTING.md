@@ -28,15 +28,18 @@ quarters, status, `type:` — invoice+bill entities) · **payroll generation**
 transfer/income side effects; PDF render pending) · obligations
 (create/summary) · upcoming-payments · transfers (list/create/delete) ·
 income (list/create) · **file serving** (bill/obligation/statement files,
-payslip & invoice PDFs — serving Python-generated files from documents/)
+payslip & invoice PDFs) · **invoice PDF generation** (pdfkit port of the
+fpdf2 layout — visually equivalent, business settings honored) · invoices
+create/update/delete (rate/VAT from Settings, PDF written, income-mirror
+cascade on delete) · bills create/update/delete (FX booking port, uploads,
+recurring-parent promotion) · obligations update/delete (promotion)
 
 **Standalone proof:** all 14 pages + a write path pass Playwright with the
 Python backend dead.
 
 ## Still Python (falls through while FastAPI runs)
 
-- PDF *generation* (invoice / payslip / expense report) — serving is ported
-- obligations update/delete, bills create/update/delete, invoice create/update
+- payslip & expense-report PDF *generation* (invoice PDFs are ported)
 - CAMT.053 / CSV bank import + transaction classification + Excel exports
 - payroll *generation* (payslip rows + obligation booking), recurring
   generators, reimbursement flows, anomalies, cashflow, budget, share links /
