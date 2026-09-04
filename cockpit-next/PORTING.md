@@ -63,7 +63,12 @@ viewer** (whitelisted markdown list + content) · **checklist parser**
 (the Test Procedure markdown → sections/tests/steps, mtime-cached) ·
 **QR-bill scanner** (jsQR + jimp — works out of the box where Python
 needs pyzbar/zbar installed) · **bulk-upload** (draft bills from files) ·
-**backup ZIP** (db + documents, 3-backup retention, WAL-checkpointed) · dashboard extras (legacy stats,
+**backup ZIP** (db + documents, 3-backup retention, WAL-checkpointed) ·
+**the AI chat** (`/api/llm/status|ask|stream` — provider abstraction for
+ollama/anthropic/openai over plain fetch, the 16-tool registry with
+propose-only writes, knowledge-mode answers from the docs KB, SSE token
+streaming) · **receipt OCR import-folder** (vision extraction, currency
+conversion, SHA-256 dedupe) · dashboard extras (legacy stats,
 finance dashboard, compare-months, category-trends) · **anomaly detection**
 (vendor mean/stdev deviation + dismiss) · **cashflow** (day-by-day balance
 projection: invoice lag, payroll, recurring bills, VAT quarters) · bank
