@@ -20,16 +20,23 @@ runway · reports P&L · calendar (payable dates, projections, expected paydays)
 obligations (list/types/labels/status) · invoices (list, paid toggle **incl.
 the income-mirror invariant**) · bills · payroll (settings/preview engine/
 payslips) · payslip math (ALV plafond port of `_compute_payslip`) ·
-kontokorrent · reserves · bank statements (list/latest) · cash balance ·
-customers · expenses & reports · search (query language: text, phrases,
-amounts, dates, quarters, status, `type:` — invoice+bill entities)
+kontokorrent · reserves (list + create/update/delete + contribute/withdraw +
+ledger) · bank statements (list/latest) · cash balance (get/put) · customers ·
+expenses & reports · search (query language: text, phrases, amounts, dates,
+quarters, status, `type:` — invoice+bill entities) · **payroll generation**
+(payslip upsert + AHV/UVG/KTG + quarterly Quellensteuer obligations + salary
+transfer/income side effects; PDF render pending) · obligations
+(create/summary) · upcoming-payments · transfers (list/create/delete) ·
+income (list/create) · **file serving** (bill/obligation/statement files,
+payslip & invoice PDFs — serving Python-generated files from documents/)
 
 **Standalone proof:** all 14 pages + a write path pass Playwright with the
 Python backend dead.
 
 ## Still Python (falls through while FastAPI runs)
 
-- PDF generation (invoice / payslip / expense report) and file serving/uploads
+- PDF *generation* (invoice / payslip / expense report) — serving is ported
+- obligations update/delete, bills create/update/delete, invoice create/update
 - CAMT.053 / CSV bank import + transaction classification + Excel exports
 - payroll *generation* (payslip rows + obligation booking), recurring
   generators, reimbursement flows, anomalies, cashflow, budget, share links /

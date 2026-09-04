@@ -1,0 +1,46 @@
+// File storage/serving — same documents/ tree the Python backend uses.
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+
+const DOCS = process.env.DOCS_DIR || path.resolve(process.cwd(), "..", "documents");
+export const DIRS = {
+  accounting: path.join(DOCS, "accounting"),
+  invoices: path.join(DOCS, "invoices"),
+  payslips: path.join(DOCS, "payslips"),
+  bank: path.join(DOCS, "bank_statements"),
+};
+
+const MIME: Record<string, string> = {
+  pdf: "application/pdf", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+  webp: "image/webp", heic: "image/heic", xml: "application/xml", csv: "text/csv",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", zip: "application/zip",
+};
+
+export function serveFile(dir: string, filename: string | null | undefined): NextResponse {
+  if (!filename) return NextResponse.json({ detail: "No file" }, { status: 404 });
+  const p = path.join(dir, path.basename(filename));
+  if (!fs.existsSync(p)) return NextResponse.json({ detail: "File not found" }, { status: 404 });
+  const ext = p.split(".").pop()?.toLowerCase() ?? "";
+  const body = new Uint8Array(fs.readFileSync(p));
+  return new NextResponse(body, { headers: { "Content-Type": MIME[ext] ?? "application/octet-stream" } });
+}
+
+export async function saveUpload(file: File | null, dir: string, prefix: string): Promise<string | null> {
+  if (!file || !file.size) return null;
+  const data = Buffer.from(await file.arrayBuffer());
+  const ext = (file.name.split(".").pop() ?? "bin").toLowerCase();
+  const hash = crypto.createHash("sha1").update(data).digest("hex").slice(0, 12);
+  const filename = `${prefix}_${hash}.${ext}`;
+  fs.mkdirSync(dir, { recursive: true });
+  const p = path.join(dir, filename);
+  if (!fs.existsSync(p)) fs.writeFileSync(p, data);
+  return filename;
+}
+
+export function deleteStored(dir: string, filename: string | null | undefined) {
+  if (!filename) return;
+  const p = path.join(dir, path.basename(filename));
+  if (fs.existsSync(p)) fs.unlinkSync(p);
+}
