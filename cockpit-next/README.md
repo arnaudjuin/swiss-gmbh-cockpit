@@ -3,8 +3,8 @@
 Started as a second frontend for the FastAPI backend; now also carries a
 **TypeScript port of the backend core** in `server/` + `app/api/**` over the
 same SQLite file. Ported endpoints serve from Node; the rest falls through to
-FastAPI via a fallback rewrite — and with the core done, **the whole UI runs
-standalone with the Python backend off**. See [PORTING.md](PORTING.md) for the
+FastAPI via a fallback rewrite — and with the core done, **the whole app — including a **fresh install on an empty database** — runs
+standalone with the Python backend off (`DB_PATH=./cockpit.db npm start`). See [PORTING.md](PORTING.md) for the
 exact split and `scripts/parity.mjs` for the byte-level parity harness.
 
 ## Run

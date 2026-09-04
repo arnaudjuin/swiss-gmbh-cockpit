@@ -4,6 +4,7 @@
 // seed_demo.py until the M4 milestone (see PORTING.md).
 import Database from "better-sqlite3";
 import path from "path";
+import { SCHEMA, SINGLETON_SEEDS } from "./schema";
 
 const DB_PATH = process.env.DB_PATH || path.resolve(process.cwd(), "..", "invoices.db");
 
@@ -14,6 +15,13 @@ export function db(): Database.Database {
     _db = new Database(DB_PATH);
     _db.pragma("journal_mode = WAL");
     _db.pragma("foreign_keys = ON");
+    // Self-install: a fresh database gets the full current schema + the
+    // singleton rows (settings, prefs, cash balance, default customer).
+    const has = _db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='invoices'").get();
+    if (!has) {
+      for (const stmt of SCHEMA) _db.exec(stmt);
+      for (const seed of SINGLETON_SEEDS) _db.exec(seed);
+    }
     gdb.__cockpitDb = _db;
   }
   return _db;

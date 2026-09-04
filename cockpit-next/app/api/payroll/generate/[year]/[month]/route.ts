@@ -2,6 +2,10 @@ import { NextRequest } from "next/server";
 import { guard, json, err } from "@/server/http";
 import { db, round2, MONTH_ABBR } from "@/server/db";
 import { payrollSettingsRow, rowToSettings, computePayslip } from "@/server/payroll";
+import { renderPayslipPdf } from "@/server/payslipPdf";
+import { DIRS } from "@/server/files";
+import fs from "fs";
+import path from "path";
 
 // Port of routes/payroll.py::generate_payslip — payslip upsert + opt-in side
 // effects (income entry, salary transfer, AHV/UVG/KTG + Quellensteuer
@@ -22,6 +26,18 @@ export const POST = guard(async (req: NextRequest, ctx: { params: Promise<{ year
   const issued = periodEnd;
   const paymentDate = `${year}-${String(month).padStart(2, "0")}-${String(Math.min(settings.payment_day, lastDay)).padStart(2, "0")}`;
 
+  // YTD incl. this month (for the PDF footer block) — port of the Python calc
+  const ytdFields = ["gross", "emp_ahv", "emp_alv", "emp_bvg", "emp_uvg", "emp_ktg", "emp_source_tax",
+    "emp_total_deductions", "net_salary", "employer_ahv", "employer_alv", "employer_bvg",
+    "employer_uvg", "employer_ktg", "employer_fak", "employer_total", "total_employer_cost"];
+  const prior = d.prepare("SELECT * FROM payslips WHERE year=? AND month<? ORDER BY month").all(year, month) as any[];
+  const ytd: Record<string, number> = {};
+  for (const fld of ytdFields) ytd[fld] = round2(prior.reduce((s2, r2) => s2 + (r2[fld] ?? 0), 0) + ((calc as any)[fld] ?? 0));
+  const pdfName = `payslip_${year}_${String(month).padStart(2, "0")}.pdf`;
+  const pdfBytes = await renderPayslipPdf(year, month, issued, paymentDate, settings, calc, ytd);
+  fs.mkdirSync(DIRS.payslips, { recursive: true });
+  fs.writeFileSync(path.join(DIRS.payslips, pdfName), pdfBytes);
+
   const existing = d.prepare("SELECT id, pdf_file FROM payslips WHERE year=? AND month=?").get(year, month) as any;
   const vals = [issued, paymentDate, calc.gross, calc.emp_ahv, calc.emp_alv, calc.emp_bvg,
     calc.emp_uvg, calc.emp_ktg, calc.emp_source_tax, calc.emp_total_deductions, calc.net_salary,
@@ -33,8 +49,8 @@ export const POST = guard(async (req: NextRequest, ctx: { params: Promise<{ year
       emp_ahv=?, emp_alv=?, emp_bvg=?, emp_uvg=?, emp_ktg=?, emp_source_tax=?,
       emp_total_deductions=?, net_salary=?,
       employer_ahv=?, employer_alv=?, employer_bvg=?, employer_uvg=?, employer_ktg=?, employer_fak=?,
-      employer_total=?, total_employer_cost=?, status='issued', source='generated'
-      WHERE year=? AND month=?`).run(...vals, year, month);
+      employer_total=?, total_employer_cost=?, status='issued', pdf_file=?, source='generated'
+      WHERE year=? AND month=?`).run(...vals, pdfName, year, month);
     payslipId = existing.id;
   } else {
     const r = d.prepare(`INSERT INTO payslips
@@ -43,8 +59,8 @@ export const POST = guard(async (req: NextRequest, ctx: { params: Promise<{ year
        emp_total_deductions, net_salary,
        employer_ahv, employer_alv, employer_bvg, employer_uvg, employer_ktg, employer_fak,
        employer_total, total_employer_cost, status, pdf_file, source)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'issued',NULL,'generated')`)
-      .run(year, month, ...vals);
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'issued',?,'generated')`)
+      .run(year, month, ...vals, pdfName);
     payslipId = Number(r.lastInsertRowid);
   }
 
@@ -119,5 +135,5 @@ export const POST = guard(async (req: NextRequest, ctx: { params: Promise<{ year
     }
   }
   return json({ id: payslipId, year, month,
-    pdf: existing?.pdf_file ?? null, side_effects: sideEffects, net_salary: calc.net_salary });
+    pdf: pdfName, side_effects: sideEffects, net_salary: calc.net_salary });
 });

@@ -26,9 +26,10 @@ expenses & reports · search (query language: text, phrases, amounts, dates,
 quarters, status, `type:` — invoice+bill entities) · **payroll generation**
 (payslip upsert + AHV/UVG/KTG + quarterly Quellensteuer obligations + salary
 transfer/income side effects; PDF render pending) · obligations
-(create/summary) · upcoming-payments · transfers (list/create/delete) ·
+(create/summary) · recurring generators (bills + obligations) · **schema
+self-install** (fresh DB → full DDL + defaults, zero Python needed) · upcoming-payments · transfers (list/create/delete) ·
 income (list/create) · **file serving** (bill/obligation/statement files,
-payslip & invoice PDFs) · **invoice PDF generation** (pdfkit port of the
+payslip & invoice PDFs) · **invoice & payslip PDF generation** (pdfkit port of the
 fpdf2 layout — visually equivalent, business settings honored) · invoices
 create/update/delete (rate/VAT from Settings, PDF written, income-mirror
 cascade on delete) · bills create/update/delete (FX booking port, uploads,
@@ -39,12 +40,14 @@ Python backend dead.
 
 ## Still Python (falls through while FastAPI runs)
 
-- payslip & expense-report PDF *generation* (invoice PDFs are ported)
+- expense-report PDF generation (invoice & payslip PDFs are ported)
 - CAMT.053 / CSV bank import + transaction classification + Excel exports
 - payroll *generation* (payslip rows + obligation booking), recurring
   generators, reimbursement flows, anomalies, cashflow, budget, share links /
   ICS, backup, AI chat & receipt OCR, docs viewer, checklist parser
-- schema creation/migrations (`db.py` / `seed_demo.py` still initialize the DB)
+- demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
+  a fresh `DB_PATH` gets the full current DDL + singleton rows on first open
+  (`server/schema.ts`, regenerate with `scripts/gen-schema.sh`)
 
 ## Notes for porters
 
