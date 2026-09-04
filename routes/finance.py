@@ -416,6 +416,17 @@ async def finance_forecast(year: int | None = None, income: float | None = None,
         pots_fund_future = bool(pots)
         year_end = date(today.year, 12, 31)
         per_month_income = {}
+        if incomes is None:
+            # No explicit incomes → use the saved per-month entries, so direct
+            # API calls agree with what the Forecast page shows.
+            import json as _json
+            row_p = db.execute("SELECT prefs FROM user_preferences WHERE id=1").fetchone()
+            try:
+                saved = (_json.loads(row_p["prefs"]) if row_p else {}).get("forecast", {}).get("incomeByMonth", {}) or {}
+                per_month_income = {k: float(v) for k, v in saved.items()
+                                    if isinstance(v, (int, float, str)) and str(v).strip()}
+            except Exception:
+                per_month_income = {}
         for tok in (incomes or "").split(","):
             if ":" in tok:
                 k, v = tok.split(":", 1)
@@ -486,7 +497,72 @@ async def finance_forecast(year: int | None = None, income: float | None = None,
         rows.append(row)
         if lowest is None or cash < lowest["cash_end"]: lowest = row
 
+    # ── Expected accrual P&L for the forecast year ──────────────────────
+    # actual invoices/payroll/bills for the year + projections for the
+    # remaining months (revenue from the same per-month income the cash rows
+    # use, net of VAT; payroll at the preview cost; bills at the run rate),
+    # plus the year-end fiduciary accrual that always lands at closing.
+    VAT = 0.081
+    with get_db() as db:
+        inv_net_y = db.execute(
+            "SELECT COALESCE(SUM(subtotal),0) AS t FROM invoices WHERE hours>0 AND year=?", (year,)).fetchone()["t"]
+        inv_months = {r["month"] for r in db.execute(
+            "SELECT DISTINCT month FROM invoices WHERE hours>0 AND year=?", (year,)).fetchall()}
+        other_y = db.execute(
+            "SELECT COALESCE(SUM(amount),0) AS t FROM income_entries "
+            "WHERE invoice_id IS NULL AND substr(income_date,1,4)=?", (str(year),)).fetchone()["t"]
+        pay_rows = db.execute(
+            "SELECT COALESCE(SUM(total_employer_cost),0) AS t, COUNT(*) AS n, COALESCE(MAX(month),0) AS last "
+            "FROM payslips WHERE year=?", (year,)).fetchone()
+        bills_y = db.execute(
+            "SELECT COALESCE(SUM(amount),0) AS t FROM company_docs "
+            "WHERE substr(doc_date,1,4)=? AND category NOT IN ('Payroll Settlement', 'Taxes / VAT')",
+            (str(year),)).fetchone()["t"]
+        fiduciary_accrual = db.execute(
+            "SELECT COALESCE(SUM(amount),0) AS t FROM obligations "
+            "WHERE obligation_type='accounting' AND period_year=?", (year,)).fetchone()["t"]
+
+    proj_rev_net = 0.0
+    proj_rev_months = []
+    for r in rows:                       # the year's forecast rows (current→Dec)
+        m_no = int(r["key"][5:7])
+        if m_no in inv_months:
+            continue                     # month already invoiced → in actuals
+        proj_rev_net += r["income"] / (1 + VAT)
+        proj_rev_months.append(r["label"])
+    payroll_proj_months = 0
+    if net_salary and year >= today.year:
+        first = max(pay_rows["last"] + 1, (emp_start.month if (emp_start and emp_start.year == year) else 1))
+        payroll_proj_months = max(0, 12 - first + 1) if year == today.year else (12 if year > today.year else 0)
+    payroll_proj = payroll_proj_months * (net_salary and (pay_rows["t"] / pay_rows["n"] if pay_rows["n"] else 0) or 0)
+    # prefer the live preview cost when we have it (settings may have changed)
+    if payroll_proj_months and psr and psr["gross_monthly"] > 0:
+        payroll_proj = payroll_proj_months * calc["total_employer_cost"]
+    months_with_bills = max(1, min(12, today.month) if year == today.year else 12)
+    bills_proj = (bills_y / months_with_bills) * max(0, 12 - months_with_bills) if year == today.year else 0.0
+
+    pbt = round(inv_net_y + other_y + proj_rev_net
+                - pay_rows["t"] - payroll_proj - bills_y - bills_proj - fiduciary_accrual, 2)
+    est_tax = round(max(0.0, pbt) * 0.165, 2)      # ZH effective incl. self-deductibility
+    legal_reserve = round(max(0.0, pbt - est_tax) * 0.05, 2)
+    pl = {
+        "year": year,
+        "revenue_actual_net": round(inv_net_y + other_y, 2),
+        "revenue_projected_net": round(proj_rev_net, 2),
+        "projected_months": proj_rev_months,
+        "payroll_actual": round(pay_rows["t"], 2), "payroll_projected": round(payroll_proj, 2),
+        "bills_actual": round(bills_y, 2), "bills_projected": round(bills_proj, 2),
+        "fiduciary_accrual": round(fiduciary_accrual, 2),
+        "profit_before_tax": pbt,
+        "est_corporate_tax": est_tax,
+        "legal_reserve": legal_reserve,
+        "est_distributable": round(max(0.0, pbt - est_tax - legal_reserve), 2),
+        "note": "Accrual estimate: entered incomes treated as incl. VAT; payroll at current settings; "
+                "bills at the year's run rate; fiduciary fee accrued into this year. The signed closing decides.",
+    }
+
     return {
+        "pl": pl,
         "opening": year_open, "bank_balance": opening, "as_of": as_of, "source": source,
         "income_monthly": round(income_m, 2), "income_source": income_source, "avg_income": avg_income,
         "payroll_net": round(net_salary, 2),

@@ -84,6 +84,33 @@ export default function ForecastPage() {
           hint={`avg · net salary ${chf(fc.payroll_net)} + obligations + bills + pots ${chf(fc.pots.reduce((t, p) => t + p.monthly_accrual, 0))}/mo`} />
       </div>
 
+      {fc.pl && (
+        <div className="panel" style={{ padding: "12px 16px", marginBottom: 16 }}>
+          <div className="row-split" style={{ flexWrap: "wrap", gap: 8 }}>
+            <h3 style={{ margin: 0, fontSize: 14 }}>Expected profit {fc.pl.year}{" "}
+              <span className="hint">(accrual — what the closing should roughly show)</span></h3>
+            <span className={`money ${fc.pl.profit_before_tax >= 0 ? "t-ok" : "t-danger"}`}
+                  style={{ fontWeight: 700, fontSize: 18 }}>{chf(fc.pl.profit_before_tax)}</span>
+          </div>
+          <div className="hint" style={{ marginTop: 6 }}>
+            Revenue net of VAT: <b>{chf(fc.pl.revenue_actual_net)}</b> booked + <b>{chf(fc.pl.revenue_projected_net)}</b> projected
+            {" "}− payroll {chf(fc.pl.payroll_actual + fc.pl.payroll_projected)}
+            {" "}− bills {chf(fc.pl.bills_actual + fc.pl.bills_projected)}
+            {" "}− fiduciary accrual {chf(fc.pl.fiduciary_accrual)}
+          </div>
+          {fc.pl.profit_before_tax >= 0 ? (
+            <div className="hint" style={{ marginTop: 4 }}>
+              After ~tax {chf(fc.pl.est_corporate_tax)} and the 5% legal reserve {chf(fc.pl.legal_reserve)} →{" "}
+              <b className="t-owner">≈ {chf(fc.pl.est_distributable)} distributable as dividend</b> at the next AGM.
+            </div>
+          ) : (
+            <div className="hint" style={{ marginTop: 4 }}>
+              A loss carries forward and reduces next year&apos;s taxable profit — no dividend from this year.
+            </div>
+          )}
+        </div>
+      )}
+
       <ChartCard title="Cash month by month"
         legend={<Legend items={[
           { label: "Income", color: "var(--viz-income)" },

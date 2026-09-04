@@ -413,6 +413,31 @@ async function loadBudgetDashboard() {
       stat('Monthly outflow', chf(fc.months.length ? fc.months.reduce((s, m) => s + m.out, 0) / fc.months.length : 0), null,
            `avg · net salary ${chf(fc.payroll_net)} + obligations + bills + pots ${chf((fc.pots || []).reduce((t, p) => t + p.monthly_accrual, 0))}/mo`);
 
+    // Expected accrual profit for the year (the dividend question, live)
+    const plEl = document.getElementById('fc-pl');
+    if (plEl && fc.pl) {
+      const pl = fc.pl;
+      const pos = pl.profit_before_tax >= 0;
+      plEl.innerHTML = `
+        <div class="panel" style="padding:12px 16px;margin-bottom:16px">
+          <div class="row-split" style="flex-wrap:wrap;gap:8px">
+            <h3 style="margin:0;font-size:14px">Expected profit ${pl.year} <span class="hint">(accrual — what the closing should roughly show)</span></h3>
+            <span class="money ${pos ? 't-ok' : 't-danger'}" style="font-weight:700;font-size:18px">${chf(pl.profit_before_tax)}</span>
+          </div>
+          <div class="hint" style="margin-top:6px">
+            Revenue net of VAT: <b>${chf(pl.revenue_actual_net)}</b> booked + <b>${chf(pl.revenue_projected_net)}</b> projected (${pl.projected_months.length} months from the incomes above)
+            &nbsp;−&nbsp; payroll ${chf(pl.payroll_actual + pl.payroll_projected)}
+            &nbsp;−&nbsp; bills ${chf(pl.bills_actual + pl.bills_projected)}
+            &nbsp;−&nbsp; fiduciary accrual ${chf(pl.fiduciary_accrual)}
+          </div>
+          ${pos ? `<div class="hint" style="margin-top:4px">
+            After ~tax ${chf(pl.est_corporate_tax)} and the 5% legal reserve ${chf(pl.legal_reserve)} →
+            <b class="t-owner">≈ ${chf(pl.est_distributable)} distributable as dividend</b> at the next AGM.</div>` : `<div class="hint" style="margin-top:4px">
+            A loss carries forward and reduces next year's taxable profit — no dividend from this year.</div>`}
+          <div class="hint hint--sm" style="margin-top:4px">${escapeHtml(pl.note)}</div>
+        </div>`;
+    } else if (plEl) { plEl.innerHTML = ''; }
+
     document.getElementById('fc-legend').innerHTML = forecastLegend();
     const ctx = document.getElementById('fc-chart').getContext('2d');
     if (overviewChart) overviewChart.destroy();

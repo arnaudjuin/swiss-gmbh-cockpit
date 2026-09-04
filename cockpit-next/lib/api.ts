@@ -108,7 +108,15 @@ export interface ForecastMonth {
   out: number; net: number; cash_end: number;
   items: { label: string; amount: number; date: string; kind: string }[];
 }
+export interface ForecastPL {
+  year: number; revenue_actual_net: number; revenue_projected_net: number;
+  projected_months: string[]; payroll_actual: number; payroll_projected: number;
+  bills_actual: number; bills_projected: number; fiduciary_accrual: number;
+  profit_before_tax: number; est_corporate_tax: number; legal_reserve: number;
+  est_distributable: number; note: string;
+}
 export interface Forecast {
+  pl: ForecastPL;
   opening: number; bank_balance: number; as_of: string; source: string;
   income_monthly: number; income_source: string; avg_income: number; payroll_net: number;
   pots: { name: string; monthly_accrual: number }[];
