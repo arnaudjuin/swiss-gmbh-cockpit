@@ -26,7 +26,11 @@ with content-hashed file storage + still-referenced checks, CAMT.053 header
 auto-parse on upload, `parse-xml` preview, and the live `transactions`
 endpoint — CAMT entry-level + UBS CSV with multi-order sub-entries and
 "Reason for payment" extraction — plus the normalized `transactions.csv`
-export, byte-identical to Python's) · cash balance (get/put) · customers ·
+export, byte-identical to Python's) · **bank statement analyze** (the
+reconciliation proposal engine: vendor categorization, owner-ledger
+matching, salary aggregation, invoice matching by embedded number or
+amount, and obligation settlement incl. same-type/same-due-date subset
+sums) · cash balance (get/put) · customers ·
 expenses & reports · search (query language: text, phrases, amounts, dates,
 quarters, status, `type:` — invoice+bill entities) · **payroll generation**
 (payslip upsert + AHV/UVG/KTG + quarterly Quellensteuer obligations + salary
@@ -46,8 +50,7 @@ Python backend dead.
 ## Still Python (falls through while FastAPI runs)
 
 - expense-report PDF generation (invoice & payslip PDFs are ported)
-- bank statement `analyze` (the reconciliation proposal engine — vendor
-  categorization + obligation combination matching) and the Excel exports
+- the Excel exports (bank history, P&L, accounting)
 - reimbursement flows, anomalies, cashflow, budget, share links /
   ICS, backup, AI chat & receipt OCR, docs viewer, checklist parser
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
