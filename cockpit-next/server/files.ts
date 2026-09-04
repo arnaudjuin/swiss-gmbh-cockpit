@@ -27,16 +27,23 @@ export function serveFile(dir: string, filename: string | null | undefined): Nex
   return new NextResponse(body, { headers: { "Content-Type": MIME[ext] ?? "application/octet-stream" } });
 }
 
-export async function saveUpload(file: File | null, dir: string, prefix: string): Promise<string | null> {
-  if (!file || !file.size) return null;
-  const data = Buffer.from(await file.arrayBuffer());
-  const ext = (file.name.split(".").pop() ?? "bin").toLowerCase();
-  const hash = crypto.createHash("sha1").update(data).digest("hex").slice(0, 12);
-  const filename = `${prefix}_${hash}.${ext}`;
+// Content-addressed filename, byte-identical to Python helpers.hashed_filename:
+// prefix_<sha1[:10]><ext> — same bytes, same name, so re-uploads dedupe across
+// both backends.
+export function storeBytes(dir: string, prefix: string, ext: string, data: Buffer): string {
+  const clean = (ext || ".bin").toLowerCase();
+  const hash = crypto.createHash("sha1").update(data).digest("hex").slice(0, 10);
+  const filename = `${prefix}_${hash}${clean.startsWith(".") ? clean : "." + clean}`;
   fs.mkdirSync(dir, { recursive: true });
   const p = path.join(dir, filename);
   if (!fs.existsSync(p)) fs.writeFileSync(p, data);
   return filename;
+}
+
+export async function saveUpload(file: File | null, dir: string, prefix: string): Promise<string | null> {
+  if (!file || !file.size) return null;
+  const data = Buffer.from(await file.arrayBuffer());
+  return storeBytes(dir, prefix, path.extname(file.name) || ".bin", data);
 }
 
 export function deleteStored(dir: string, filename: string | null | undefined) {

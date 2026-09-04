@@ -21,7 +21,12 @@ obligations (list/types/labels/status) · invoices (list, paid toggle **incl.
 the income-mirror invariant**) · bills · payroll (settings/preview engine/
 payslips) · payslip math (ALV plafond port of `_compute_payslip`) ·
 kontokorrent · reserves (list + create/update/delete + contribute/withdraw +
-ledger) · bank statements (list/latest) · cash balance (get/put) · customers ·
+ledger) · **bank statements** (list/latest/years/get, create/update/delete
+with content-hashed file storage + still-referenced checks, CAMT.053 header
+auto-parse on upload, `parse-xml` preview, and the live `transactions`
+endpoint — CAMT entry-level + UBS CSV with multi-order sub-entries and
+"Reason for payment" extraction — plus the normalized `transactions.csv`
+export, byte-identical to Python's) · cash balance (get/put) · customers ·
 expenses & reports · search (query language: text, phrases, amounts, dates,
 quarters, status, `type:` — invoice+bill entities) · **payroll generation**
 (payslip upsert + AHV/UVG/KTG + quarterly Quellensteuer obligations + salary
@@ -41,9 +46,9 @@ Python backend dead.
 ## Still Python (falls through while FastAPI runs)
 
 - expense-report PDF generation (invoice & payslip PDFs are ported)
-- CAMT.053 / CSV bank import + transaction classification + Excel exports
-- payroll *generation* (payslip rows + obligation booking), recurring
-  generators, reimbursement flows, anomalies, cashflow, budget, share links /
+- bank statement `analyze` (the reconciliation proposal engine — vendor
+  categorization + obligation combination matching) and the Excel exports
+- reimbursement flows, anomalies, cashflow, budget, share links /
   ICS, backup, AI chat & receipt OCR, docs viewer, checklist parser
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
   a fresh `DB_PATH` gets the full current DDL + singleton rows on first open

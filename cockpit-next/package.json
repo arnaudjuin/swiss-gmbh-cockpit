@@ -10,6 +10,7 @@
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "chart.js": "^4.4.7",
+    "fast-xml-parser": "^5.11.1",
     "next": "^15.1.6",
     "pdfkit": "^0.20.2",
     "react": "^19.0.0",
