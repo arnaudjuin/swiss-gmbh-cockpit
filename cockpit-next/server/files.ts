@@ -10,6 +10,8 @@ export const DIRS = {
   invoices: path.join(DOCS, "invoices"),
   payslips: path.join(DOCS, "payslips"),
   bank: path.join(DOCS, "bank_statements"),
+  scans: path.join(DOCS, "expenses", "scans"),
+  reports: path.join(DOCS, "expenses", "reports"),
 };
 
 const MIME: Record<string, string> = {
@@ -50,4 +52,14 @@ export function deleteStored(dir: string, filename: string | null | undefined) {
   if (!filename) return;
   const p = path.join(dir, path.basename(filename));
   if (fs.existsSync(p)) fs.unlinkSync(p);
+}
+
+// Starlette FileResponse content-disposition: RFC 5987 form when the name
+// needs quoting (spaces included), plain quoted form otherwise.
+export function contentDisposition(filename: string): string {
+  const quoted = encodeURIComponent(filename)
+    .replace(/[!*'()]/g, ch => "%" + ch.charCodeAt(0).toString(16).toUpperCase());
+  return quoted === filename
+    ? `attachment; filename="${filename}"`
+    : `attachment; filename*=utf-8''${quoted}`;
 }

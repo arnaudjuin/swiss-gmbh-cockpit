@@ -38,7 +38,14 @@ expenses & reports · **vehicles** (CRUD + depreciation book-value) ·
 against parsed statements/**personal-card outstanding + reimburse** with the
 Kontokorrent-safe transfer tagging) · payroll extras (YTD totals, payslip
 status/delete, **accountant-payslip upload** with settings-estimated
-breakdown) · reserves create + summary · income delete/file · transfers
+breakdown) · **expenses** (CRUD + scan blobs with shared-content-hash
+lifecycle, years/summary, bulk delete/recategorize, scan serving) ·
+**expense reports** (generate — keeps the invoice number on regenerate,
+reopens reimbursement when the total changes — plus the multi-page PDF
+with receipt scans via pdfkit/pdf-lib, the exceljs Excel export, list and
+delete with invoice-mirror cleanup) · RFC 5987 download filenames on all
+PDF/Excel endpoints (Starlette-identical) · next-invoice-number ·
+reserves create + summary · income delete/file · transfers
 file + the annotated `export.csv` · dashboard extras (legacy stats,
 finance dashboard, compare-months, category-trends) · **anomaly detection**
 (vendor mean/stdev deviation + dismiss) · **cashflow** (day-by-day balance
@@ -63,9 +70,8 @@ Python backend dead.
 
 ## Still Python (falls through while FastAPI runs)
 
-- expense-report PDF generation (invoice & payslip PDFs are ported) and
-  expense CRUD/report/import endpoints
-- the Excel exports (bank history, P&L, accounting)
+- `expenses/import-folder` + receipt OCR (needs the LLM provider — AI tranche)
+- the remaining Excel exports (bank history, P&L, accounting)
 - quarterly report, accountant package, share links / ICS, backup,
   AI chat & receipt OCR, docs viewer, checklist parser
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
