@@ -30,8 +30,16 @@ export, byte-identical to Python's) · **bank statement analyze** (the
 reconciliation proposal engine: vendor categorization, owner-ledger
 matching, salary aggregation, invoice matching by embedded number or
 amount, and obligation settlement incl. same-type/same-due-date subset
-sums) · cash balance (get/put) · customers ·
-expenses & reports · search (query language: text, phrases, amounts, dates,
+sums) · cash balance (get/put) · customers (incl. get/update/delete) ·
+expenses & reports · **vehicles** (CRUD + depreciation book-value) ·
+**trips** (CRUD + rollup totals + expense auto-assign/assign) ·
+**shareholder loans** (CRUD + net-position summary) · accounting extras
+(years/categories/summary/vendors/check-duplicate/status toggle/bank-check
+against parsed statements/**personal-card outstanding + reimburse** with the
+Kontokorrent-safe transfer tagging) · payroll extras (YTD totals, payslip
+status/delete, **accountant-payslip upload** with settings-estimated
+breakdown) · reserves create + summary · income delete/file · transfers
+file + the annotated `export.csv` · search (query language: text, phrases, amounts, dates,
 quarters, status, `type:` — invoice+bill entities) · **payroll generation**
 (payslip upsert + AHV/UVG/KTG + quarterly Quellensteuer obligations + salary
 transfer/income side effects; PDF render pending) · obligations
@@ -49,10 +57,12 @@ Python backend dead.
 
 ## Still Python (falls through while FastAPI runs)
 
-- expense-report PDF generation (invoice & payslip PDFs are ported)
+- expense-report PDF generation (invoice & payslip PDFs are ported) and
+  expense CRUD/report/import endpoints
 - the Excel exports (bank history, P&L, accounting)
-- reimbursement flows, anomalies, cashflow, budget, share links /
-  ICS, backup, AI chat & receipt OCR, docs viewer, checklist parser
+- dashboard extras (category-trends, compare-months), anomalies, cashflow,
+  budget, quarterly report, accountant package, share links / ICS, backup,
+  AI chat & receipt OCR, docs viewer, checklist parser
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
   a fresh `DB_PATH` gets the full current DDL + singleton rows on first open
   (`server/schema.ts`, regenerate with `scripts/gen-schema.sh`)
