@@ -6,7 +6,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import { SCHEMA, SINGLETON_SEEDS } from "./schema";
 
-const DB_PATH = process.env.DB_PATH || path.resolve(process.cwd(), "..", "invoices.db");
+export const DB_PATH = process.env.DB_PATH || path.resolve(process.cwd(), "..", "invoices.db");
 
 const gdb = globalThis as unknown as { __cockpitDb?: Database.Database };
 export function db(): Database.Database {

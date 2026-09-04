@@ -12,6 +12,8 @@
     "chart.js": "^4.4.7",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.11.1",
+    "jimp": "^1.6.1",
+    "jsqr": "^1.4.0",
     "jszip": "^3.10.1",
     "next": "^15.1.6",
     "pdf-lib": "^1.17.1",
@@ -26,6 +28,7 @@
     "@types/pdfkit": "^0.17.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "qrcode": "^1.5.4",
     "typescript": "^5"
   }
 }

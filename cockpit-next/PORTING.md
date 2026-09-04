@@ -58,7 +58,12 @@ quarter-filtered and full-history modes) · **sharing** (share-link CRUD,
 the public read-only HTML pages at /share/{token} — byte-identical markup —
 shared file serving, the shared accountant ZIP, the dynamic **iCal feed**
 with bills/obligations/invoices/budget/VAT events, and the Google-Sheets
-CSV endpoints with CORS) · the **/quick** mobile capture page · dashboard extras (legacy stats,
+CSV endpoints with CORS) · the **/quick** mobile capture page · **docs
+viewer** (whitelisted markdown list + content) · **checklist parser**
+(the Test Procedure markdown → sections/tests/steps, mtime-cached) ·
+**QR-bill scanner** (jsQR + jimp — works out of the box where Python
+needs pyzbar/zbar installed) · **bulk-upload** (draft bills from files) ·
+**backup ZIP** (db + documents, 3-backup retention, WAL-checkpointed) · dashboard extras (legacy stats,
 finance dashboard, compare-months, category-trends) · **anomaly detection**
 (vendor mean/stdev deviation + dismiss) · **cashflow** (day-by-day balance
 projection: invoice lag, payroll, recurring bills, VAT quarters) · bank
@@ -83,8 +88,8 @@ Python backend dead.
 ## Still Python (falls through while FastAPI runs)
 
 - `expenses/import-folder` + receipt OCR (needs the LLM provider — AI tranche)
-- backup ZIP, bulk-upload, QR-bill scan, AI chat & receipt OCR,
-  docs viewer, checklist parser
+- AI chat (`/api/ask`, `/api/status`, `/api/stream`) & receipt OCR
+  (`expenses/import-folder`)
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
   a fresh `DB_PATH` gets the full current DDL + singleton rows on first open
   (`server/schema.ts`, regenerate with `scripts/gen-schema.sh`)
