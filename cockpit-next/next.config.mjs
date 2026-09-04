@@ -6,7 +6,10 @@ const API = process.env.API_URL || "http://127.0.0.1:8000";
 // browser talks same-origin and the Bearer token flows through untouched.
 const nextConfig = {
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${API}/api/:path*` }];
+    // FALLBACK phase: Next's own route handlers (including dynamic ones like
+    // /api/reports/pl/[year]) win; only endpoints not yet ported fall through
+    // to the FastAPI backend. afterFiles would shadow dynamic routes.
+    return { fallback: [{ source: "/api/:path*", destination: `${API}/api/:path*` }] };
   },
 };
 

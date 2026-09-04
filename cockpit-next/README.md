@@ -1,8 +1,11 @@
-# cockpit-next — Next.js frontend (port in progress)
+# cockpit-next — full-stack Next.js port
 
-A second frontend for the same FastAPI backend, replacing the classic
-vanilla-JS SPA page by page. The backend is untouched: both frontends run
-against it at the same time, which is how parity is verified.
+Started as a second frontend for the FastAPI backend; now also carries a
+**TypeScript port of the backend core** in `server/` + `app/api/**` over the
+same SQLite file. Ported endpoints serve from Node; the rest falls through to
+FastAPI via a fallback rewrite — and with the core done, **the whole UI runs
+standalone with the Python backend off**. See [PORTING.md](PORTING.md) for the
+exact split and `scripts/parity.mjs` for the byte-level parity harness.
 
 ## Run
 
