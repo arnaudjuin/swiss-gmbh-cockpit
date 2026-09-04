@@ -1,27 +1,30 @@
-# cockpit-next — full-stack Next.js port
+# cockpit-next — the full-stack Next.js app
 
-Started as a second frontend for the FastAPI backend; now also carries a
-**TypeScript port of the backend core** in `server/` + `app/api/**` over the
-same SQLite file. Ported endpoints serve from Node; the rest falls through to
-FastAPI via a fallback rewrite — and with the core done, **the whole app — including a **fresh install on an empty database** — runs
-standalone with the Python backend off (`DB_PATH=./cockpit.db npm start`). See [PORTING.md](PORTING.md) for the
-exact split and `scripts/parity.mjs` for the byte-level parity harness.
+Started as a second frontend for the FastAPI backend; it is now the
+**complete application**: all 13 pages *and* a full TypeScript port of the
+backend (`server/` + `app/api/**`) over the same SQLite file. Every one of
+the 176 endpoints serves from Node — invoicing and payslip PDFs (pdfkit),
+Excel exports (exceljs), ZIP packages, CAMT.053/CSV bank parsing, the Swiss
+payroll engine, the AI chat, public share pages, the iCal feed. The schema
+self-installs on an empty database, so a fresh install needs zero Python.
+
+[PORTING.md](PORTING.md) documents how the port was done tranche by tranche
+with a byte-level parity harness against the FastAPI reference
+(`scripts/parity.mjs`), which remains in the repo root.
 
 ## Run
 
 ```bash
-# backend (from the repo root)
-.venv/bin/python seed_demo.py && .venv/bin/python app.py     # :8000
-
-# frontend
-cd cockpit-next
 npm install
-npm run dev              # :3000 — /api/* proxied to :8000 (API_URL to override)
+npm run build
+npm run seed                        # fictional demo data (spawns a temp server)
+ADMIN_PASSWORD=demo npm start       # http://127.0.0.1:3000
 ```
 
-Log in with the demo password (`demo`). Note: `next.config.mjs` rewrites are
-resolved at **build** time — set `API_URL` when running `npm run build` for a
-non-default backend.
+`npm run dev` for the hot-reloading dev server, `npm run smoke` for the
+route-sweep smoke test on a scratch database (fresh-install proof included).
+Point `DB_PATH` / `DOCS_DIR` elsewhere to relocate data (defaults: repo
+root `invoices.db` + `documents/`).
 
 ## How the port maps
 
@@ -31,18 +34,11 @@ non-default backend.
 | template strings in `static/js/01–09` | React components (`components/`) |
 | global `api()` + Bearer token | `lib/api.ts` — typed client, 401 → `/login` |
 | `Prefs.get/set` (server-backed) | `lib/prefs.ts` — same `/preferences` endpoint |
-| `static/app.css` classes | **the same file** (`app/app.css` is a copy — keep in sync); components are thin wrappers over the canonical classes |
+| `static/app.css` classes | **the same file** (`app/app.css` is a copy — keep in sync) |
 | Chart.js reading CSS tokens | identical: `vizToken()` + a `themechange` event re-renders charts |
-
-## Ported so far
-
-- Auth (login, token, 401 handling), app shell, dark mode
-- **Dashboard**: headline stats, the per-page recap strip, reserves,
-  Income-vs-Costs / Cash-forecast / Costs-by-Category charts, recent invoices
-- **Forecast**: per-year cash projection with editable per-month income
-  (writes the same server-backed preference the classic page reads)
-- **Obligations**: payment-day groups on the payable date, mark paid/unpaid,
-  by-type and full tables
+| FastAPI `routes/*.py` | route handlers in `app/api/**` over shared logic in `server/*.ts` |
+| fpdf2 PDFs / openpyxl Excel | pdfkit + pdf-lib / exceljs — visually and structurally equivalent |
+| `seed_demo.py` / `test_smoke.py` | `scripts/seed-demo.mjs` / `scripts/smoke.mjs` |
 
 ## Still in the classic frontend
 

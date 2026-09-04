@@ -1,21 +1,10 @@
 services:
-  backend:
+  app:
     build: .
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:3000:3000"
     environment:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-demo}
       SEED_DEMO: ${SEED_DEMO:-1}
     volumes:
-      - ./data/invoices.db:/app/invoices.db
-      - ./data/documents:/app/documents
-
-  frontend:
-    build:
-      context: ./cockpit-next
-      args:
-        API_URL: http://backend:8000
-    ports:
-      - "127.0.0.1:3000:3000"
-    depends_on:
-      - backend
+      - ./data:/app/data

@@ -5,7 +5,7 @@ import { getPrefs, putPrefs } from "@/server/prefs";
 export const GET = guard(async () => json(getPrefs()));
 export const PUT = guard(async (req: NextRequest) => {
   const body = await req.json().catch(() => null);
-  if (!body || typeof body !== "object") return err(400, "Body must be an object");
+  if (!body || typeof body !== "object" || Array.isArray(body)) return err(400, "Preferences must be a JSON object");
   putPrefs(body);
   return json({ ok: true });
 });

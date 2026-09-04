@@ -1,6 +1,6 @@
 # Swiss GmbH Cockpit
 
-Self-hosted financial operations suite for a founder-run Swiss GmbH — invoicing, bills & receipts, Swiss payroll (AHV/ALV/BVG/UVG/KTG/Quellensteuer), obligations tracking, bank-statement reconciliation (CAMT.053), VAT, cash forecasting, dividend planning and an owner Kontokorrent — in one small FastAPI + vanilla-JS app.
+Self-hosted financial operations suite for a founder-run Swiss GmbH — invoicing, bills & receipts, Swiss payroll (AHV/ALV/BVG/UVG/KTG/Quellensteuer), obligations tracking, bank-statement reconciliation (CAMT.053), VAT, cash forecasting, dividend planning and an owner Kontokorrent. Ships as a **full-stack Next.js/TypeScript app** — ported endpoint-by-endpoint, with byte-level parity testing, from the original FastAPI + vanilla-JS implementation that lives alongside it as the reference.
 
 > **All data in this repository is fictional.** Company, people, vendors, amounts and documents are invented demo data (`seed_demo.py`). The Swiss payroll/tax mechanics are real; the numbers are not anyone's.
 
@@ -24,14 +24,21 @@ Self-hosted financial operations suite for a founder-run Swiss GmbH — invoicin
 ## Quick start
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python seed_demo.py     # schema + fictional demo data (via the app's own API)
-.venv/bin/python app.py           # http://127.0.0.1:8000 — password: demo
-.venv/bin/python -m pytest tests/test_smoke.py -q
+cd cockpit-next
+npm install && npm run build
+npm run seed                      # schema self-installs + fictional demo data (via the app's own API)
+npm start                         # http://127.0.0.1:3000 — password: demo
+npm run smoke                     # 148-check route sweep on a scratch DB
 ```
 
-Single SQLite file (`invoices.db`), no build step, no frontend framework.
+Single SQLite file (`invoices.db`), zero Python required. The classic
+FastAPI + vanilla-JS implementation still runs the same database:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python seed_demo.py && .venv/bin/python app.py     # :8000
+.venv/bin/python -m pytest tests/test_smoke.py -q
+```
 
 ## Architecture
 
@@ -45,7 +52,7 @@ design-system/          canonical.css + reference pages + migration notes
 design-audit/           Playwright screenshot harness (31 shots, both themes)
 docs/                   in-app documentation (feeds the viewer, checklists & AI chat)
 tests/test_smoke.py     172 route/behavior smoke tests
-cockpit-next/           Next.js 15 full-stack port — all pages + TS backend core (PORTING.md)
+cockpit-next/           Next.js 15 full-stack app — all pages + the complete TS backend (PORTING.md)
 ```
 
 Design rules worth stealing: every color comes from semantic token families (`--ok/--danger/--warn/--info/--owner`), every CHF figure is `tabular-nums`, charts read their palette from CSS tokens at render time so the theme toggle re-skins them, and "color = meaning" is enforced (green success, red danger, purple = owner money — never decoration).
@@ -59,9 +66,15 @@ Bookkeeping invariants the code protects: invoice **subtotal** is revenue (VAT b
 | ![Forecast](docs/screenshots/forecast.png) | ![Obligations](docs/screenshots/obligations.png) |
 | ![Payroll](docs/screenshots/payroll.png) | ![Dark mode](docs/screenshots/dark.png) |
 
-## Next.js frontend
+## The Next.js port
 
-`cockpit-next/` is an incremental React/TypeScript port of the frontend over the same FastAPI backend — typed API client, the canonical CSS reused verbatim, charts reading their palette from the design tokens. All thirteen pages are ported (Dashboard, Forecast, Cash, Bills, Obligations, Calendar, Payroll, Reports, Dividends, Invoices, Customers, Expenses, Bank); create/edit dialogs and the docs viewer remain in the classic frontend — see [cockpit-next/README.md](cockpit-next/README.md).
+`cockpit-next/` is a complete React/TypeScript port — all thirteen pages
+*and* all 176 backend endpoints, from the Swiss payroll engine and CAMT.053
+bank parsing to pdfkit invoices, exceljs exports, accountant ZIPs, the AI
+chat and the public share pages. It was migrated tranche-by-tranche against
+the FastAPI reference with a canonicalized-diff parity harness (byte-identical
+responses, structurally identical Excel/ZIP artifacts) — the process and the
+porter's notes are in [cockpit-next/PORTING.md](cockpit-next/PORTING.md).
 
 ![Next.js dashboard](docs/screenshots/next-dashboard.png)
 
@@ -86,7 +99,7 @@ counterpart, a quiz per lesson, progress saved in your browser. Serve it with Gi
 |---|---|---|
 | `ADMIN_PASSWORD` | `demo` | Login password (app refuses to bind non-localhost with the default) |
 | `SESSION_SECRET` | random per start | JWT signing secret |
-| `HOST` / `PORT` | `127.0.0.1` / `8000` | Bind address |
+| `HOST` / `PORT` | `127.0.0.1` / `8000` (py) · `3000` (next) | Bind address |
 | `LLM_PROVIDER` + `ANTHROPIC_API_KEY` | off | Optional AI chat (`ollama` for local) |
 
 ## License
