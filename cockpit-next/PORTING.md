@@ -54,7 +54,11 @@ files + byte-identical summary CSVs) · **bank statement Excel export**
 Reimbursements, Personal card — same classification engine: salary
 detection against the owner ledger incl. retro-splits, reimbursement and
 owner-contribution matching, family/intra-company detection; single,
-quarter-filtered and full-history modes) · dashboard extras (legacy stats,
+quarter-filtered and full-history modes) · **sharing** (share-link CRUD,
+the public read-only HTML pages at /share/{token} — byte-identical markup —
+shared file serving, the shared accountant ZIP, the dynamic **iCal feed**
+with bills/obligations/invoices/budget/VAT events, and the Google-Sheets
+CSV endpoints with CORS) · the **/quick** mobile capture page · dashboard extras (legacy stats,
 finance dashboard, compare-months, category-trends) · **anomaly detection**
 (vendor mean/stdev deviation + dismiss) · **cashflow** (day-by-day balance
 projection: invoice lag, payroll, recurring bills, VAT quarters) · bank
@@ -79,8 +83,8 @@ Python backend dead.
 ## Still Python (falls through while FastAPI runs)
 
 - `expenses/import-folder` + receipt OCR (needs the LLM provider — AI tranche)
-- share links / ICS + public sheets, backup ZIP, bulk-upload, QR-bill scan,
-  AI chat & receipt OCR, docs viewer, checklist parser
+- backup ZIP, bulk-upload, QR-bill scan, AI chat & receipt OCR,
+  docs viewer, checklist parser
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
   a fresh `DB_PATH` gets the full current DDL + singleton rows on first open
   (`server/schema.ts`, regenerate with `scripts/gen-schema.sh`)
@@ -92,3 +96,7 @@ Python backend dead.
 - `rewrites()` must return `{ fallback: [...] }`, not a plain array.
 - JS `Math.round` is half-up; Python's `round` is banker's. No observed
   divergence on real data, but keep money math in whole rappen when extending.
+- The old hybrid proxy only forwarded `/api/*` — `/share/*` and `/quick`
+  never reached FastAPI from the Next app. Porting them fixed that.
+- Known deviation: Python's `zipfile` permits duplicate archive names (two
+  expenses sharing one scan + identical labels); JSZip stores one entry.
