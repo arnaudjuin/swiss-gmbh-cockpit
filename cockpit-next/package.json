@@ -12,6 +12,7 @@
     "chart.js": "^4.4.7",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.11.1",
+    "jszip": "^3.10.1",
     "next": "^15.1.6",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.20.2",

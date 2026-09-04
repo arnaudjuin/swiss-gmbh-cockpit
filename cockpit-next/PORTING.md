@@ -46,7 +46,15 @@ with receipt scans via pdfkit/pdf-lib, the exceljs Excel export, list and
 delete with invoice-mirror cleanup) · RFC 5987 download filenames on all
 PDF/Excel endpoints (Starlette-identical) · next-invoice-number ·
 reserves create + summary · income delete/file · transfers
-file + the annotated `export.csv` · dashboard extras (legacy stats,
+file + the annotated `export.csv` · **quarterly report** (AHV Lohnsumme from
+issued payslips) · **P&L Excel** · **accounting export ZIP** and the full
+**accountant package ZIP** (invoice/bill/expense/payslip/bank-statement
+files + byte-identical summary CSVs) · **bank statement Excel export**
+(4 sheets — Summary with Kontokorrent residual, classified Transactions,
+Reimbursements, Personal card — same classification engine: salary
+detection against the owner ledger incl. retro-splits, reimbursement and
+owner-contribution matching, family/intra-company detection; single,
+quarter-filtered and full-history modes) · dashboard extras (legacy stats,
 finance dashboard, compare-months, category-trends) · **anomaly detection**
 (vendor mean/stdev deviation + dismiss) · **cashflow** (day-by-day balance
 projection: invoice lag, payroll, recurring bills, VAT quarters) · bank
@@ -71,8 +79,7 @@ Python backend dead.
 ## Still Python (falls through while FastAPI runs)
 
 - `expenses/import-folder` + receipt OCR (needs the LLM provider — AI tranche)
-- the remaining Excel exports (bank history, P&L, accounting)
-- quarterly report, accountant package, share links / ICS, backup,
+- share links / ICS + public sheets, backup ZIP, bulk-upload, QR-bill scan,
   AI chat & receipt OCR, docs viewer, checklist parser
 - demo-data seeding (`seed_demo.py`); schema itself now **self-installs** —
   a fresh `DB_PATH` gets the full current DDL + singleton rows on first open
