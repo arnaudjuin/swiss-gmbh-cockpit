@@ -176,6 +176,21 @@ kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); bord
 .codetabs .tabbtns button.tnx.on { box-shadow: inset 0 2px 0 var(--accent); }
 .codetabs pre { margin-top: 0; border-top-left-radius: 0; }
 .codetabs .pane[hidden] { display: none; }
+.srcs { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; margin-top: 26px; }
+.srcs .st { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.srcs a { font-family: var(--f-mono); font-size: 12px; text-decoration: none;
+  background: var(--accent-bg); color: var(--accent); padding: 2px 9px; border-radius: 99px; }
+.srcs a:hover { filter: brightness(1.06); text-decoration: none; }
+.plab table { font-size: 13.5px; margin: 8px 0 0; }
+.plab td, .plab th { padding: 4px 10px; }
+.plab .tot td { border-top: 2px solid var(--border); font-weight: 600; }
+.plab input[type=number] { width: 90px; }
+.chiprow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 26px; }
+.chiprow .qchip { font-family: var(--f-mono); font-size: 12px; padding: 2px 10px;
+  border-radius: 99px; background: var(--accent-bg); color: var(--accent); }
+.chiprow .qchip.stat { background: var(--warn-bg); color: var(--warn-ink); }
+.chiprow .qchip.date { background: var(--ok-bg); color: var(--ok-ink); }
 
 </style>
 <div class="wrap">
@@ -183,8 +198,8 @@ kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); bord
   <div class="eyebrow">swiss-gmbh-cockpit / cockpit-next · an interactive code-reading course</div>
   <h1>Next.js for the Angular Engineer</h1>
   <p class="lede">Twenty-two lessons taught through <b>real source from this repository</b> — every
-  concept mapped to the Angular idea you already own, with quizzes, <b>ten hands-on labs you can poke</b>,
-  Angular↔Next code tabs, and your progress saved locally. Parts I–IV teach Next.js as a frontend;
+  concept mapped to the Angular idea you already own, with quizzes, <b>thirteen hands-on labs running the app's real ported code</b> — the Swiss payslip engine, the payable-date rule, the parity diff — plus
+  Angular↔Next code tabs, a <b>link to the real source file</b> under every lesson, and your progress saved locally. Parts I–IV teach Next.js as a frontend;
   <b>Part V tells the second act</b>: how the entire FastAPI backend — 176 endpoints, Swiss payroll,
   PDFs, Excel, streaming AI chat — was ported to TypeScript route handlers with byte-level parity
   testing, until Python became optional. Ends with a final exam. Built for engineers evaluating (or joining) the
@@ -277,6 +292,7 @@ boundary moves one file at a time.</p>
 </div>
 <p class="qwhy" hidden>Shared server-side state (one DB, one preferences document) means either stack can serve any request on any day. The parity harness then proves the answers are identical.</p></div>
 </div>
+<div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/next.config.mjs">next.config.mjs</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/PORTING.md">PORTING.md</a></div>
 <div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="0">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-1" hidden>
 <h2><span class="no">02</span>React in one lesson, for Angular hands</h2>
 <p>Angular separates a component into a class (state + logic), a template (its own language:
@@ -353,7 +369,8 @@ the array really grows (truth counter), but the UI goes stale — exactly what h
 <button type="button" class="qopt" data-o="2">A route parameter</button>
 </div>
 <p class="qwhy" hidden>It tells the differ which rendered item is which. Without it, React diffs by position and re-mounts rows on reorder.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="1">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-2" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/components/ui.tsx">components/ui.tsx</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="1">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-2" hidden>
 <h2><span class="no">03</span>Angular → Next, the full mapping</h2>
 <div class="tblwrap"><table>
 <tr><th><span class="tag tag--ng">Angular</span></th><th><span class="tag tag--nx">This project</span></th><th>Lesson</th></tr>
@@ -392,7 +409,8 @@ counterpart — the render loop is driven only by setter calls you can grep for.
 <button type="button" class="qopt" data-o="2">A service-locator library</button>
 </div>
 <p class="qwhy" hidden>lib/api.ts and lib/prefs.ts are plain modules. Module-level state is app-wide state; imports give you the singleton for free.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="2">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-3" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/lib/api.ts">lib/api.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/lib/prefs.ts">lib/prefs.ts</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="2">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-3" hidden>
 <h2><span class="no">04</span>Routing is the filesystem</h2>
 <p>The App Router's convention: a folder under <code>app/</code> is a URL segment; the
 <code>page.tsx</code> inside it is the component for that URL. This project's entire "router
@@ -467,7 +485,8 @@ same result at this scale.</p>
 <button type="button" class="qopt" data-o="2">Prefetching happens twice</button>
 </div>
 <p class="qwhy" hidden>Each click reloads the app (~103 kB, prerendered shell), which the project accepted during the port. Swapping to &lt;Link&gt; is a find-and-replace later.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="3">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-4" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/layout.tsx">app/layout.tsx</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/page.tsx">app/page.tsx</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/components/Shell.tsx">components/Shell.tsx</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="3">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-4" hidden>
 <h2><span class="no">05</span>Rendering: server components, hydration, and what ○ Static means</h2>
 <p>The App Router's headline feature: components are <b>server components by default</b>. They
 run only on the server (at build or request time), emit HTML, ship zero JS, and cannot use
@@ -547,7 +566,8 @@ That is exercise 3, and it's the highest-value one.</p>
 <button type="button" class="qopt" data-o="2">It is served from a CDN only</button>
 </div>
 <p class="qwhy" hidden>The static part is the pre-data render. Hydration attaches React, then useEffect fetches live data.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="4">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-5" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/dashboard/page.tsx">app/dashboard/page.tsx</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="4">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-5" hidden>
 <h2><span class="no">06</span>Auth: the login flow and its trade-offs</h2>
 <div class="box"><div class="bt">2026 update</div>
 <p>Everything below still holds — the auth <i>contract</i> (Bearer header, session cookie,
@@ -603,7 +623,8 @@ needed a download link.</p>
 <button type="button" class="qopt" data-o="2">FastAPI only reads query params</button>
 </div>
 <p class="qwhy" hidden>A plain link can't send Authorization. The backend accepts a query token exactly for downloads.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="5">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-6" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/login/page.tsx">app/login/page.tsx</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/auth.ts">server/auth.ts</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="5">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-6" hidden>
 <h2><span class="no">07</span>The data layer — your HttpClient in 30 lines</h2>
 <p>Angular gives you <code>HttpClient</code> (typed via generics) plus interceptors for auth
 and errors. Here the same three jobs are one function:</p>
@@ -650,6 +671,19 @@ slices of what FastAPI actually returns:</p>
   expected_bill_date: string | null; expected_bill_amount: number | null;
   payable_date: string | null;      <span class="c">// ← the domain rule, surfaced as data</span>
 }</pre>
+<div class="lab" id="lab-payable">
+<div class="bt">Lab · the payable-date rule, running for real</div>
+<p style="margin-top:0">The app's core scheduling rule: an obligation is planned on
+<code>max(due_date, expected_bill_date)</code> — the AHV settlement may be <i>due</i> in March,
+but if the bill only arrives in May, May is when cash leaves. The function below is
+<code>payableDate()</code> from <code>server/obligations.ts</code>, verbatim, running in your
+browser:</p>
+<div class="row">
+  <label>due_date <input type="date" id="pd-due" value="2026-03-31"></label>
+  <label>expected_bill_date <input type="date" id="pd-exp" value="2026-05-15"></label>
+</div>
+<div class="out" aria-live="polite"></div>
+</div>
 <p>Your instinct to generate these from OpenAPI is right — FastAPI serves
 <code>openapi.json</code> for free, and <code>npx openapi-typescript</code> would emit the lot.
 Hand-written was chosen so each type documents <i>what the page actually consumes</i>; if you
@@ -707,7 +741,8 @@ export class ObligationService {
 <button type="button" class="qopt" data-o="2">finalize()</button>
 </div>
 <p class="qwhy" hidden>An optional widget degrades to empty instead of failing the whole Promise.all — per-source error isolation.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="6">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-7" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/lib/api.ts">lib/api.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/obligations.ts">server/obligations.ts</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="6">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-7" hidden>
 <h2><span class="no">08</span>State, effects, refs — the four hooks actually used</h2>
 <p>The whole app is built from four hooks. Master these against their Angular counterparts and
 you have read every page.</p>
@@ -793,6 +828,8 @@ requests would actually hit the server.</p>
   <div class="cell"><div class="ct">requests sent</div><span class="calls stat-num">0</span></div>
 </div>
 <div class="out">(type above)</div>
+  <div class="ct" style="font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:10px">what the server parses it into (server/search.ts grammar)</div>
+  <div class="chiprow" id="db-chips"><span style="font-size:12.5px;color:var(--muted)">try: <code>swisscom &gt;100 2026-07 unpaid</code> · <code>"team lunch" q2</code> · <code>type:bill 50-200</code></span></div>
 </div>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="7" data-q="0" data-a="1">
@@ -809,7 +846,8 @@ requests would actually hit the server.</p>
 <button type="button" class="qopt" data-o="2">refs persist across page navigations</button>
 </div>
 <p class="qwhy" hidden>A ref is the instance field that must not trigger re-renders. clearTimeout+setTimeout gives you debounceTime+switchMap in six lines.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="7">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-8" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/bills/page.tsx">app/bills/page.tsx</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/search.ts">server/search.ts</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="7">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-8" hidden>
 <h2><span class="no">09</span>Forms without FormsModule</h2>
 <p>No <code>FormsModule</code>, no <code>FormBuilder</code>, no validators framework. Three
 patterns cover every form in the app:</p>
@@ -870,7 +908,8 @@ earns its dependency — none here does.</p>
 <button type="button" class="qopt" data-o="2">It avoids TypeScript errors</button>
 </div>
 <p class="qwhy" hidden>'Uncontrolled with reset key' is the pattern for editable cells the server recomputes — a controlled binding would fight the user mid-typing.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="8">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-9" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/settings/page.tsx">app/settings/page.tsx</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="8">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-9" hidden>
 <h2><span class="no">10</span>Component patterns in ui.tsx</h2>
 <p><code>components/ui.tsx</code> is the project's shared component library — seven components,
 80 lines, no decorators. The patterns generalize:</p>
@@ -927,7 +966,8 @@ optimistic version and lets you feel the difference.</p>
 <button type="button" class="qopt" data-o="2">ViewChild</button>
 </div>
 <p class="qwhy" hidden>Content projection. A named slot is just another prop that accepts JSX — elements are values.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="9">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-10" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/components/ui.tsx">components/ui.tsx</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/components/RecapStrip.tsx">components/RecapStrip.tsx</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="9">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-10" hidden>
 <h2><span class="no">11</span>Shared services without DI</h2>
 <p><code>providedIn: 'root'</code> gives Angular a lazy singleton. In React-land a plain module
 already is one — ES imports are cached, so module-level state is app-wide state:</p>
@@ -977,7 +1017,8 @@ an afternoon — exercise 2.</p>
 <button type="button" class="qopt" data-o="2">On the server, in the /preferences document</button>
 </div>
 <p class="qwhy" hidden>Both frontends read/write the same server document — that's why they can't disagree, and why no client store exists.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="10">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-11" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/lib/prefs.ts">lib/prefs.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/lib/money.ts">lib/money.ts</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="10">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-11" hidden>
 <h2><span class="no">12</span>Styling: one CSS file, two frontends</h2>
 <p>Angular scopes styles per component (ViewEncapsulation); Next offers CSS Modules for the
 same job — and this project deliberately uses <b>neither</b>. <code>app/app.css</code> is a
@@ -1020,7 +1061,8 @@ ticks — re-formats. One module, no injection token, no pipe re-registration.</
 <button type="button" class="qopt" data-o="2">Licensing</button>
 </div>
 <p class="qwhy" hidden>A stated trade: pixel parity between frontends beats DRY here; the copy must be mirrored manually and the code says so.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="11">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-12" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/app.css">app/app.css</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/design-system/canonical.css">design-system/canonical.css</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="11">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-12" hidden>
 <h2><span class="no">13</span>Charts and the registration gotcha</h2>
 <p>Chart.js is wrapped by <code>react-chartjs-2</code> the way <code>ng2-charts</code> wraps it
 for Angular. Chart.js v4 is tree-shakeable, which means <b>you register every piece you use</b> —
@@ -1090,7 +1132,8 @@ document — and then re-reads the tokens with <code>getComputedStyle</code>, ex
 <button type="button" class="qopt" data-o="2">Chart.js has a dark-mode flag</button>
 </div>
 <p class="qwhy" hidden>Canvas pixels can't use CSS variables, so charts call getComputedStyle at render and re-render when the event fires.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="12">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-13" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/components/charts.tsx">components/charts.tsx</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/lib/money.ts">lib/money.ts</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="12">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-13" hidden>
 <h2><span class="no">14</span>Build, env, Docker, CI</h2>
 <h3>The three commands</h3>
 <div class="tblwrap"><table>
@@ -1160,7 +1203,8 @@ test suite found its own parity bug (a validation Python had that TS lacked).</p
 <button type="button" class="qopt" data-o="2">Docker overrides it</button>
 </div>
 <p class="qwhy" hidden>Build-time, not runtime — the same mental model as environment.ts. The Docker build takes it as a build ARG for exactly this reason.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="13">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-14" hidden>
+</div><div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/Dockerfile">Dockerfile</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/scripts/start.mjs">scripts/start.mjs</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/scripts/smoke.mjs">smoke.mjs</a></div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="13">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-14" hidden>
 <h2><span class="no">15</span>Performance: what actually ships, what would be next</h2>
 <ul>
 <li><b>First paint</b> is prerendered HTML — chrome and loading state — then one request per
@@ -1223,11 +1267,33 @@ async def update_doc_status(id: int, request: Request):
 </div>
 <p>Three things carry the whole mapping:</p>
 <ul>
-<li><b><code>guard()</code></b> (in <code>server/http.ts</code>) wraps every authenticated
-handler: it checks the Bearer/cookie/query token, and catches anything thrown into a 500 with
-the same <code>{"detail": …}</code> shape FastAPI produces. It is your middleware/dependency
-injection collapsed into a higher-order function — <code>Depends(require_auth)</code> without
-the framework.</li>
+<li><b><code>guard()</code></b> wraps every authenticated handler — your
+middleware/dependency-injection stack collapsed into a higher-order function,
+<code>Depends(require_auth)</code> without the framework. This is the entire thing, verbatim:
+<p class="filecap">cockpit-next/server/http.ts — complete auth + error contract</p>
+<pre>export const json = (data: unknown, status = 200) =&gt; NextResponse.json(data, { status });
+export const err = (status: number, detail: string) =&gt; NextResponse.json({ detail }, { status });
+
+<span class="c">// Same auth contract as FastAPI: Bearer header, session cookie, or ?token=.</span>
+export function requireAuth(req: NextRequest): NextResponse | null {
+  const h = req.headers.get("authorization") || "";
+  const bearer = h.startsWith("Bearer ") ? h.slice(7) : null;
+  const cookie = req.cookies.get("session")?.value ?? null;
+  const query = req.nextUrl.searchParams.get("token");
+  if (validToken(bearer) || validToken(cookie) || validToken(query)) return null;
+  return err(401, "Not authenticated");
+}
+
+export function guard(handler) {
+  return async (req: NextRequest, ctx: any) =&gt; {
+    const unauthorized = requireAuth(req);
+    if (unauthorized) return unauthorized;
+    try { return await handler(req, ctx); }
+    catch (e) { return err(500, e instanceof Error ? e.message : "Internal error"); }
+  };
+}</pre>
+Note <code>err()</code> produces <code>{"detail": …}</code> — FastAPI's error shape,
+preserved so no frontend code had to change.</li>
 <li><b>Exports are the HTTP methods.</b> A <code>route.ts</code> may export
 <code>GET</code>, <code>POST</code>, <code>PATCH</code>… and <i>nothing else</i> — export a
 helper from one and the build fails. Shared logic therefore lives in <code>server/*.ts</code>,
@@ -1275,6 +1341,7 @@ fixed it — and that one line is what made the whole strangler-fig migration po
 </div>
 <p class="qwhy" hidden>The build enforces it. The port hit this on day one and moved computeDates/getCustomer into server/invoices.ts.</p></div>
 </div>
+<div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/http.ts">server/http.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/api/accounting/%5Bid%5D/status/route.ts">the TS route</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/routes/misc.py">the Python original</a></div>
 <div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="15">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-16" hidden>
 <h2><span class="no">17</span>The database: sync SQLite and the bundle trap</h2>
 <p>The most surprising choice first: the TypeScript backend talks to SQLite
@@ -1354,6 +1421,7 @@ discovered by the first real user.</p>
 </div>
 <p class="qwhy" hidden>"Always async" is a rule about remote databases. For an embedded file DB the sync API is simpler, faster, and made parity review dramatically easier.</p></div>
 </div>
+<div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/db.ts">server/db.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/schema.ts">server/schema.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/auth.ts">server/auth.ts</a></div>
 <div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="16">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-17" hidden>
 <h2><span class="no">18</span>Binary endpoints: PDFs, Excel, ZIPs</h2>
 <p>A finance app's API is half JSON, half <i>files</i>: numbered invoice PDFs, payslips,
@@ -1408,6 +1476,7 @@ comparison finds it.</p>
 </div>
 <p class="qwhy" hidden>The rule is: quote(filename) != filename → RFC 5987 form. Spaces percent-encode, so "P&L 2026.xlsx" and "Travel Expenses.pdf" both take the starred form.</p></div>
 </div>
+<div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/pdf.ts">server/pdf.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/expensePdf.ts">server/expensePdf.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/bankXlsx.ts">server/bankXlsx.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/files.ts">server/files.ts</a></div>
 <div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="17">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-18" hidden>
 <h2><span class="no">19</span>Streaming: SSE from an async generator</h2>
 <p>The AI chat streams tokens as the model produces them. The Python version yields from a
@@ -1473,6 +1542,7 @@ the part you gain by owning a server. Note also what the <i>tool-selection</i> s
 </div>
 <p class="qwhy" hidden>The structured result exists before the phrasing does. Sending it first makes the UI feel instant even on a slow model.</p></div>
 </div>
+<div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/llm.ts">server/llm.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/app/api/llm/stream/route.ts">the stream route</a></div>
 <div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="18">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-19" hidden>
 <h2><span class="no">20</span>The parity harness: porting without fear</h2>
 <p>The port's real innovation isn't any single endpoint — it's the <b>verification loop</b>
@@ -1518,6 +1588,28 @@ found by porting the <i>test suite</i> and watching it fail against the new back
 <div class="row"><button class="primary" id="pr-run">Canonicalize + diff</button><span style="font-size:12.5px;color:var(--muted)">hint: numbers canonicalize equal — strings don't</span></div>
 <div class="out" aria-live="polite">(not run)</div>
 </div>
+<h3>The function both backends must agree on</h3>
+<p>Nothing made parity feel more real than the payroll engine. Below is
+<code>computePayslip()</code> from <code>server/payroll.ts</code> — the 1:1 port of
+<code>routes/payroll.py::_compute_payslip</code> — running live. Drag the gross past
+CHF&nbsp;12,350 and watch the ALV contribution stop growing: that's the Swiss plafond
+(148,200/yr ÷ 12) doing its job, in both languages, to the rappen.</p>
+<div class="lab plab" id="lab-payslip">
+<div class="bt">Lab · the Swiss payslip engine, verbatim</div>
+<div class="row">
+  <label>gross/mo <input type="number" id="ps-gross" value="9500" step="100" min="0"></label>
+  <label>AHV % <input type="number" id="ps-ahv" value="5.3" step="0.1" min="0"></label>
+  <label>ALV % <input type="number" id="ps-alv" value="1.1" step="0.1" min="0"></label>
+  <label>BVG emp <input type="number" id="ps-bvg" value="450" step="10" min="0"></label>
+  <label>source tax <input type="number" id="ps-qst" value="1150" step="50" min="0"></label>
+</div>
+<div class="row"><input type="range" id="ps-slider" min="3000" max="20000" step="100" value="9500" style="flex:1"></div>
+<div class="split">
+  <div class="cell"><div class="ct">employee side</div><div class="tblwrap"><table id="ps-emp"></table></div></div>
+  <div class="cell"><div class="ct">employer side</div><div class="tblwrap"><table id="ps-empr"></table></div></div>
+</div>
+<div class="out" id="ps-note" aria-live="polite"></div>
+</div>
 <div class="box">
 <div class="bt">Take this to work</div>
 <p>The recipe generalizes to any rewrite: keep the old system as the oracle, share the state
@@ -1542,6 +1634,7 @@ not-knowing.</p>
 </div>
 <p class="qwhy" hidden>The mock speaks the Ollama wire protocol and answers by keyword. Both backends see identical "model" behavior, so tool execution, arg coercion, error paths and SSE framing all diff exactly.</p></div>
 </div>
+<div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/scripts/parity.mjs">scripts/parity.mjs</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/pycsv.ts">server/pycsv.ts</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/server/payroll.ts">server/payroll.ts</a></div>
 <div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="19">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-20" hidden>
 <h2><span class="no">21</span>Exercises, with hints</h2>
 <div class="box box--ex">
@@ -1609,6 +1702,7 @@ extract, don't duplicate). Write the <code>desc</code> so a model would pick you
 "what are the cars worth?" but NOT for "show vehicle bills" — prompt design is API design.
 Test with <code>LLM_PROVIDER=ollama</code> against the mock server in the parity suite.</p>
 </div>
+<div class="srcs"><span class="st">Read the real source</span><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/scripts/seed-demo.mjs">scripts/seed-demo.mjs</a><a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit/blob/master/cockpit-next/scripts/smoke.mjs">scripts/smoke.mjs</a></div>
 <div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="20">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article>
 <article class="lesson" id="lesson-21" hidden>
 <h2><span class="no">22</span>The final exam</h2>
@@ -2023,6 +2117,151 @@ Answer all ten correctly and the lesson checks itself off.</p>
       lines.push("", "→ numbers matched; the STRING still carries str(float). Fix the ts description to \"0.0 months at current burn\" (that is what pyFloat() is for) and re-run.");
       out.textContent = lines.join("\n");
     });
+  })();
+
+  // L7: payable-date rule — verbatim port of server/obligations.ts payableDate()
+  (function () {
+    var root = document.getElementById("lab-payable"); if (!root) return;
+    function payableDate(r) {
+      var due = r.due_date || null, exp = r.expected_bill_date || null;
+      if (!due) return exp;
+      return exp && exp > due ? exp : due;
+    }
+    function upd() {
+      var due = root.querySelector("#pd-due").value;
+      var exp = root.querySelector("#pd-exp").value;
+      var res = payableDate({ due_date: due, expected_bill_date: exp });
+      var why = !due ? "no due date → the expected bill date is all we have"
+        : (exp && exp > due) ? "the bill arrives AFTER the due date → cash actually leaves on " + exp
+        : "the bill is expected on time (or unknown) → the due date stands";
+      root.querySelector(".out").textContent =
+        "payableDate({ due_date: " + JSON.stringify(due || null) +
+        ", expected_bill_date: " + JSON.stringify(exp || null) + " })\n→ " +
+        JSON.stringify(res) + "   // " + why +
+        "\n\nEvery overdue flag, calendar entry, cash projection and forecast bucket in the app uses this value.";
+    }
+    root.addEventListener("input", upd); upd();
+  })();
+
+  // L8: query-grammar chips — the server/search.ts token rules (subset)
+  (function () {
+    var input = document.querySelector("#lab-debounce input");
+    var chips = document.getElementById("db-chips");
+    if (!input || !chips) return;
+    function fmt2(n) { return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function parse(q) {
+      var out = [], text = [];
+      // quoted phrases first
+      q = q.replace(/"([^"]+)"/g, function (_, p) { out.push(["exact", '"' + p + '"']); return " "; });
+      q.trim().split(/\s+/).forEach(function (tok) {
+        if (!tok) return;
+        var m;
+        if ((m = tok.match(/^type:(bill|invoice|document)s?$/i))) out.push(["type", "type: " + m[1].toLowerCase()]);
+        // dates BEFORE amount ranges — otherwise 2026-07 parses as "CHF 2,026 – 7".
+        // (The real port hit exactly this bug; server/search.ts checks dates first.)
+        else if ((m = tok.match(/^(\d{4})-(\d{2})$/))) out.push(["date", m[0]]);
+        else if ((m = tok.match(/^([<>])(\d+(?:\.\d+)?)$/))) out.push(["amount", (m[1] === ">" ? "CHF > " : "CHF < ") + fmt2(+m[2])]);
+        else if ((m = tok.match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/))) out.push(["amount", "CHF " + fmt2(+m[1]) + " – " + fmt2(+m[2])]);
+        else if ((m = tok.match(/^q([1-4])$/i))) {
+          var y = new Date().getFullYear(), s = (+m[1] - 1) * 3 + 1;
+          out.push(["date", "Quarter (" + y + "-" + String(s).padStart(2, "0") + " / " + y + "-" + String(s + 2).padStart(2, "0") + ")"]);
+        }
+        else if (/^(paid|unpaid|overdue)$/i.test(tok)) out.push(["stat", tok.toLowerCase()]);
+        else text.push(tok);
+      });
+      if (text.length) out.unshift(["text", text.join(" ")]);
+      // order like the server: text/amount/status, then dates, then types
+      var rank = { text: 0, exact: 0, amount: 0, stat: 0, date: 1, type: 2 };
+      out.sort(function (a, b) { return rank[a[0]] - rank[b[0]]; });
+      return out;
+    }
+    input.addEventListener("input", function (e) {
+      var toks = parse(e.target.value);
+      if (!toks.length) { chips.innerHTML = '<span style="font-size:12.5px;color:var(--muted)">(nothing parsed yet)</span>'; return; }
+      chips.innerHTML = toks.map(function (t) {
+        var cls = t[0] === "stat" ? "qchip stat" : (t[0] === "date" ? "qchip date" : "qchip");
+        return '<span class="' + cls + '">' + t[1].replace(/&/g, "&amp;").replace(/</g, "&lt;") + "</span>";
+      }).join("");
+    });
+  })();
+
+  // L20: computePayslip — 1:1 with server/payroll.ts (fixed employer-side inputs
+  // from the demo settings; the sliders drive the employee-relevant ones)
+  (function () {
+    var root = document.getElementById("lab-payslip"); if (!root) return;
+    var r2 = function (n) { return Math.round((n + Number.EPSILON) * 100) / 100; };
+    var fmt = function (n) { return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+    var FIXED = { ahv_employer_pct: 5.3, alv_employer_pct: 1.1, bvg_monthly_employer: 650,
+      uvg_employee_monthly: 40, uvg_employer_monthly: 25,
+      ktg_monthly_total: 90, ktg_employer_share_pct: 50, fak_employer_pct: 1.2 };
+    function computePayslip(s) {           // ← verbatim logic from server/payroll.ts
+      var gross = s.gross_monthly;
+      var plafond = 148200 / 12;
+      var emp_ahv = r2(gross * s.ahv_employee_pct / 100);
+      var capped = Math.min(gross, plafond);
+      var emp_alv = r2(capped * s.alv_employee_pct / 100);
+      var emp_bvg = s.bvg_monthly_employee;
+      var emp_uvg = s.uvg_employee_monthly;
+      var ktgShare = s.ktg_employer_share_pct / 100;
+      var emp_ktg = r2(s.ktg_monthly_total * (1 - ktgShare));
+      var employer_ktg = r2(s.ktg_monthly_total * ktgShare);
+      var emp_source_tax = Number(s.source_tax_monthly || 0);
+      var emp_total = r2(emp_ahv + emp_alv + emp_bvg + emp_uvg + emp_ktg + emp_source_tax);
+      var net = r2(gross - emp_total);
+      var employer_ahv = r2(gross * s.ahv_employer_pct / 100);
+      var employer_alv = r2(capped * s.alv_employer_pct / 100);
+      var employer_fak = r2(gross * s.fak_employer_pct / 100);
+      var employer_total = r2(employer_ahv + employer_alv + s.bvg_monthly_employer +
+        s.uvg_employer_monthly + employer_ktg + employer_fak);
+      return { gross: gross, capped: capped, plafond: plafond,
+        emp_ahv: emp_ahv, emp_alv: emp_alv, emp_bvg: emp_bvg, emp_uvg: emp_uvg,
+        emp_ktg: emp_ktg, emp_source_tax: emp_source_tax,
+        emp_total_deductions: emp_total, net_salary: net,
+        employer_ahv: employer_ahv, employer_alv: employer_alv,
+        employer_bvg: s.bvg_monthly_employer, employer_uvg: s.uvg_employer_monthly,
+        employer_ktg: employer_ktg, employer_fak: employer_fak,
+        employer_total: employer_total, total_employer_cost: r2(gross + employer_total) };
+    }
+    function row(label, v, hot) {
+      return "<tr" + (hot ? ' style="color:var(--warn-ink)"' : "") + "><td>" + label +
+        '</td><td style="text-align:right;font-family:var(--f-mono)">' + fmt(v) + "</td></tr>";
+    }
+    function upd(fromSlider) {
+      var g = root.querySelector("#ps-gross"), sl = root.querySelector("#ps-slider");
+      if (fromSlider) g.value = sl.value; else sl.value = Math.min(20000, Math.max(3000, +g.value || 0));
+      var s = {
+        gross_monthly: +g.value || 0,
+        ahv_employee_pct: +root.querySelector("#ps-ahv").value || 0,
+        alv_employee_pct: +root.querySelector("#ps-alv").value || 0,
+        bvg_monthly_employee: +root.querySelector("#ps-bvg").value || 0,
+        source_tax_monthly: +root.querySelector("#ps-qst").value || 0,
+        uvg_employee_monthly: FIXED.uvg_employee_monthly,
+        ktg_monthly_total: FIXED.ktg_monthly_total,
+        ktg_employer_share_pct: FIXED.ktg_employer_share_pct,
+        ahv_employer_pct: FIXED.ahv_employer_pct, alv_employer_pct: FIXED.alv_employer_pct,
+        bvg_monthly_employer: FIXED.bvg_monthly_employer, uvg_employer_monthly: FIXED.uvg_employer_monthly,
+        fak_employer_pct: FIXED.fak_employer_pct };
+      var c = computePayslip(s);
+      var capped = c.gross > c.plafond;
+      document.getElementById("ps-emp").innerHTML =
+        row("Gross salary", c.gross) +
+        row("AHV/IV/EO −" + s.ahv_employee_pct + "%", -c.emp_ahv) +
+        row("ALV −1.1% " + (capped ? "(capped at plafond!)" : "of gross"), -c.emp_alv, capped) +
+        row("BVG (pension)", -c.emp_bvg) + row("UVG (accident)", -c.emp_uvg) +
+        row("KTG share", -c.emp_ktg) + row("Quellensteuer", -c.emp_source_tax) +
+        '<tr class="tot"><td>Net salary</td><td style="text-align:right;font-family:var(--f-mono)">' + fmt(c.net_salary) + "</td></tr>";
+      document.getElementById("ps-empr").innerHTML =
+        row("AHV employer", c.employer_ahv) + row("ALV employer" + (capped ? " (capped)" : ""), c.employer_alv, capped) +
+        row("BVG employer", c.employer_bvg) + row("UVG employer", c.employer_uvg) +
+        row("KTG employer", c.employer_ktg) + row("FAK 1.2%", c.employer_fak) +
+        '<tr class="tot"><td>Total employer cost</td><td style="text-align:right;font-family:var(--f-mono)">' + fmt(c.total_employer_cost) + "</td></tr>";
+      document.getElementById("ps-note").textContent = capped
+        ? "gross " + fmt(c.gross) + " > plafond " + fmt(c.plafond) + " → ALV is computed on the plafond only. " +
+          "Both backends produce these exact numbers — the demo dataset's net of 7,207.00 comes from this function."
+        : "below the ALV plafond (" + fmt(c.plafond) + "/mo) — every contribution scales with gross. Demo settings give net 7,207.00.";
+    }
+    root.addEventListener("input", function (e) { upd(e.target && e.target.id === "ps-slider"); });
+    upd(false);
   })();
 
 })();
