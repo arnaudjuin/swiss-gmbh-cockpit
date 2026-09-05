@@ -192,6 +192,42 @@ kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); bord
 .chiprow .qchip.stat { background: var(--warn-bg); color: var(--warn-ink); }
 .chiprow .qchip.date { background: var(--ok-bg); color: var(--ok-ink); }
 
+/* ── the app map: real screenshots + server diagram ── */
+.appmap { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px 9px; margin-bottom: 18px; }
+.appmap .am-cap { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted);
+  margin-top: 9px; min-height: 16px; }
+.appmap .am-cap b { color: var(--accent); font-weight: 600; }
+.am-grid { display: grid; grid-template-columns: 1.5fr auto 1fr; gap: 10px; align-items: stretch; }
+.am-shot { position: relative; border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; background: #0d1526; height: 300px; }
+.am-shotinner { position: absolute; left: 0; width: 100%; transition: top .55s cubic-bezier(.4,0,.2,1); }
+.am-shotinner img { display: block; width: 100%; height: auto; }
+.am-rect { position: absolute; border: 2px solid var(--accent); border-radius: 6px;
+  box-shadow: 0 0 0 3000px rgba(8,12,22,.45); transition: all .55s cubic-bezier(.4,0,.2,1); }
+.am-shotlabel { position: absolute; right: 8px; bottom: 6px; font-family: var(--f-mono);
+  font-size: 9.5px; color: #cfe0f5; background: rgba(10,16,28,.75); border-radius: 5px;
+  padding: 2px 7px; pointer-events: none; }
+.am-zone { cursor: pointer; transition: opacity .3s, box-shadow .3s, border-color .3s; }
+.appmap.dimserver .am-zone:not(.on) { opacity: .35; }
+.am-zone.on { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent) !important; opacity: 1; }
+.am-wire { display: flex; align-items: center; padding: 0 1px; }
+.am-wire .api { font-family: var(--f-mono); font-size: 10px; color: var(--accent);
+  border: 1px dashed var(--accent); border-radius: 6px; padding: 6px 3px; writing-mode: vertical-rl;
+  background: var(--accent-bg); }
+.am-server { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.am-node { border: 1px solid var(--border); border-radius: 8px; background: var(--bg); padding: 6px 8px; }
+.am-node .t { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.am-routes { display: flex; flex-wrap: wrap; gap: 3px; }
+.am-routes span { font-family: var(--f-mono); font-size: 8.5px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; white-space: nowrap; }
+.am-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.am-mini { font-family: var(--f-mono); font-size: 9.5px; line-height: 1.5; }
+.am-ghost { opacity: .8; border-style: dashed; }
+@media (max-width: 820px) { .am-grid { grid-template-columns: 1fr; } .am-wire { display: none; }
+  .am-shot { height: 240px; } }
+
 </style>
 <div class="wrap">
 <header class="hero">
@@ -221,6 +257,34 @@ kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); bord
     <ul class="lessonlist" id="lessonlist"></ul>
   </aside>
   <main>
+    <div class="appmap" id="appmap">
+      <div class="am-grid">
+        <div class="am-shot">
+          <div class="am-shotinner" id="am-inner">
+            <img id="am-img" src="../screenshots/next-dashboard.png" alt="The real app, from docs/screenshots/">
+            <div class="am-rect" id="am-rect" hidden></div>
+          </div>
+          <div class="am-shotlabel" id="am-shotlabel">docs/screenshots/next-dashboard.png</div>
+        </div>
+        <div class="am-wire"><span class="api am-zone" data-z="api" data-lesson="6" title="The data layer — lesson 07">/api · fetch</span></div>
+        <div class="am-server">
+          <div class="am-node am-zone" data-z="next" data-lesson="15" title="Route handlers — lesson 16">
+            <div class="t">Next.js · route handlers</div>
+            <div class="am-routes"><span>obligations</span><span>payroll</span><span>bank/[id]</span><span>llm/stream</span><span>+172</span></div>
+          </div>
+          <div class="am-row2">
+            <div class="am-node am-mini am-zone" data-z="db" data-lesson="16" title="better-sqlite3 — lesson 17">🗄 invoices.db<br><span style="color:var(--muted)">schema self-installs</span></div>
+            <div class="am-node am-mini am-zone" data-z="files" data-lesson="17" title="PDFs, Excel, ZIPs — lesson 18">📄 PDF · 📊 XLSX<br>🗜 ZIP</div>
+          </div>
+          <div class="am-row2">
+            <div class="am-node am-mini am-zone" data-z="sse" data-lesson="18" title="Streaming — lesson 19">▸▸▸ SSE tokens</div>
+            <div class="am-node am-mini am-zone" data-z="ci" data-lesson="13" title="Build, Docker, smoke — lesson 14">🐳 Docker<br>smoke 148 ✓</div>
+          </div>
+          <div class="am-node am-mini am-ghost am-zone" data-z="py" data-lesson="19" title="Strangler fig &amp; parity — lessons 01 / 20">🐍 FastAPI (reference) ⇄ parity diff</div>
+        </div>
+      </div>
+      <div class="am-cap" id="am-cap"></div>
+    </div>
     <article class="lesson" id="lesson-0" hidden>
 <h2><span class="no">01</span>The architecture decision — a story in two acts</h2>
 <p>This repo's history is the course's best teaching material, because it made a decision most
@@ -1817,11 +1881,14 @@ Answer all ten correctly and the lesson checks itself off.</p>
     var db = document.querySelector("#lesson-" + state.cur + " .btn-done");
     if (db) { db.classList.toggle("is-done", !!state.done[state.cur]);
       db.textContent = state.done[state.cur] ? "Done ✓" : "Mark lesson done ✓"; }
+    if (window.__amUpdate) window.__amUpdate(state.cur);
     window.scrollTo({ top: 0 });
     save();
   }
 
   function go(i) { state.cur = Math.max(0, Math.min(N - 1, i)); render(); }
+  window.__amGo = go;
+  window.__amInit = function () { if (window.__amUpdate) window.__amUpdate(state.cur); };
 
   document.addEventListener("click", function (e) {
     var t = e.target.closest("button, a"); if (!t) return;
@@ -2262,6 +2329,98 @@ Answer all ten correctly and the lesson checks itself off.</p>
     }
     root.addEventListener("input", function (e) { upd(e.target && e.target.id === "ps-slider"); });
     upd(false);
+  })();
+
+  // ── the app map: real screenshots, cropped + highlighted per lesson ──────
+  (function () {
+    var map = document.getElementById("appmap"); if (!map) return;
+    var img = document.getElementById("am-img"), inner = document.getElementById("am-inner");
+    var rect = document.getElementById("am-rect"), cap = document.getElementById("am-cap");
+    var slab = document.getElementById("am-shotlabel");
+    var SHOTS = "../screenshots/";
+    // rect = [x, y, w, h] in % of the full screenshot; top = crop scroll in %.
+    var L = [
+      { img: "next-dashboard.png", top: 0, rect: null, zones: ["api", "next", "py"],
+        cap: "<b>The whole machine.</b> Browser (real screenshot) → /api → route handlers → SQLite. The dashed Python box is Act I's backend, now the parity reference." },
+      { img: "next-dashboard.png", top: 10, rect: [16.5, 12.8, 81, 13], zones: [],
+        cap: "<b>Every tile is a function returning its UI.</b> Bank 23'456.78, Payroll 7'207.00/mo — RecapTile components mapping over real data." },
+      { img: "next-dashboard.png", top: 0, rect: [0, 0, 16.6, 30], zones: ["api"],
+        cap: "<b>The mapping, visualized:</b> sidebar = router config, tiles = components, /api = HttpClient. This page is the table on the left, rendered." },
+      { img: "next-dashboard.png", top: 0, rect: [0, 0, 16.6, 30], zones: [],
+        cap: "<b>The sidebar IS app/'s folder listing.</b> Dashboard, Forecast, Bills… each item exists because a page.tsx exists." },
+      { img: "next-dashboard.png", top: 0, rect: [16.5, 4.3, 81, 6.3], zones: [],
+        cap: "<b>What prerenders vs what hydrates.</b> The card frames ship as static HTML; the CHF numbers arrive in step 4 (useEffect → api())." },
+      { img: "next-dashboard.png", top: 0, rect: [16.5, 0, 81, 4], zones: ["api"],
+        cap: "<b>No login, no page.</b> Every widget's request carries the Bearer token; one 401 anywhere clears it and lands you on /login." },
+      { img: "next-dashboard.png", top: 10, rect: [16.5, 12.8, 81, 13], zones: ["api"],
+        cap: "<b>Ten tiles, one Promise.all.</b> Each card is an api&lt;T&gt;() slice; optional ones .catch() into graceful blanks." },
+      { img: "obligations.png", top: 15, rect: [88, 20, 10, 45], zones: ["api"],
+        cap: "<b>State in action:</b> every Pay button is setState → PATCH → reload() — the refetch-after-mutate cycle of lesson 08." },
+      { img: "forecast.png", top: 50, rect: [23.5, 56.5, 10.5, 32], zones: ["api"],
+        cap: "<b>Controlled inputs, server truth.</b> The income column: type → state echoes → debounced write. The whole row recomputes from it." },
+      { img: "next-dashboard.png", top: 10, rect: [16.5, 12.8, 81, 13], zones: [],
+        cap: "<b>ui.tsx in the wild:</b> Stat, Chip (overdue / up to date), Meter — the same primitives repeated across every tile." },
+      { img: "forecast.png", top: 48, rect: [18.9, 56, 79.5, 37], zones: ["api"],
+        cap: "<b>Shared state without DI:</b> these editable months persist via /preferences — the classic frontend reads the very same document." },
+      { img: "dark.png", top: 0, rect: null, zones: [],
+        cap: "<b>Same CSS file, second theme.</b> The dark dashboard is [data-theme=dark] flipping tokens — no component knows it happened." },
+      { img: "next-dashboard.png", top: 30, rect: [16.5, 32, 81, 18.5], zones: [],
+        cap: "<b>Chart.js on real numbers</b> — Income vs Costs reads its palette from CSS tokens at render time; theme flips re-render it." },
+      { img: "next-dashboard.png", top: 0, rect: null, zones: ["ci"],
+        cap: "<b>One image now.</b> next build type-checks all of this; the smoke suite boots a scratch DB and sweeps every route behind it." },
+      { img: "next-dashboard.png", top: 30, rect: [16.5, 32, 81, 18.5], zones: [],
+        cap: "<b>The heavy route is heavy for a reason:</b> +71 kB on /dashboard is Chart.js — visible in the build table, budgeted knowingly." },
+      { img: "next-dashboard.png", top: 10, rect: [16.5, 12.8, 81, 13], zones: ["next"],
+        cap: "<b>Act II begins.</b> Every number on these tiles is now computed by a TypeScript route handler — same URL, new server." },
+      { img: "next-dashboard.png", top: 2, rect: [16.5, 12.8, 30, 6.5], zones: ["next", "db"],
+        cap: "<b>Bank 23'456.78 comes from better-sqlite3</b> — a synchronous read in the route handler, one shared handle on globalThis." },
+      { img: "payroll.png", top: 52, rect: [18.5, 57.5, 80, 38], zones: ["files"],
+        cap: "<b>Every 📄 in this table is pdfkit.</b> Nine payslip PDFs, mm→pt converted, visually identical to the fpdf2 originals." },
+      { img: "next-dashboard.png", top: 0, rect: null, zones: ["sse"],
+        cap: "<b>The AI chat streams over SSE:</b> meta (tool + result) first so tables render instantly, then tokens, then done." },
+      { img: "payroll.png", top: 2, rect: [18.5, 6.2, 80, 34.5], zones: ["py", "next"],
+        cap: "<b>What parity protects:</b> this payslip — net 7'207.00, employer 10'942.00 — must come out identical from Python and TypeScript. It does." },
+      { img: "next-dashboard.png", top: 0, rect: null, zones: ["api", "next", "db", "files", "sse", "py", "ci"],
+        cap: "<b>Your playground.</b> The exercises touch every box on this map — pick one and open the linked source." },
+      { img: "next-dashboard.png", top: 0, rect: null, zones: ["api", "next", "db", "files", "sse", "py", "ci"],
+        cap: "<b>The exam covers the whole map.</b> Ten questions, one attempt each." },
+    ];
+    var pending = null;
+    function apply() {
+      var cfg = pending; if (!cfg) return;
+      var h = img.clientHeight || 1;
+      var viewH = inner.parentElement.clientHeight;
+      var maxTop = Math.max(0, h - viewH);
+      inner.style.top = -Math.min(cfg.top / 100 * h, maxTop) + "px";
+      if (cfg.rect) {
+        rect.hidden = false;
+        rect.style.left = cfg.rect[0] + "%";
+        rect.style.top = (cfg.rect[1] / 100 * h) + "px";
+        rect.style.width = cfg.rect[2] + "%";
+        rect.style.height = (cfg.rect[3] / 100 * h) + "px";
+      } else rect.hidden = true;
+    }
+    img.addEventListener("load", apply);
+    window.addEventListener("resize", apply);
+    window.__amUpdate = function (cur) {
+      var cfg = L[cur] || L[0];
+      pending = cfg;
+      var want = SHOTS + cfg.img;
+      slab.textContent = "docs/screenshots/" + cfg.img;
+      if (img.dataset.shot !== cfg.img) { rect.hidden = true; img.dataset.shot = cfg.img; img.src = want; }
+      else apply();
+      cap.innerHTML = cfg.cap;
+      var zones = cfg.zones || [];
+      map.classList.toggle("dimserver", zones.length > 0);
+      map.querySelectorAll(".am-zone").forEach(function (z) {
+        z.classList.toggle("on", zones.indexOf(z.dataset.z) >= 0);
+      });
+    };
+    map.addEventListener("click", function (e) {
+      var z = e.target.closest(".am-zone");
+      if (z && z.dataset.lesson !== undefined && window.__amGo) window.__amGo(+z.dataset.lesson);
+    });
+    if (window.__amInit) window.__amInit();
   })();
 
 })();
