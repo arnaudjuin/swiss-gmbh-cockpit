@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The cockpit-next Course</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -180,8 +182,12 @@ kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); bord
 <header class="hero">
   <div class="eyebrow">swiss-gmbh-cockpit / cockpit-next · an interactive code-reading course</div>
   <h1>Next.js for the Angular Engineer</h1>
-  <p class="lede">Sixteen lessons taught through <b>real source from this repository</b> — every
-  concept mapped to the Angular idea you already own, with a quiz per lesson, <b>hands-on labs you can poke</b>, Angular↔Next code tabs, and your progress saved locally. Built for engineers evaluating (or joining) the
+  <p class="lede">Twenty-two lessons taught through <b>real source from this repository</b> — every
+  concept mapped to the Angular idea you already own, with quizzes, <b>ten hands-on labs you can poke</b>,
+  Angular↔Next code tabs, and your progress saved locally. Parts I–IV teach Next.js as a frontend;
+  <b>Part V tells the second act</b>: how the entire FastAPI backend — 176 endpoints, Swiss payroll,
+  PDFs, Excel, streaming AI chat — was ported to TypeScript route handlers with byte-level parity
+  testing, until Python became optional. Ends with a final exam. Built for engineers evaluating (or joining) the
   <a href="https://github.com/arnaudjuin/swiss-gmbh-cockpit">swiss-gmbh-cockpit</a> codebase.</p>
   <div class="hero-cta">
     <button class="primary" id="start">Start / resume the course</button>
@@ -201,76 +207,77 @@ kbd { font-family: var(--f-mono); font-size: 11px; background: var(--card); bord
   </aside>
   <main>
     <article class="lesson" id="lesson-0" hidden>
-<h2><span class="no">01</span>The architecture decision</h2>
-<p>The repo has <b>two frontends over one FastAPI backend</b>. The classic SPA
-(<code>static/js/01–09</code>) renders template strings into hidden
-<code>&lt;div class="page"&gt;</code> elements. <code>cockpit-next/</code> replaces that layer
-with Next.js 15 + React 19 + TypeScript, <b>without touching the backend</b>.</p>
-<p>This is the single most important thing to understand: here, Next.js is used as a
-<b>frontend framework with a build server</b>, not as a full-stack framework. There are no API
-routes, no server actions, no database access from Node. All domain logic — Swiss payroll, VAT,
-the payable-date rule, the forecast — stays in Python, where it has 173 tests. If you have ever
-put an Angular app in front of a Spring or .NET API, you already know this shape.</p>
-<p>The bridge is one rewrite rule:</p>
-<p class="filecap">cockpit-next/next.config.mjs — complete file</p>
+<h2><span class="no">01</span>The architecture decision — a story in two acts</h2>
+<p>This repo's history is the course's best teaching material, because it made a decision most
+migrations get wrong, then used it to pull off something bigger than planned.</p>
+<h3>Act I — Next.js as a frontend with a build server</h3>
+<p>The app began as <b>one FastAPI backend with a vanilla-JS SPA</b> (template strings rendered
+into hidden <code>&lt;div class="page"&gt;</code> elements — <code>static/js/01–09</code>).
+<code>cockpit-next/</code> first replaced only that layer: Next.js 15 + React 19 + TypeScript,
+<b>without touching the backend</b>. No API routes, no database access from Node. All domain
+logic — Swiss payroll, VAT, the payable-date rule — stayed in Python, where it had 173 tests.
+If you have ever put an Angular app in front of a Spring or .NET API, you know this shape.</p>
+<p>The bridge was one rewrite rule, and its final form is worth reading closely:</p>
+<p class="filecap">cockpit-next/next.config.mjs — complete file (final form)</p>
 <pre>/** @type {import('next').NextConfig} */
 const API = process.env.API_URL || "http://127.0.0.1:8000";
 
-<span class="c">// The FastAPI backend stays the single source of truth. In dev (and behind a
-// single reverse proxy in prod) every /api call is forwarded there, so the
-// browser talks same-origin and the Bearer token flows through untouched.</span>
 const nextConfig = {
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${API}/api/:path*` }];
+    <span class="c">// FALLBACK phase: Next's own route handlers (including dynamic ones
+    // like /api/reports/pl/[year]) win; only endpoints not yet ported fall
+    // through to FastAPI. afterFiles would shadow dynamic routes.</span>
+    return { fallback: [{ source: "/api/:path*", destination: `${API}/api/:path*` }] };
   },
 };
 
 export default nextConfig;</pre>
-<p>Every browser call to <code>/api/…</code> is proxied server-side to FastAPI. Same origin, so
-no CORS, and the auth header travels untouched. This is exactly Angular's
-<code>proxy.conf.json</code> — except it also runs in production, and it is resolved at
-<i>build</i> time (lesson 14 tells that war story).</p>
-<h3>Why two frontends at once is not madness</h3>
-<p>Both frontends read and write the same server-side state: the SQLite DB through the same
-endpoints, and the same <code>/preferences</code> document for UI state (widget layouts,
-forecast inputs, settings). Nothing lives only in a browser. That single decision is what makes
-an incremental port safe: any page can be used from either frontend on any day, and they cannot
-disagree. When you plan a migration at work — AngularJS→Angular, Angular→React, monolith
-frontend→micro-frontends — this is the property to engineer first.</p>
+<p>Every browser call to <code>/api/…</code> that Next cannot answer itself is proxied
+server-side to FastAPI. Same origin, so no CORS; the Bearer token travels untouched. It is
+Angular's <code>proxy.conf.json</code> — except it also runs in production, and the
+<b>phase</b> (<code>fallback</code>, not <code>afterFiles</code>) is what lets Next routes take
+over one at a time. Lesson 16 tells the war story behind that comment.</p>
+<h3>Act II — the strangler fig eats the backend</h3>
+<p>Because the proxy loses to any route handler Next defines, the backend could be ported
+<b>endpoint by endpoint</b>: write <code>app/api/obligations/route.ts</code>, and FastAPI
+silently stops receiving <code>/api/obligations</code> — while 170 other endpoints keep working
+through the proxy. Each tranche was verified against the Python original with a parity harness
+(lesson 20) before the next began. Today <b>all 176 endpoints serve from Node</b> — payroll
+engine, CAMT.053 bank parsing, pdfkit invoices, exceljs exports, accountant ZIPs, the AI chat —
+the schema self-installs on an empty SQLite file, and FastAPI remains in the repo purely as the
+reference implementation the port is tested against. This pattern has a name — the
+<b>strangler fig</b> — and this codebase is a complete, inspectable example of it.</p>
+<h3>Why two implementations at once was not madness</h3>
+<p>Both frontends — and during the port, both backends — read and write the same server-side
+state: one SQLite file, one <code>/preferences</code> document for UI state. Nothing lives only
+in a browser or only in one process's memory. That single property is what made incremental
+migration safe: any page could be served by either stack on any day, and they could not
+disagree. When you plan a migration at work — AngularJS→Angular, monolith→micro-frontends,
+Python→TypeScript — this is the property to engineer first.</p>
 <div class="box">
-<div class="bt">Repo map for this course</div>
-<pre style="margin:0">cockpit-next/
-  next.config.mjs        <span class="c">proxy + build config (lesson 1, 14)</span>
-  app/
-    layout.tsx           <span class="c">html shell + theme bootstrap (lesson 4, 12)</span>
-    login/page.tsx       <span class="c">auth (lesson 6)</span>
-    dashboard/ … settings/   <span class="c">14 route folders (lesson 4)</span>
-  components/
-    Shell.tsx            <span class="c">sidebar, nav, theme toggle</span>
-    ui.tsx               <span class="c">Stat, Chip, Meter, RecapTile… (lesson 10)</span>
-    charts.tsx           <span class="c">Chart.js wrappers (lesson 13)</span>
-    RecapStrip.tsx       <span class="c">the dashboard tile strip</span>
-  lib/
-    api.ts               <span class="c">typed fetch client + interfaces (lesson 7)</span>
-    prefs.ts             <span class="c">server-backed shared state (lesson 11)</span>
-    money.ts             <span class="c">chf(), locale, viz tokens (lesson 12)</span></pre>
+<div class="bt">Map to Angular</div>
+<p>Act I is <code>proxy.conf.json</code> promoted to production. Act II has no Angular
+equivalent — it is what becomes possible when the framework in front of your API is itself a
+Node server: the proxy target and the replacement code live in one process, so the migration
+boundary moves one file at a time.</p>
 </div>
 <div class="quiz"><div class="bt">Check yourself</div>
-<div class="qq" data-l="0" data-q="0" data-a="1">
-<p class="qtext">Where does the Swiss payroll logic run in this architecture?</p><div class="qopts">
-<button type="button" class="qopt" data-o="0">In Next.js server actions</button>
-<button type="button" class="qopt" data-o="1">In the FastAPI backend, unchanged</button>
-<button type="button" class="qopt" data-o="2">Duplicated in TypeScript for the new frontend</button>
+<div class="qq" data-l="0" data-q="0" data-a="2">
+<p class="qtext">Why must the /api proxy live in the <code>fallback</code> rewrite phase rather than <code>afterFiles</code>?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">fallback is faster</button>
+<button type="button" class="qopt" data-o="1">afterFiles can't target another host</button>
+<button type="button" class="qopt" data-o="2">afterFiles runs before dynamic routes match, so it would shadow handlers like /api/reports/pl/[year]</button>
 </div>
-<p class="qwhy" hidden>Next is used purely as a frontend layer. All domain logic stays in Python behind /api — that's what made the incremental port safe.</p></div>
+<p class="qwhy" hidden>afterFiles rewrites are checked after static files but before dynamic route matching — a dynamic route handler would never be reached. fallback runs only when nothing else matched, which is exactly the strangler-fig contract.</p></div>
 <div class="qq" data-l="0" data-q="1" data-a="1">
-<p class="qtext">What is next.config.mjs's rewrites() closest to in Angular?</p><div class="qopts">
-<button type="button" class="qopt" data-o="0">An HTTP interceptor</button>
-<button type="button" class="qopt" data-o="1">proxy.conf.json</button>
-<button type="button" class="qopt" data-o="2">environment.ts</button>
+<p class="qtext">What single property made the endpoint-by-endpoint backend port safe?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">TypeScript catching bugs at compile time</button>
+<button type="button" class="qopt" data-o="1">Both backends read and write the same SQLite file, so they could not disagree</button>
+<button type="button" class="qopt" data-o="2">Feature flags per endpoint</button>
 </div>
-<p class="qwhy" hidden>It forwards /api/* to the backend so the browser talks same-origin — exactly proxy.conf.json, except it also runs in production.</p></div>
-</div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="0">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-1" hidden>
+<p class="qwhy" hidden>Shared server-side state (one DB, one preferences document) means either stack can serve any request on any day. The parity harness then proves the answers are identical.</p></div>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="0">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-1" hidden>
 <h2><span class="no">02</span>React in one lesson, for Angular hands</h2>
 <p>Angular separates a component into a class (state + logic), a template (its own language:
 <code>*ngIf</code>, <code>*ngFor</code>, pipes, bindings) and DI-provided collaborators. React
@@ -542,6 +549,11 @@ That is exercise 3, and it's the highest-value one.</p>
 <p class="qwhy" hidden>The static part is the pre-data render. Hydration attaches React, then useEffect fetches live data.</p></div>
 </div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="4">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-5" hidden>
 <h2><span class="no">06</span>Auth: the login flow and its trade-offs</h2>
+<div class="box"><div class="bt">2026 update</div>
+<p>Everything below still holds — the auth <i>contract</i> (Bearer header, session cookie,
+<code>?token=</code>) is unchanged. What changed is who verifies it: the TypeScript backend now
+does, and sessions live in a SQLite table (<code>ts_sessions</code>) rather than process
+memory. Lesson 17 explains the production bug that forced that move.</p></div>
 <p class="filecap">app/login/page.tsx (core)</p>
 <pre>const submit = async (e: React.FormEvent) =&gt; {
   e.preventDefault();
@@ -1107,33 +1119,39 @@ login kept failing with the right password. Identical mental model to
 build <code>ARG</code>; changing backends means rebuilding the image (or fronting both with
 one reverse proxy and never baking a URL at all).</p>
 </div>
-<h3>Docker: two processes, honest split</h3>
-<p class="filecap">cockpit-next/Dockerfile (multi-stage)</p>
-<pre>FROM node:20-alpine AS build
-WORKDIR /app
-COPY package*.json ./
+<h3>Docker: one process now</h3>
+<p>During Act I this was a two-container compose file — FastAPI on :8000, Next on :3000, the
+rewrite target baked in with a build <code>ARG</code>. After the backend port there is nothing
+left to proxy to, so the production image collapsed to one Node process:</p>
+<p class="filecap">Dockerfile (repo root — full-stack image)</p>
+<pre>FROM node:20-slim AS build
+WORKDIR /app/cockpit-next
+COPY cockpit-next/package*.json ./
 RUN npm ci
-COPY . .
-ARG API_URL=http://backend:8000     <span class="c">← baked here</span>
-ENV API_URL=$API_URL
+COPY cockpit-next ./
 RUN npm run build
 
-FROM node:20-alpine
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./
-CMD ["npx", "next", "start", "-p", "3000"]</pre>
-<p><code>docker-compose.yml</code> pairs it with the FastAPI container (which self-seeds demo
-data on an empty DB) — backend on :8000, frontend on :3000, database and documents in a bind
-mount.</p>
-<h3>CI as a type gate</h3>
-<p>The GitHub workflow runs two jobs: backend (seed + 173 smoke tests) and frontend
-(<code>npm ci &amp;&amp; next build</code>). The build type-checks every page — so when the
-backend job's API shape and a frontend interface drift apart, the compile fails <i>before</i>
-any frontend test exists. Cheap insurance; the same role <code>ng build</code> plays in an
-Nx monorepo pipeline.</p>
+FROM node:20-slim
+WORKDIR /app/cockpit-next
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000 \
+    DB_PATH=/app/data/invoices.db DOCS_DIR=/app/data/documents
+COPY --from=build /app/cockpit-next/.next ./.next
+COPY --from=build /app/cockpit-next/node_modules ./node_modules
+COPY --from=build /app/cockpit-next/package.json ./
+COPY cockpit-next/scripts ./scripts
+CMD ["node", "scripts/start.mjs"]   <span class="c">← starts next, seeds demo data if the DB is empty</span></pre>
+<p>The entrypoint (<code>scripts/start.mjs</code>) spawns <code>next start</code>, waits for
+the auth wall to answer, and runs the demo seeder against the app's <i>own HTTP API</i> — the
+same trick the Python <code>seed_demo.py</code> used with TestClient, so every seeded number is
+produced by real business logic. The schema itself self-installs on first open of an empty
+<code>DB_PATH</code>.</p>
+<h3>CI as a type gate — and a route sweep</h3>
+<p><code>next build</code> type-checks every page and route handler, so an API shape and a
+frontend interface can't silently drift. On top of that sits <code>npm run smoke</code>: boot a
+production server on a scratch database, seed it through the API, then sweep <b>every route
+discovered from <code>app/api/**</code></b> for 500s — 148 checks, and a fresh-install proof in
+the same breath. It is the TypeScript port of <code>tests/test_smoke.py</code>, and porting the
+test suite found its own parity bug (a validation Python had that TS lacked).</p>
 <div class="quiz"><div class="bt">Check yourself</div>
 <div class="qq" data-l="13" data-q="0" data-a="1">
 <p class="qtext">Setting API_URL when running `next start` does nothing because…</p><div class="qopts">
@@ -1170,7 +1188,362 @@ needed to ship.</p>
 </div>
 <p class="qwhy" hidden>Re-render hygiene is structural: no global state → no global re-renders. Optimization starts only when the build-table numbers say so.</p></div>
 </div><div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="14">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-15" hidden>
-<h2><span class="no">16</span>Exercises, with hints</h2>
+<h2><span class="no">16</span>Route handlers are your APIRouter</h2>
+<p>Part V is the second act: porting 176 FastAPI endpoints into Next.js route handlers, on the
+same SQLite file, until Python became optional. It starts where every backend starts — how a
+request finds its function.</p>
+<p>In FastAPI, a decorator declares the path. In the App Router, <b>the filesystem is the
+decorator</b> — the same rule you learned for pages in lesson 4, applied to APIs. Here is one
+real endpoint, both implementations:</p>
+<div class="codetabs">
+<div class="tabbtns"><button class="tng on" data-tab="py">routes/misc.py (FastAPI)</button><button class="tnx" data-tab="ts">app/api/accounting/[id]/status/route.ts</button></div>
+<pre class="pane" data-pane="py">@router.patch("/accounting/{id}/status")
+async def update_doc_status(id: int, request: Request):
+    body = await request.json()
+    status = body.get("status")
+    if status not in ("paid", "unpaid"):
+        raise HTTPException(400, "Status must be 'paid' or 'unpaid'")
+    with get_db() as db:
+        row = db.execute("SELECT id FROM company_docs WHERE id=?", (id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "Document not found")
+        db.execute("UPDATE company_docs SET status=? WHERE id=?", (status, id))
+    return {"message": f"Status set to {status}"}</pre>
+<pre class="pane" data-pane="ts" hidden>export const PATCH = guard(async (req: NextRequest, ctx: any) => {
+  const { id } = await ctx.params;          <span class="c">// params is a Promise in Next 15!</span>
+  const body = await req.json();
+  const status = body.status;
+  if (status !== "paid" &amp;&amp; status !== "unpaid")
+    return err(400, "Status must be 'paid' or 'unpaid'");
+  if (!db().prepare("SELECT id FROM company_docs WHERE id=?").get(Number(id)))
+    return err(404, "Document not found");
+  db().prepare("UPDATE company_docs SET status=? WHERE id=?").run(status, Number(id));
+  return json({ message: `Status set to ${status}` });
+});</pre>
+</div>
+<p>Three things carry the whole mapping:</p>
+<ul>
+<li><b><code>guard()</code></b> (in <code>server/http.ts</code>) wraps every authenticated
+handler: it checks the Bearer/cookie/query token, and catches anything thrown into a 500 with
+the same <code>{"detail": …}</code> shape FastAPI produces. It is your middleware/dependency
+injection collapsed into a higher-order function — <code>Depends(require_auth)</code> without
+the framework.</li>
+<li><b>Exports are the HTTP methods.</b> A <code>route.ts</code> may export
+<code>GET</code>, <code>POST</code>, <code>PATCH</code>… and <i>nothing else</i> — export a
+helper from one and the build fails. Shared logic therefore lives in <code>server/*.ts</code>,
+which is exactly the discipline FastAPI's <code>routes/</code> vs <code>helpers.py</code> split
+encouraged.</li>
+<li><b><code>ctx.params</code> is a Promise</b> since Next 15. Every handler starts with
+<code>const { id } = await ctx.params;</code> — forget the <code>await</code> and TypeScript
+saves you, which is more than Python did.</li>
+</ul>
+<h3>Route precedence: the invariant you no longer maintain</h3>
+<p>The FastAPI codebase carries a load-bearing comment: <i>"literal paths
+(<code>/accounting/vendors</code>) must be declared before parameterized ones
+(<code>/accounting/{id}</code>)"</i> — get the order wrong and <code>"vendors"</code> fails
+integer parsing with a 422. The App Router deletes this entire bug class:
+<code>accounting/vendors/route.ts</code> and <code>accounting/[id]/route.ts</code> are files,
+and <b>static segments always beat dynamic ones</b>, regardless of any ordering anywhere.</p>
+<div class="box box--gotcha">
+<div class="bt">War story: the phantom Python endpoint</div>
+<p>Mid-port, <code>/api/reports/pl/[year]</code> was written in TypeScript, returned perfect
+data — and was secretly never executed. The proxy rewrite was in the <code>afterFiles</code>
+phase, which runs <i>before dynamic route matching</i>, so every request went to FastAPI. The
+tell: a <code>server: uvicorn</code> response header on a route that should have come from
+Node. Moving the proxy to the <code>fallback</code> phase (runs only when nothing matched)
+fixed it — and that one line is what made the whole strangler-fig migration possible.</p>
+</div>
+<div class="lab" id="lab-router">
+<div class="bt">Lab · who answers this request?</div>
+<p style="margin-top:0">Type an API path and see which layer wins. Then flip the proxy phase and watch the bug from the war story happen.</p>
+<div class="row"><input type="text" id="rt-url" value="/api/reports/pl/2026" style="flex:1;min-width:220px"><label style="display:flex;align-items:center;gap:6px;font-size:13.5px"><input type="checkbox" id="rt-phase"> proxy in <code>afterFiles</code> (the bug)</label></div>
+<div class="out" aria-live="polite"></div>
+</div>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="15" data-q="0" data-a="0">
+<p class="qtext">Why does the FastAPI "declare literal routes before parameterized ones" rule not exist in the App Router?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Routes are files, and static segments always beat dynamic segments — there is no declaration order</button>
+<button type="button" class="qopt" data-o="1">Next parses ids more leniently</button>
+<button type="button" class="qopt" data-o="2">It does exist — you order the folders alphabetically</button>
+</div>
+<p class="qwhy" hidden>Filesystem routing has no registration order to get wrong. accounting/vendors/route.ts wins over accounting/[id]/route.ts structurally.</p></div>
+<div class="qq" data-l="15" data-q="1" data-a="2">
+<p class="qtext">A route.ts file may export…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">anything, like any module</button>
+<button type="button" class="qopt" data-o="1">HTTP methods plus a default component</button>
+<button type="button" class="qopt" data-o="2">only HTTP method handlers — shared helpers must live elsewhere (here: server/*.ts)</button>
+</div>
+<p class="qwhy" hidden>The build enforces it. The port hit this on day one and moved computeDates/getCustomer into server/invoices.ts.</p></div>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="15">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-16" hidden>
+<h2><span class="no">17</span>The database: sync SQLite and the bundle trap</h2>
+<p>The most surprising choice first: the TypeScript backend talks to SQLite
+<b>synchronously</b>, via <code>better-sqlite3</code>. No <code>await</code>, no pool, no ORM:</p>
+<p class="filecap">server/db.ts — the whole data layer</p>
+<pre>import Database from "better-sqlite3";
+
+export const DB_PATH = process.env.DB_PATH || path.resolve(process.cwd(), "..", "invoices.db");
+
+const gdb = globalThis as unknown as { __cockpitDb?: Database.Database };
+export function db(): Database.Database {
+  if (!gdb.__cockpitDb) {
+    const _db = new Database(DB_PATH);
+    if (!tableExists(_db, "invoices")) {          <span class="c">// fresh file? install the schema</span>
+      for (const stmt of SCHEMA) _db.exec(stmt);
+      for (const seed of SINGLETON_SEEDS) _db.exec(seed);
+    }
+    gdb.__cockpitDb = _db;
+  }
+  return gdb.__cockpitDb;
+}</pre>
+<p>Why sync is the <i>right</i> call here: SQLite is a local file — there is no network wait to
+overlap, and a single-tenant app has no concurrency to win. Synchronous statements make the
+ported handlers read almost line-for-line like their Python originals (compare the tabs in
+lesson 16), which mattered enormously for a parity-checked port. This is a place to resist
+dogma: "always async" is a rule about remote databases.</p>
+<h3>The bundle trap — a production-only bug</h3>
+<p>The first port of auth kept sessions in a module-level <code>Map</code>. Dev worked
+perfectly. Production failed in the strangest way: <b>login succeeded, and the very next
+request was a 401</b>.</p>
+<p>The cause: in a production build, <b>each route becomes its own bundle</b>, and a module
+imported by two routes is <i>instantiated once per bundle</i>. The <code>Map</code> that
+<code>/api/login</code> wrote and the <code>Map</code> that <code>/api/auth/check</code> read
+were two different Maps. Angular has a cousin of this bug — a "singleton" service provided
+again inside a lazy-loaded module — but Next's version is invisible until you build.</p>
+<p>Two fixes, both visible above and in <code>server/auth.ts</code>:</p>
+<ul>
+<li>State that must be shared goes to <b><code>globalThis</code></b> (the DB handle) — one per
+process, bundles be damned.</li>
+<li>State that must <i>survive</i> goes to <b>the database</b> — sessions live in a
+<code>ts_sessions</code> table, which also means a server restart doesn't log everyone out.</li>
+</ul>
+<div class="lab" id="lab-bundles">
+<div class="bt">Lab · the bundle trap, live</div>
+<p style="margin-top:0">Two isolated scopes below simulate the login and auth-check route bundles. Log in on A, then check auth on B.</p>
+<div class="row">
+  <button class="primary" id="bt-login">POST /api/login (bundle A)</button>
+  <button id="bt-check">GET /api/auth/check (bundle B)</button>
+  <label style="display:flex;align-items:center;gap:6px;font-size:13.5px"><input type="checkbox" id="bt-sqlite"> sessions in SQLite (the fix)</label>
+</div>
+<div class="split">
+  <div class="cell"><div class="ct">bundle A · module state</div><div class="stat-num" id="bt-a">Map(0)</div></div>
+  <div class="cell"><div class="ct">bundle B · module state</div><div class="stat-num" id="bt-b">Map(0)</div></div>
+</div>
+<div class="out" aria-live="polite">(waiting)</div>
+</div>
+<h3>The schema installs itself</h3>
+<p><code>server/schema.ts</code> is the full DDL — 25 tables — <i>generated from the live
+database</i> (<code>scripts/gen-schema.sh</code> shells out to <code>sqlite3 .schema</code>).
+Open an empty <code>DB_PATH</code> and the app builds its world: schema, singleton rows,
+defaults. That is what lets <code>npm run smoke</code> boot a scratch database and lets the
+Docker image start from nothing — the fresh-install path is exercised on every test run, not
+discovered by the first real user.</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="16" data-q="0" data-a="1">
+<p class="qtext">Login works, but the next request 401s — only in production. The classic cause in a Next backend?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Cookies are stripped by next start</button>
+<button type="button" class="qopt" data-o="1">Module state isn't shared across route bundles — each route got its own copy of the session store</button>
+<button type="button" class="qopt" data-o="2">The JWT clock skewed</button>
+</div>
+<p class="qwhy" hidden>Each route compiles to its own bundle; a module-level Map exists once per bundle. Fix: globalThis for per-process state, the database for durable state.</p></div>
+<div class="qq" data-l="16" data-q="1" data-a="0">
+<p class="qtext">Why is a <i>synchronous</i> SQLite driver defensible here?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Local file, single tenant: no network latency to overlap — and handlers stay line-for-line comparable to the Python they were ported from</button>
+<button type="button" class="qopt" data-o="1">Node is single-threaded anyway, so async never helps</button>
+<button type="button" class="qopt" data-o="2">better-sqlite3 has no async API</button>
+</div>
+<p class="qwhy" hidden>"Always async" is a rule about remote databases. For an embedded file DB the sync API is simpler, faster, and made parity review dramatically easier.</p></div>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="16">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-17" hidden>
+<h2><span class="no">18</span>Binary endpoints: PDFs, Excel, ZIPs</h2>
+<p>A finance app's API is half JSON, half <i>files</i>: numbered invoice PDFs, payslips,
+Excel exports for the accountant, ZIP packages of a whole fiscal year. Porting those meant
+re-implementing three Python libraries' output closely enough that a human — or a diff — can't
+tell.</p>
+<div class="tblwrap"><table>
+<tr><th>Python</th><th>TypeScript</th><th>The porting trick</th></tr>
+<tr><td>fpdf2 (invoices, payslips)</td><td>pdfkit</td><td>fpdf works in millimetres, pdfkit in points — every coordinate goes through <code>mm = v =&gt; v * 2.83465</code>. Layouts verified by rendering both and comparing thumbnails.</td></tr>
+<tr><td>PyMuPDF (receipt scans in reports)</td><td>pdf-lib</td><td>Python rasterizes PDF scans to images; pdf-lib <i>embeds the vector pages</i> and draws the same reference banner on top — arguably sharper than the original.</td></tr>
+<tr><td>openpyxl (P&amp;L, bank export)</td><td>exceljs</td><td>Compared not by bytes (zip metadata differs) but structurally: every cell value, number format, freeze pane and autofilter read back with openpyxl.</td></tr>
+<tr><td>zipfile (accountant package)</td><td>JSZip</td><td>JSZip invents folder entries unless every add passes <code>{ createFolders: false }</code> — the parity diff caught seven phantom directories.</td></tr>
+</table></div>
+<p>Returning a file from a route handler is refreshingly boring:</p>
+<pre>return new NextResponse(new Uint8Array(buf), { headers: {
+  "Content-Type": "application/zip",
+  "Content-Disposition": contentDisposition(`Accountant Package ${year}.zip`),
+}});</pre>
+<h3>The header nobody reads until it bites</h3>
+<p>FastAPI (via Starlette) doesn't emit <code>filename="Travel Expenses 2026.pdf"</code> — a
+space makes it switch to the RFC 5987 form:
+<code>filename*=utf-8''Travel%20Expenses%202026.pdf</code>. The byte-diff refused to pass until
+the TS port reproduced the exact algorithm — percent-encode, and only fall back to the plain
+quoted form when nothing needed encoding. Try it:</p>
+<div class="lab" id="lab-dispo">
+<div class="bt">Lab · Content-Disposition encoder</div>
+<div class="row"><input type="text" id="dp-name" value="Travel Expenses August 2026.pdf" style="flex:1;min-width:240px"></div>
+<div class="out" aria-live="polite"></div>
+</div>
+<div class="box box--gotcha">
+<div class="bt">The str(float) family of bugs</div>
+<p>Python's <code>str(152.0)</code> is <code>"152.0"</code>; JavaScript's
+<code>String(152)</code> is <code>"152"</code>. Harmless — until that number lands in a CSV
+cell, an iCal DESCRIPTION, or a proposal payload, where the byte-diff flags every occurrence.
+The port grew a two-line <code>pyFloat()</code> helper and used it at every string boundary.
+The deeper lesson: <b>when output is the contract, formatting is logic</b>, and only byte-level
+comparison finds it.</p>
+</div>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="17" data-q="0" data-a="2">
+<p class="qtext">Why compare Excel exports structurally (cells, formats, freeze panes) instead of byte-for-byte?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Bytes always match if cells match</button>
+<button type="button" class="qopt" data-o="1">openpyxl can't read exceljs files</button>
+<button type="button" class="qopt" data-o="2">xlsx is a zip — timestamps and library serialization differ even when the spreadsheet is identical</button>
+</div>
+<p class="qwhy" hidden>Two byte-different files can be the same spreadsheet. The harness reads both back with openpyxl and diffs values, number formats, freeze panes and autofilters.</p></div>
+<div class="qq" data-l="17" data-q="1" data-a="0">
+<p class="qtext">When does Starlette (and therefore the port) use the <code>filename*=utf-8''…</code> form?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Whenever percent-encoding the name changes it — a single space is enough</button>
+<button type="button" class="qopt" data-o="1">Only for non-ASCII characters</button>
+<button type="button" class="qopt" data-o="2">Always, for safety</button>
+</div>
+<p class="qwhy" hidden>The rule is: quote(filename) != filename → RFC 5987 form. Spaces percent-encode, so "P&L 2026.xlsx" and "Travel Expenses.pdf" both take the starred form.</p></div>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="17">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-18" hidden>
+<h2><span class="no">19</span>Streaming: SSE from an async generator</h2>
+<p>The AI chat streams tokens as the model produces them. The Python version yields from a
+generator into a <code>StreamingResponse</code>; the TypeScript version is the same idea with
+the platform's own primitives — and it is worth seeing how little glue is needed.</p>
+<p class="filecap">server/llm.ts — consuming the provider's stream</p>
+<pre>export async function* chatStream(messages, system, maxTokens, temperature) {
+  const r = await fetch(`${OLLAMA_URL}/api/chat`, { method: "POST", body: …, signal: AbortSignal.timeout(120000) });
+  for await (const line of readLines(r)) {      <span class="c">// NDJSON, one object per line</span>
+    const obj = JSON.parse(line);
+    const delta = obj.message?.content ?? "";
+    if (delta) yield delta;
+    if (obj.done) break;
+  }
+}</pre>
+<p class="filecap">app/api/llm/stream/route.ts — producing Server-Sent Events</p>
+<pre>const sse = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+
+function sseResponse(gen) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async pull(controller) {
+      const { done, value } = await gen.next();
+      if (done) controller.close();
+      else controller.enqueue(encoder.encode(value));
+    },
+  });
+  return new NextResponse(stream, { headers: { "Content-Type": "text/event-stream" } });
+}</pre>
+<p>The protocol is three event types, designed so the UI can act before the prose exists:
+<b><code>meta</code></b> first (which tool ran, with its full JSON result — tables render
+immediately), then a stream of <b><code>token</code></b> events (the sentence assembles
+word by word), then <b><code>done</code></b>. Errors are an event too — a stream that has
+already sent 200 cannot change its status code, so <i>in-band</i> error events are the only
+honest option. That last sentence is the lesson.</p>
+<div class="lab" id="lab-sse">
+<div class="bt">Lab · the stream, replayed</div>
+<p style="margin-top:0">This replays a real event sequence from the chat endpoint (canned, no model). Watch the event log and the answer assemble.</p>
+<div class="row"><button class="primary" id="sse-go">POST /api/llm/stream · "what's my runway?"</button></div>
+<div class="split">
+<div class="cell"><div class="ct">event log</div><div class="out" id="sse-log" style="margin-top:0">(idle)</div></div>
+<div class="cell"><div class="ct">what the UI renders</div><div id="sse-ui" style="font-size:14px">—</div></div>
+</div>
+</div>
+<p>Angular mapping: the consumer side of this is an <code>Observable</code> you'd build with
+<code>fromEvent(new EventSource(…))</code>; the producer side has no Angular equivalent — it's
+the part you gain by owning a server. Note also what the <i>tool-selection</i> step is
+<b>not</b>: it's a plain awaited call before the stream starts, because you can't pick a tool
+"progressively".</p>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="18" data-q="0" data-a="1">
+<p class="qtext">Why are errors sent as an SSE <code>error</code> event instead of an HTTP error status?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">SSE forbids non-200 responses</button>
+<button type="button" class="qopt" data-o="1">The 200 and headers are already sent when streaming starts — only in-band signaling remains</button>
+<button type="button" class="qopt" data-o="2">Browsers retry non-200 streams forever</button>
+</div>
+<p class="qwhy" hidden>A stream commits its status line first. Anything that goes wrong mid-stream must travel inside the stream — which is why the protocol has meta/token/error/done event types.</p></div>
+<div class="qq" data-l="18" data-q="1" data-a="2">
+<p class="qtext">Why does the <code>meta</code> event (tool + full result) come before any token?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">SSE requires a preamble event</button>
+<button type="button" class="qopt" data-o="1">It's an accident of the port</button>
+<button type="button" class="qopt" data-o="2">So the UI can render the data (tables, numbers) immediately while the prose streams in behind it</button>
+</div>
+<p class="qwhy" hidden>The structured result exists before the phrasing does. Sending it first makes the UI feel instant even on a slow model.</p></div>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="18">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-19" hidden>
+<h2><span class="no">20</span>The parity harness: porting without fear</h2>
+<p>The port's real innovation isn't any single endpoint — it's the <b>verification loop</b>
+that made rewriting a finance backend boring. Both backends run <i>on the same database</i>;
+every request is sent to both; the answers must match. The whole method fits in five rules:</p>
+<ol>
+<li><b>Canonicalize, then diff.</b> JSON is compared with sorted keys and floats rounded to 2
+decimals — so key order and <code>10942</code> vs <code>10942.0</code> don't drown real
+differences. Everything else must be <i>byte-identical</i>: CSVs, the iCal feed, the public
+share pages' HTML.</li>
+<li><b>Write through one, read through the other.</b> A bill toggled paid via TypeScript must
+show paid when Python reads it — proving both sides agree on the database contract, not just on
+serialization.</li>
+<li><b>Error shapes are part of the API.</b> The suites assert status codes <i>and</i>
+messages — down to Python's <code>repr()</code> quoting in <code>"got 'Nope'"</code> and its
+list formatting in <code>"Bills [5] are not…"</code>. Someone's frontend matches on those
+strings.</li>
+<li><b>Make the nondeterministic deterministic.</b> The AI chat can't be byte-compared against
+a live model — so the harness runs a <b>mock LLM server</b> that both backends point at:
+deterministic tool picks, canned answers, scripted stream chunks. Suddenly the whole
+ask/stream/tools pipeline diffs like any other endpoint.</li>
+<li><b>Leave the database as you found it.</b> Every suite deletes what it created and reverts
+what it toggled — the demo dataset survives hundreds of runs. (One suite ate a payslip once;
+its cleanup grew a restore step. The harness tests the harness.)</li>
+</ol>
+<p>What the diffs actually caught, a sampler: Python's <code>str(float)</code> everywhere
+(<code>"152.0"</code>), <code>f"{None}"</code> rendering as the string <code>"None"</code> in a
+report title (the port reproduces the quirk deliberately), JSZip's phantom folder entries,
+Starlette's RFC 5987 filenames, a missing not-a-dict validation on <code>/preferences</code> —
+found by porting the <i>test suite</i> and watching it fail against the new backend.</p>
+<div class="lab" id="lab-parity">
+<div class="bt">Lab · run the diff yourself</div>
+<p style="margin-top:0">Two backend responses for the same request. Canonicalize + diff, then try fixing the TypeScript side until the harness passes.</p>
+<div class="split">
+<div class="cell"><div class="ct">python response</div><textarea id="pr-py" rows="6" style="width:100%;font-family:var(--f-mono);font-size:12px;background:var(--code-bg);color:var(--code-ink);border:0;border-radius:6px;padding:8px">{"balance": 0.0, "runway_months": 0.0,
+ "monthly_payroll_cost": 10942.0,
+ "description": "0.0 months at current burn"}</textarea></div>
+<div class="cell"><div class="ct">typescript response</div><textarea id="pr-ts" rows="6" style="width:100%;font-family:var(--f-mono);font-size:12px;background:var(--code-bg);color:var(--code-ink);border:0;border-radius:6px;padding:8px">{"description": "0 months at current burn",
+ "runway_months": 0,
+ "monthly_payroll_cost": 10942,
+ "balance": 0}</textarea></div>
+</div>
+<div class="row"><button class="primary" id="pr-run">Canonicalize + diff</button><span style="font-size:12.5px;color:var(--muted)">hint: numbers canonicalize equal — strings don't</span></div>
+<div class="out" aria-live="polite">(not run)</div>
+</div>
+<div class="box">
+<div class="bt">Take this to work</div>
+<p>The recipe generalizes to any rewrite: keep the old system as the oracle, share the state
+store, canonicalize what may differ, byte-compare what must not, mock what refuses to be
+deterministic, and port the old test suite last — it will find the bug the new tests were
+written around. Fear of rewrites is mostly fear of not knowing what changed; this deletes the
+not-knowing.</p>
+</div>
+<div class="quiz"><div class="bt">Check yourself</div>
+<div class="qq" data-l="19" data-q="0" data-a="1">
+<p class="qtext">The two responses in the lab differ after canonicalization because…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">key order differs</button>
+<button type="button" class="qopt" data-o="1">the description string embeds Python's str(0.0) — formatting inside strings survives canonicalization</button>
+<button type="button" class="qopt" data-o="2">0.0 and 0 are different numbers</button>
+</div>
+<p class="qwhy" hidden>Sorted keys and float rounding equalize structure and numbers — but "0.0 months" vs "0 months" is a real byte difference in a string value. That exact bug shipped and was caught by this diff.</p></div>
+<div class="qq" data-l="19" data-q="1" data-a="0">
+<p class="qtext">How was the AI chat pipeline parity-tested despite nondeterministic model output?</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">A deterministic mock LLM server that both backends call — tool picks and stream chunks are scripted</button>
+<button type="button" class="qopt" data-o="1">Temperature 0 makes models deterministic enough</button>
+<button type="button" class="qopt" data-o="2">It wasn't — chat is exempt</button>
+</div>
+<p class="qwhy" hidden>The mock speaks the Ollama wire protocol and answers by keyword. Both backends see identical "model" behavior, so tool execution, arg coercion, error paths and SSE framing all diff exactly.</p></div>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="19">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article><article class="lesson" id="lesson-20" hidden>
+<h2><span class="no">21</span>Exercises, with hints</h2>
 <div class="box box--ex">
 <div class="bt">1 · Port a dialog (warm-up)</div>
 <p>The classic "Log other income" dialog posts to <code>POST /api/income</code> as form data.
@@ -1212,17 +1585,109 @@ then re-point two interfaces at the generated ones. Compare the hand-written
 <code>Overview</code> with the generated shape and notice what the hand version documents that
 the machine one can't: which fields the UI actually relies on.</p>
 </div>
-<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="15">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article>
+<div class="box box--ex">
+<div class="bt">6 · Port an endpoint with the harness (backend)</div>
+<p>Pick a small FastAPI endpoint, delete its TypeScript twin (try
+<code>app/api/next-invoice-number/route.ts</code>), and re-port it from the Python source
+without peeking at git. Then run both backends on the demo DB and diff the responses the way
+<code>scripts/parity.mjs</code> does. The exercise is not the 8 lines of code — it's feeling
+the loop: red diff, fix, green diff, trust.</p>
+</div>
+<div class="box box--ex">
+<div class="bt">7 · A byte-faithful CSV (backend)</div>
+<p>Add <code>GET /api/customers/export.csv</code>. Use <code>csvRow</code> and
+<code>pyFloat</code> from <code>server/pycsv.ts</code>, CRLF endings, and a
+<code>contentDisposition()</code> filename with a space in it. Then write the five-line Python
+equivalent with <code>csv.writer</code> and prove the outputs byte-identical. You now know why
+<code>pycsv.ts</code> exists.</p>
+</div>
+<div class="box box--ex">
+<div class="bt">8 · Teach the AI chat a tool (backend)</div>
+<p>Add a <code>vehicle_book_values</code> tool to <code>server/llmTools.ts</code>: list active
+vehicles with their depreciated book value (the math already lives in the book-value route —
+extract, don't duplicate). Write the <code>desc</code> so a model would pick your tool for
+"what are the cars worth?" but NOT for "show vehicle bills" — prompt design is API design.
+Test with <code>LLM_PROVIDER=ollama</code> against the mock server in the parity suite.</p>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="20">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article>
+<article class="lesson" id="lesson-21" hidden>
+<h2><span class="no">22</span>The final exam</h2>
+<p>Ten questions across all six parts. One attempt per question (reset the course to retake).
+Answer all ten correctly and the lesson checks itself off.</p>
+<div class="box"><div class="bt">Score</div><p id="examscore" style="font-family:var(--f-mono)">0 / 10 correct</p></div>
+<div class="quiz"><div class="bt">Everything, mixed</div>
+<div class="qq" data-l="21" data-q="0" data-a="1">
+<p class="qtext">1 · In this repo, "use client" marks…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">code that skips SSR entirely</button>
+<button type="button" class="qopt" data-o="1">the boundary where components start shipping to (and hydrating in) the browser</button>
+<button type="button" class="qopt" data-o="2">a performance optimization</button>
+</div><p class="qwhy" hidden>It marks the client boundary — everything imported below it becomes browser JS. The pages here are client components that still get prerendered shells.</p></div>
+<div class="qq" data-l="21" data-q="1" data-a="2">
+<p class="qtext">2 · The api() helper deletes the stored token and redirects on 401 because…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Next requires it</button>
+<button type="button" class="qopt" data-o="1">the backend can't send WWW-Authenticate</button>
+<button type="button" class="qopt" data-o="2">it centralizes session-expiry handling once, like an Angular HttpInterceptor</button>
+</div><p class="qwhy" hidden>One 30-line module plays the role of HttpClient + interceptor: JSON headers, Bearer token, 401 → clear + /login.</p></div>
+<div class="qq" data-l="21" data-q="2" data-a="0">
+<p class="qtext">3 · Both frontends stay consistent during migration because…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">all state — data AND UI preferences — lives server-side</button>
+<button type="button" class="qopt" data-o="1">they share a JS bundle</button>
+<button type="button" class="qopt" data-o="2">localStorage is synced between them</button>
+</div><p class="qwhy" hidden>SQLite for data, the /preferences document for UI state. Nothing lives only in one browser or one process.</p></div>
+<div class="qq" data-l="21" data-q="3" data-a="2">
+<p class="qtext">4 · Chart.js "bar is not a registered controller" means…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">the canvas mounted twice</button>
+<button type="button" class="qopt" data-o="1">the chart data is malformed</button>
+<button type="button" class="qopt" data-o="2">tree-shaking: the controller was never register()ed</button>
+</div><p class="qwhy" hidden>Chart.js v4 ships à la carte; you must Chart.register(BarController, …) — the classic script tag registered everything implicitly.</p></div>
+<div class="qq" data-l="21" data-q="4" data-a="1">
+<p class="qtext">5 · The proxy rewrite must be in the fallback phase because…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">afterFiles is dev-only</button>
+<button type="button" class="qopt" data-o="1">afterFiles runs before dynamic route matching and would shadow handlers like /api/reports/pl/[year]</button>
+<button type="button" class="qopt" data-o="2">fallback preserves the Authorization header</button>
+</div><p class="qwhy" hidden>Diagnosed in production by a server: uvicorn header on a route that should have been Node's. fallback = only when nothing else matched.</p></div>
+<div class="qq" data-l="21" data-q="5" data-a="0">
+<p class="qtext">6 · Sessions moved from a module-level Map to a SQLite table because…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">each route bundle instantiates modules separately in production — two routes saw two different Maps</button>
+<button type="button" class="qopt" data-o="1">Maps leak memory</button>
+<button type="button" class="qopt" data-o="2">SQLite is faster than a Map</button>
+</div><p class="qwhy" hidden>The bundle trap: dev shares modules, production doesn't. globalThis for per-process state, the DB for durable state.</p></div>
+<div class="qq" data-l="21" data-q="6" data-a="2">
+<p class="qtext">7 · fpdf2 layouts were ported to pdfkit by…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">an automated converter</button>
+<button type="button" class="qopt" data-o="1">rebuilding the layouts from screenshots</button>
+<button type="button" class="qopt" data-o="2">converting every coordinate mm→pt (×2.83465) and comparing rendered thumbnails</button>
+</div><p class="qwhy" hidden>fpdf thinks in millimetres, pdfkit in points. One conversion helper plus visual verification kept the invoices pixel-comparable.</p></div>
+<div class="qq" data-l="21" data-q="7" data-a="1">
+<p class="qtext">8 · A stream that fails halfway reports the failure via…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">an HTTP 500</button>
+<button type="button" class="qopt" data-o="1">an in-band error event — the 200 status was already sent</button>
+<button type="button" class="qopt" data-o="2">closing the connection silently</button>
+</div><p class="qwhy" hidden>Streaming commits the status line first; meta/token/error/done in-band events are the honest protocol.</p></div>
+<div class="qq" data-l="21" data-q="8" data-a="0">
+<p class="qtext">9 · "0.0 months at current burn" vs "0 months at current burn" is the signature of…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">Python str(float) formatting living inside a string value — invisible to numeric canonicalization</button>
+<button type="button" class="qopt" data-o="1">a rounding-mode difference</button>
+<button type="button" class="qopt" data-o="2">a locale difference</button>
+</div><p class="qwhy" hidden>When output is the contract, formatting is logic. pyFloat() reproduces str(float) at every string boundary.</p></div>
+<div class="qq" data-l="21" data-q="9" data-a="2">
+<p class="qtext">10 · The last piece that made Python optional was…</p><div class="qopts">
+<button type="button" class="qopt" data-o="0">rewriting the SQL</button>
+<button type="button" class="qopt" data-o="1">a compatibility shim over uvicorn</button>
+<button type="button" class="qopt" data-o="2">porting the seeder and smoke suite — the seeder drives the app's own HTTP API so seeded data exercises real business logic</button>
+</div><p class="qwhy" hidden>seed-demo.mjs + smoke.mjs (148 checks on a scratch DB) closed the loop: fresh clone → npm install → seeded, verified app. Porting the test suite even found one last parity bug.</p></div>
+</div>
+<div class="lesson-nav"><button class="btn-nav" data-go="-1">← Previous</button><button class="btn-done" data-done="21">Mark lesson done ✓</button><button class="btn-nav btn-nav--next" data-go="1">Next →</button></div></article>
   </main>
 </div>
 </div>
 
 <script>
 (function () {
-  var TITLES = ["The architecture decision", "React in one lesson, for Angular hands", "Angular \u2192 Next, the full mapping", "Routing is the filesystem", "Rendering: server components, hydration, and what \u25cb Static means", "Auth: the login flow and its trade-offs", "The data layer \u2014 your HttpClient in 30 lines", "State, effects, refs \u2014 the four hooks actually used", "Forms without FormsModule", "Component patterns in ui.tsx", "Shared services without DI", "Styling: one CSS file, two frontends", "Charts and the registration gotcha", "Build, env, Docker, CI", "Performance: what actually ships, what would be next", "Exercises, with hints"];
-  var PARTS = {"0": "Part I \u2014 Foundations", "3": "Part II \u2014 The framework", "6": "Part III \u2014 The application", "11": "Part IV \u2014 The seams"};
+  var TITLES = ["The architecture decision", "React in one lesson, for Angular hands", "Angular \u2192 Next, the full mapping", "Routing is the filesystem", "Rendering: server components, hydration, and what \u25cb Static means", "Auth: the login flow and its trade-offs", "The data layer \u2014 your HttpClient in 30 lines", "State, effects, refs \u2014 the four hooks actually used", "Forms without FormsModule", "Component patterns in ui.tsx", "Shared services without DI", "Styling: one CSS file, two frontends", "Charts and the registration gotcha", "Build, env, Docker, CI", "Performance: what actually ships, what would be next", "Route handlers are your APIRouter", "The database: sync SQLite and the bundle trap", "Binary endpoints: PDFs, Excel, ZIPs", "Streaming: SSE from an async generator", "The parity harness: porting without fear", "Exercises, with hints", "The final exam"];
+  var PARTS = {"0": "Part I \u2014 Foundations", "3": "Part II \u2014 The framework", "6": "Part III \u2014 The application", "11": "Part IV \u2014 The seams", "15": "Part V \u2014 Full-stack: the backend port", "20": "Part VI \u2014 Prove it"};
   var N = TITLES.length;
-  var KEY = "cockpit-course-v1";
+  var KEY = "cockpit-course-v2";
   var state = { cur: 0, done: {}, quiz: {} };
   try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
@@ -1249,6 +1714,12 @@ the machine one can't: which fields the UI actually relies on.</p>
     var doneCount = Object.keys(state.done).filter(function (k) { return state.done[k]; }).length;
     document.getElementById("pbar").style.width = (doneCount / N * 100) + "%";
     document.getElementById("ptxt").textContent = doneCount + " / " + N + " lessons done";
+    var ex = document.getElementById("examscore");
+    if (ex) {
+      var got = 0, tot = document.querySelectorAll('.qq[data-l="21"]').length;
+      for (var k in state.quiz) if (k.indexOf("21:") === 0 && state.quiz[k]) got++;
+      ex.textContent = got + " / " + tot + " correct" + (tot && got === tot ? "  \u2014  \ud83c\udfc6 full marks. Go read the source." : "");
+    }
     var db = document.querySelector("#lesson-" + state.cur + " .btn-done");
     if (db) { db.classList.toggle("is-done", !!state.done[state.cur]);
       db.textContent = state.done[state.cur] ? "Done ✓" : "Mark lesson done ✓"; }
@@ -1412,6 +1883,146 @@ the machine one can't: which fields the UI actually relies on.</p>
       read();   // ← this is vizToken() re-reading after themechange
     });
     read();
+  })();
+
+  // L16: route matcher
+  (function () {
+    var root = document.getElementById("lab-router"); if (!root) return;
+    var STATIC = ["/api/obligations", "/api/customers", "/api/reports/quarterly", "/api/next-invoice-number", "/api/llm/status"];
+    var DYNAMIC = [
+      [/^\/api\/reports\/pl\/[^/]+$/, "app/api/reports/pl/[year]/route.ts"],
+      [/^\/api\/obligations\/[^/]+$/, "app/api/obligations/[id]/route.ts"],
+      [/^\/api\/customers\/[^/]+$/, "app/api/customers/[id]/route.ts"],
+      [/^\/api\/bank-statements\/[^/]+\/transactions$/, "app/api/bank-statements/[id]/transactions/route.ts"]];
+    function upd() {
+      var url = root.querySelector("#rt-url").value.trim() || "/";
+      var buggy = root.querySelector("#rt-phase").checked;
+      var out;
+      var stat = STATIC.indexOf(url) >= 0;
+      var dyn = null;
+      for (var i = 0; i < DYNAMIC.length; i++) if (DYNAMIC[i][0].test(url)) { dyn = DYNAMIC[i][1]; break; }
+      if (stat) {
+        out = "1. static file? no\n2. " + (buggy ? "afterFiles proxy? — static routes still win\n3. " : "") +
+              "route match: app" + url + "/route.ts  ← Node answers\nserver: next";
+      } else if (dyn) {
+        out = buggy
+          ? "1. static file? no\n2. afterFiles proxy MATCHES /api/:path* → forwarded to FastAPI\n" +
+            "   (your dynamic route " + dyn + " is never consulted)\nserver: uvicorn   ← the war-story bug"
+          : "1. static file? no\n2. afterFiles rewrites: none\n3. dynamic route match: " + dyn + "  ← Node answers\nserver: next";
+      } else {
+        out = "1. static file? no\n2. " + (buggy ? "afterFiles proxy → FastAPI\nserver: uvicorn" :
+              "no route matches\n3. fallback proxy → FastAPI (or 500 if it's dead — nothing falls through anymore)\nserver: uvicorn");
+      }
+      root.querySelector(".out").textContent = out;
+    }
+    root.addEventListener("input", upd); root.addEventListener("change", upd); upd();
+  })();
+
+  // L17: bundle trap
+  (function () {
+    var root = document.getElementById("lab-bundles"); if (!root) return;
+    var mapA = 0, mapB = 0, sqlite = 0;
+    var aEl = root.querySelector("#bt-a"), bEl = root.querySelector("#bt-b"), out = root.querySelector(".out");
+    function paint() {
+      var useDb = root.querySelector("#bt-sqlite").checked;
+      aEl.textContent = useDb ? "— (reads ts_sessions)" : "Map(" + mapA + ")";
+      bEl.textContent = useDb ? "— (reads ts_sessions)" : "Map(" + mapB + ")";
+    }
+    root.querySelector("#bt-login").addEventListener("click", function () {
+      if (root.querySelector("#bt-sqlite").checked) { sqlite++; out.textContent = "200 { token } — INSERT INTO ts_sessions …  (rows: " + sqlite + ")"; }
+      else { mapA++; out.textContent = "200 { token } — stored in bundle A's Map. Bundle B has no idea."; }
+      paint();
+    });
+    root.querySelector("#bt-check").addEventListener("click", function () {
+      var useDb = root.querySelector("#bt-sqlite").checked;
+      if (useDb) out.textContent = sqlite ? "200 — SELECT FROM ts_sessions found the token ✓" : "401 — no session row yet (log in first)";
+      else out.textContent = mapB ? "200 (impossible in prod — how did B's Map get a token?)" :
+        "401 — bundle B's Map(" + mapB + ") is EMPTY even though you just logged in.\nThis is the production bug: one module, two bundles, two Maps.";
+      paint();
+    });
+    root.querySelector("#bt-sqlite").addEventListener("change", function () { out.textContent = "(store switched — try the same two clicks)"; mapA = 0; mapB = 0; sqlite = 0; paint(); });
+    paint();
+  })();
+
+  // L18: content-disposition encoder
+  (function () {
+    var root = document.getElementById("lab-dispo"); if (!root) return;
+    function enc(s) {
+      return encodeURIComponent(s).replace(/[!*'()]/g, function (c) {
+        return "%" + c.charCodeAt(0).toString(16).toUpperCase();
+      });
+    }
+    function upd() {
+      var name = root.querySelector("#dp-name").value;
+      var q = enc(name);
+      var hdr = q === name ? 'attachment; filename="' + name + '"'
+                           : "attachment; filename*=utf-8''" + q;
+      root.querySelector(".out").textContent =
+        "quote(name) " + (q === name ? "== name  → plain quoted form" : "!= name  → RFC 5987 form") +
+        "\n\nContent-Disposition: " + hdr;
+    }
+    root.addEventListener("input", upd); upd();
+  })();
+
+  // L19: SSE replay
+  (function () {
+    var root = document.getElementById("lab-sse"); if (!root) return;
+    var log = root.querySelector("#sse-log"), ui = root.querySelector("#sse-ui");
+    var META = { mode: "data", tool: "get_runway", args: {}, result: { balance: 23456.78, monthly_burn: 2905.1, runway_months: 8.1 } };
+    var TOKENS = ["At the ", "current burn ", "of CHF 2,905.10 ", "per month, ", "the balance of ", "CHF 23,456.78 ", "gives about ", "8.1 months ", "of runway."];
+    var running = false;
+    root.querySelector("#sse-go").addEventListener("click", function () {
+      if (running) return; running = true;
+      log.textContent = ""; ui.innerHTML = "";
+      function line(s) { log.textContent += s + "\n"; log.scrollTop = 1e6; }
+      line("event: meta");
+      line("data: " + JSON.stringify(META).slice(0, 78) + "…");
+      ui.innerHTML = '<div style="font-family:var(--f-mono);font-size:12px;border:1px solid var(--border);border-radius:6px;padding:6px 8px;margin-bottom:8px">get_runway() → balance 23,456.78 · burn 2,905.10 · runway 8.1</div><div class="sse-ans"></div>';
+      var i = 0;
+      (function tick() {
+        if (i < TOKENS.length) {
+          line('event: token   data: {"text": ' + JSON.stringify(TOKENS[i]) + "}");
+          ui.querySelector(".sse-ans").textContent += TOKENS[i];
+          i++; setTimeout(tick, 170);
+        } else { line("event: done    data: {}"); running = false; }
+      })();
+    });
+  })();
+
+  // L20: parity diff
+  (function () {
+    var root = document.getElementById("lab-parity"); if (!root) return;
+    function canon(x) {
+      if (typeof x === "number") return Math.round(x * 100) / 100;
+      if (Array.isArray(x)) return x.map(canon);
+      if (x && typeof x === "object") {
+        var o = {}; Object.keys(x).sort().forEach(function (k) { o[k] = canon(x[k]); });
+        return o;
+      }
+      return x;
+    }
+    root.querySelector("#pr-run").addEventListener("click", function () {
+      var out = root.querySelector(".out");
+      var a, b;
+      try { a = JSON.parse(root.querySelector("#pr-py").value); } catch (e) { out.textContent = "python side: invalid JSON — " + e.message; return; }
+      try { b = JSON.parse(root.querySelector("#pr-ts").value); } catch (e) { out.textContent = "typescript side: invalid JSON — " + e.message; return; }
+      var ca = canon(a), cb = canon(b);
+      var ja = JSON.stringify(ca, null, 1).split("\n"), jb = JSON.stringify(cb, null, 1).split("\n");
+      if (JSON.stringify(ca) === JSON.stringify(cb)) {
+        out.textContent = "OK   parity ✓  (sorted keys, floats rounded to 2dp — the responses are the same)";
+        return;
+      }
+      var lines = ["DIFF after canonicalization:"];
+      var n = Math.max(ja.length, jb.length);
+      for (var i = 0; i < n; i++) {
+        if (ja[i] !== jb[i]) {
+          if (ja[i] !== undefined) lines.push("py " + ja[i]);
+          if (jb[i] !== undefined) lines.push("ts " + jb[i]);
+        }
+      }
+      lines.push("", "→ numbers matched; the STRING still carries str(float). Fix the ts description to \"0.0 months at current burn\" (that is what pyFloat() is for) and re-run.");
+      out.textContent = lines.join("\n");
+    });
   })();
 
 })();
