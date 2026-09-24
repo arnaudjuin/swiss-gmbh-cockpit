@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# env
+.env
+.env.local
+.env*.local
+
+# data (SQLite + uploaded documents) — never commit
+/data/*.db
+/data/*.db-*
+/data/*.sqlite
+/data/documents/*
+!/data/documents/.gitkeep
+
+# logs / os
+*.log
+.DS_Store
